@@ -1,0 +1,334 @@
+import { useState } from 'react'
+import { Wallet, ChevronDown, Copy, Check, LogOut, Loader2, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { useWallet } from '@/lib/wallets'
+import { useWalletStore } from '@/stores/wallet'
+import type { WalletType } from '@/types'
+import { cn } from '@/lib/utils'
+
+function CrossmarkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" fill="url(#crossmark-gradient)" />
+      <path
+        d="M10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16C22 19.3137 19.3137 22 16 22"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle cx="16" cy="16" r="3" fill="white" />
+      <defs>
+        <linearGradient id="crossmark-gradient" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#3B82F6" />
+          <stop offset="1" stopColor="#1D4ED8" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+function GemwalletIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M16 4L28 12L16 28L4 12L16 4Z"
+        fill="url(#gemwallet-gradient)"
+      />
+      <path
+        d="M16 4L28 12L16 16L4 12L16 4Z"
+        fill="url(#gemwallet-top)"
+        opacity="0.8"
+      />
+      <path
+        d="M4 12L16 16L16 28L4 12Z"
+        fill="url(#gemwallet-left)"
+        opacity="0.6"
+      />
+      <path
+        d="M28 12L16 16L16 28L28 12Z"
+        fill="url(#gemwallet-right)"
+        opacity="0.4"
+      />
+      <defs>
+        <linearGradient id="gemwallet-gradient" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#A855F7" />
+          <stop offset="1" stopColor="#7C3AED" />
+        </linearGradient>
+        <linearGradient id="gemwallet-top" x1="4" y1="4" x2="28" y2="16" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#E879F9" />
+          <stop offset="1" stopColor="#A855F7" />
+        </linearGradient>
+        <linearGradient id="gemwallet-left" x1="4" y1="12" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#7C3AED" />
+          <stop offset="1" stopColor="#5B21B6" />
+        </linearGradient>
+        <linearGradient id="gemwallet-right" x1="28" y1="12" x2="16" y2="28" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#9333EA" />
+          <stop offset="1" stopColor="#581C87" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+function XamanIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#xaman-gradient)" />
+      <path
+        d="M8 12L12 8L16 12L20 8L24 12L20 16L24 20L20 24L16 20L12 24L8 20L12 16L8 12Z"
+        fill="white"
+      />
+      <defs>
+        <linearGradient id="xaman-gradient" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#23292F" />
+          <stop offset="1" stopColor="#14181C" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+const WALLET_OPTIONS: { type: WalletType; name: string; description: string; Icon: React.ComponentType<{ className?: string }> }[] = [
+  {
+    type: 'crossmark',
+    name: 'Crossmark',
+    description: 'Browser extension wallet',
+    Icon: CrossmarkIcon,
+  },
+  {
+    type: 'gemwallet',
+    name: 'Gemwallet',
+    description: 'Browser extension wallet',
+    Icon: GemwalletIcon,
+  },
+  {
+    type: 'xaman',
+    name: 'Xaman',
+    description: 'Mobile wallet app',
+    Icon: XamanIcon,
+  },
+]
+
+export function WalletConnect() {
+  const { address, connected, connecting, walletType, connect, disconnect } = useWallet()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleConnect = async (type: WalletType) => {
+    setError(null)
+    try {
+      await connect(type)
+      setModalOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect wallet')
+    }
+  }
+
+  const handleDisconnect = async () => {
+    await disconnect()
+    setModalOpen(false)
+  }
+
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const formatAddress = (addr: string) => {
+    return `${addr.slice(0, 8)}...${addr.slice(-6)}`
+  }
+
+  const selectedWallet = WALLET_OPTIONS.find((w) => w.type === walletType)
+
+  if (connected && address) {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setModalOpen(true)}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 rounded-lg',
+            'bg-gradient-to-r from-emerald-500/10 to-teal-500/10',
+            'border border-emerald-500/20',
+            'hover:border-emerald-500/40 transition-all duration-200',
+            'group'
+          )}
+        >
+          <div className="relative">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75" />
+          </div>
+          {selectedWallet && <selectedWallet.Icon className="w-5 h-5" />}
+          <span className="font-mono text-sm text-emerald-100">{formatAddress(address)}</span>
+          <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        </button>
+
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                Wallet Connected
+              </DialogTitle>
+              <DialogDescription>
+                Your wallet is connected to XRPL
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 pt-4">
+              {selectedWallet && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
+                  <selectedWallet.Icon className="w-8 h-8" />
+                  <div>
+                    <p className="font-medium">{selectedWallet.name}</p>
+                    <p className="text-xs text-muted-foreground">{selectedWallet.description}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Address
+                </label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-3 rounded-lg bg-secondary/50 font-mono text-xs break-all">
+                    {address}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={copyAddress}
+                    className="shrink-0"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                {copied && (
+                  <p className="text-xs text-emerald-400 animate-in fade-in slide-in-from-top-1">
+                    Copied to clipboard!
+                  </p>
+                )}
+              </div>
+
+              <Button
+                variant="destructive"
+                className="w-full gap-2"
+                onClick={handleDisconnect}
+              >
+                <LogOut className="w-4 h-4" />
+                Disconnect Wallet
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
+  }
+
+  return (
+    <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 border-0">
+          <Wallet className="w-4 h-4" />
+          Connect Wallet
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
+        <DialogHeader>
+          <DialogTitle>Connect Your Wallet</DialogTitle>
+          <DialogDescription>
+            Select a wallet to connect to XRPL
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-3 pt-4">
+          {WALLET_OPTIONS.map((wallet) => (
+            <button
+              key={wallet.type}
+              onClick={() => handleConnect(wallet.type)}
+              disabled={connecting}
+              className={cn(
+                'flex items-center gap-4 p-4 rounded-xl',
+                'bg-gradient-to-r from-secondary/80 to-secondary/40',
+                'border border-border/50 hover:border-primary/50',
+                'transition-all duration-200',
+                'hover:shadow-lg hover:shadow-primary/5',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                'group text-left'
+              )}
+            >
+              <div className="relative">
+                <wallet.Icon className="w-10 h-10" />
+                {connecting && walletType === wallet.type && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold group-hover:text-primary transition-colors">
+                  {wallet.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {wallet.description}
+                </p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground -rotate-90 group-hover:text-primary transition-colors" />
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {connecting && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Connecting...</p>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export function NetworkSwitch() {
+  const network = useWalletStore((state) => state.network)
+  const setNetwork = useWalletStore((state) => state.setNetwork)
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 border border-border/50">
+      <Zap className="w-4 h-4 text-amber-400" />
+      <select
+        value={network}
+        onChange={(e) => setNetwork(e.target.value as 'mainnet' | 'testnet')}
+        className="bg-transparent border-0 text-sm focus:ring-0 focus:outline-none cursor-pointer"
+      >
+        <option value="mainnet">Mainnet</option>
+        <option value="testnet">Testnet</option>
+      </select>
+    </div>
+  )
+}

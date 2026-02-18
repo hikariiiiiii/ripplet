@@ -1,0 +1,94 @@
+{
+  "home": {
+    "welcome": "Welcome to Ripplet",
+    "welcomeDescription": "Your gateway to the XRP Ledger. Connect your wallet to get started.",
+    "connectedAs": "Connected as",
+    "quickActions": "Quick Actions",
+    "paymentTitle": "Send Payment",
+    "paymentDescription": "Transfer XRP to another account",
+    "trustSetTitle": "Manage Trust Lines",
+    "trustSetDescription": "Set up trust lines for tokens",
+    "accountSetTitle": "Account Settings",
+    "accountSetDescription": "Configure your account flags"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "connected": "Connected"
+  },
+  "network": {
+    "mainnet": "Mainnet",
+    "testnet": "Testnet"
+  },
+  "common": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "transaction": {
+    "pending": "Transaction in progress...",
+    "pendingDescription": "Please wait while your transaction is being processed.",
+    "success": "Transaction Successful",
+    "successDescription": "Your transaction has been confirmed on the ledger.",
+    "failed": "Transaction Failed",
+    "failedDescription": "Your transaction could not be completed.",
+    "hash": "Transaction Hash",
+    "viewExplorer": "View on Explorer",
+    "errorCode": "Error Code",
+    "tryAgain": "Try Again"
+  },
+  "payment": {
+    "title": "Payment",
+    "subtitle": "Send XRP to another account",
+    "connectWalletTitle": "Connect Your Wallet",
+    "connectWalletDescription": "Please connect your wallet to send payments",
+    "destination": "Destination",
+    "destinationPlaceholder": "r...",
+    "destinationTag": "Destination Tag",
+    "destinationTagPlaceholder": "Optional",
+    "destinationTagHint": "A 32-bit unsigned integer to identify the reason for the payment",
+    "amount": "Amount (XRP)",
+    "amountPlaceholder": "0.00",
+    "memo": "Memo",
+    "memoPlaceholder": "Optional message",
+    "destinationRequired": "Destination address is required",
+    "destinationInvalid": "Invalid XRPL address format",
+    "amountRequired": "Amount is required",
+    "amountInvalid": "Amount must be greater than 0",
+    "destinationTagInvalid": "Destination tag must be between 0 and 4294967295"
+  },
+  "trustset": {
+    "title": "Trust Set",
+    "currency": "Currency",
+    "currencyHint": "3-letter ISO code (e.g., USD) or 40-character hex",
+    "currencyRequired": "Currency is required",
+    "currencyInvalid": "Must be a 3-letter ISO code or 40-character hex string",
+    "issuer": "Issuer",
+    "issuerHint": "The account that issues this currency",
+    "issuerRequired": "Issuer address is required",
+    "issuerInvalid": "Invalid XRPL address format",
+    "limit": "Limit",
+    "limitRequired": "Limit is required",
+    "limitInvalid": "Limit must be a valid number >= 0",
+    "limitZeroInfo": "Setting limit to 0 will delete the trust line (if balance is also 0)"
+  },
+  "accountset": {
+    "title": "Account Settings",
+    "flags": "Account Flags",
+    "domain": "Domain",
+    "domainPlaceholder": "example.com",
+    "domainHint": "Optional domain name for your account (will be hex encoded)",
+    "flags": {
+      "defaultRipple": "Default Ripple",
+      "defaultRippleTooltip": "Enable rippling on trust lines by default. This allows your issued currencies to be automatically rippled through connected trust lines.",
+      "requireAuth": "Require Authorization",
+      "requireAuthTooltip": "Require authorization for others to hold your issued currencies (IOUs). Other accounts must be pre-approved to hold your tokens.",
+      "disallowXRP": "Disallow XRP",
+      "disallowXRPTooltip": "Disallow incoming XRP payments from strangers. Only accounts you've authorized can send you XRP.",
+      "requireDestTag": "Require Destination Tag",
+      "requireDestTagTooltip": "Require a destination tag on all incoming payments. Useful for exchanges and hosted wallets to identify recipients."
+    }
+  }
+}

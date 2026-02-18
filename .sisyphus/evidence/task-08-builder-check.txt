@@ -1,0 +1,88 @@
+QA Evidence: Task 08 - Transaction Builder Base Utilities
+============================================================
+
+Date: 2026-02-19
+
+## Scenario: Builder functions exported
+
+**Tool**: Bash
+**Steps**:
+1. Run `grep -r "prepareTransaction\|submitTransaction\|handleTransactionResult" src/lib/xrpl/transactions/`
+
+**Expected Result**: Functions defined and exported
+**Actual Result**: 
+```
+src/lib/xrpl/transactions/builder.ts:export async function prepareTransaction(
+src/lib/xrpl/transactions/builder.ts:export async function submitTransaction(
+src/lib/xrpl/transactions/builder.ts:export function handleTransactionResult(
+src/lib/xrpl/transactions/index.ts:  prepareTransaction,
+src/lib/xrpl/transactions/index.ts:  submitTransaction,
+src/lib/xrpl/transactions/index.ts:  handleTransactionResult,
+```
+
+**Status**: PASS
+
+---
+
+## Scenario: TypeScript compilation passes
+
+**Tool**: Bash
+**Steps**:
+1. Run `npx tsc --noEmit`
+
+**Expected Result**: No errors
+**Actual Result**: No output (success)
+
+**Status**: PASS
+
+---
+
+## Scenario: Transaction types defined
+
+**Tool**: Read
+**Steps**:
+1. Check types.ts for XRPLErrorCode enum
+2. Check types.ts for TransactionSubmitResult interface
+3. Check types.ts for BaseTransactionParams interface
+
+**Expected Result**: All types defined
+**Actual Result**: All types present in types.ts
+
+**Status**: PASS
+
+---
+
+## Scenario: Error codes properly categorized
+
+**Tool**: Read
+**Steps**:
+1. Check categorizeErrorCode function in types.ts
+
+**Expected Result**: Function categorizes tel/ter/tef codes correctly
+**Actual Result**: Function correctly categorizes:
+- tel codes → LOCAL_ERROR
+- ter codes → REMOTE_ERROR
+- tef codes → FATAL_ERROR
+- tec codes → REMOTE_ERROR
+
+**Status**: PASS
+
+---
+
+## Files Created
+
+1. `src/lib/xrpl/transactions/types.ts` - Transaction types and error codes
+2. `src/lib/xrpl/transactions/builder.ts` - Base utilities (prepareTransaction, submitTransaction, handleTransactionResult)
+3. `src/lib/xrpl/transactions/index.ts` - Exports
+
+## Acceptance Criteria Verification
+
+- [x] Transaction types defined
+- [x] prepareTransaction() uses autofill()
+- [x] submitTransaction() uses submitAndWait()
+- [x] Error codes properly categorized
+- [x] TypeScript types complete
+
+## Summary
+
+All acceptance criteria met. Transaction builder base utilities are ready for use by specific transaction builders (Payment, TrustSet, AccountSet).

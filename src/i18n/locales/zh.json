@@ -1,0 +1,94 @@
+{
+  "home": {
+    "welcome": "欢迎使用 Ripplet",
+    "welcomeDescription": "您的 XRP 账本入口。连接钱包开始使用。",
+    "connectedAs": "已连接",
+    "quickActions": "快捷操作",
+    "paymentTitle": "发送支付",
+    "paymentDescription": "向其他账户转账 XRP",
+    "trustSetTitle": "管理信任线",
+    "trustSetDescription": "为代币设置信任线",
+    "accountSetTitle": "账户设置",
+    "accountSetDescription": "配置您的账户标志"
+  },
+  "wallet": {
+    "connect": "连接钱包",
+    "disconnect": "断开连接",
+    "connected": "已连接"
+  },
+  "network": {
+    "mainnet": "主网",
+    "testnet": "测试网"
+  },
+  "common": {
+    "submit": "提交",
+    "cancel": "取消",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功"
+  },
+  "transaction": {
+    "pending": "交易处理中...",
+    "pendingDescription": "请等待您的交易被处理。",
+    "success": "交易成功",
+    "successDescription": "您的交易已在账本上确认。",
+    "failed": "交易失败",
+    "failedDescription": "您的交易无法完成。",
+    "hash": "交易哈希",
+    "viewExplorer": "在浏览器中查看",
+    "errorCode": "错误代码",
+    "tryAgain": "重试"
+  },
+  "payment": {
+    "title": "支付",
+    "subtitle": "向其他账户发送XRP",
+    "connectWalletTitle": "连接您的钱包",
+    "connectWalletDescription": "请连接您的钱包以发送支付",
+    "destination": "目标地址",
+    "destinationPlaceholder": "r...",
+    "destinationTag": "目标标签",
+    "destinationTagPlaceholder": "可选",
+    "destinationTagHint": "用于标识支付原因的32位无符号整数",
+    "amount": "金额 (XRP)",
+    "amountPlaceholder": "0.00",
+    "memo": "备注",
+    "memoPlaceholder": "可选消息",
+    "destinationRequired": "目标地址为必填项",
+    "destinationInvalid": "无效的XRPL地址格式",
+    "amountRequired": "金额为必填项",
+    "amountInvalid": "金额必须大于0",
+    "destinationTagInvalid": "目标标签必须在0到4294967295之间"
+  },
+  "trustset": {
+    "title": "信任设置",
+    "currency": "货币",
+    "currencyHint": "3字母ISO代码（如USD）或40字符十六进制",
+    "currencyRequired": "货币代码为必填项",
+    "currencyInvalid": "必须是3字母ISO代码或40字符十六进制字符串",
+    "issuer": "发行方",
+    "issuerHint": "发行此货币的账户",
+    "issuerRequired": "发行方地址为必填项",
+    "issuerInvalid": "无效的XRPL地址格式",
+    "limit": "限额",
+    "limitRequired": "限额为必填项",
+    "limitInvalid": "限额必须是大于等于0的有效数字",
+    "limitZeroInfo": "将限额设置为0将删除信任线（如果余额也为0）"
+  },
+  "accountset": {
+    "title": "账户设置",
+    "flags": "账户标志",
+    "domain": "域名",
+    "domainPlaceholder": "example.com",
+    "domainHint": "可选的账户域名（将被十六进制编码）",
+    "flags": {
+      "defaultRipple": "默认涟漪",
+      "defaultRippleTooltip": "默认启用信任线上的涟漪功能。这允许您发行的货币自动通过连接的信任线进行涟漪传输。",
+      "requireAuth": "需要授权",
+      "requireAuthTooltip": "要求其他人持有您发行的货币（IOU）时需要授权。其他账户必须预先获得批准才能持有您的代币。",
+      "disallowXRP": "禁止XRP",
+      "disallowXRPTooltip": "禁止陌生人发送XRP付款。只有您授权的账户才能向您发送XRP。",
+      "requireDestTag": "需要目标标签",
+      "requireDestTagTooltip": "要求所有传入付款都包含目标标签。适用于交易所和托管钱包识别收款人。"
+    }
+  }
+}
