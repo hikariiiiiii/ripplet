@@ -134,6 +134,17 @@ export function useWallet() {
       store.setAddress(address);
       store.setWalletType(type);
       store.setConnected(true);
+      
+      // Try to detect wallet network on connect
+      try {
+        const walletNetwork = await detectWalletNetwork(type);
+        if (walletNetwork) {
+          store.setNetwork(walletNetwork as import('@/types').NetworkType);
+        }
+      } catch (e) {
+        console.warn('Could not detect wallet network:', e);
+      }
+      
       return address;
     } catch (error) {
       console.error('Wallet connection error:', error);
@@ -150,10 +161,56 @@ export function useWallet() {
     store.disconnect();
   };
 
+  const validateWalletState = async (): Promise<{ valid: boolean; error?: string }> => {
+    if (!store.walletType || !store.address) {
+      return { valid: false, error: 'No wallet connected' };
+    }
+
+    // Check if wallet address has changed
+    try {
+      const currentAddress = await getWalletAddress(store.walletType);
+      if (currentAddress && currentAddress !== store.address) {
+        return {
+          valid: false,
+          error: `Wallet address changed. Please reconnect your wallet.\nExpected: ${store.address.slice(0, 8)}...\nCurrent: ${currentAddress.slice(0, 8)}...`,
+        };
+      }
+    } catch (e) {
+      console.warn('Could not verify wallet address:', e);
+    }
+
+    // Check if wallet network matches app network
+    try {
+      const walletNetwork = await detectWalletNetwork(store.walletType);
+      if (walletNetwork && walletNetwork !== store.network) {
+        const networkNames: Record<string, string> = {
+          mainnet: 'Mainnet',
+          testnet: 'Testnet',
+          devnet: 'Devnet',
+        };
+        return {
+          valid: false,
+          error: `Network mismatch!\nApp is set to ${networkNames[store.network]}, but wallet is on ${networkNames[walletNetwork]}.\nPlease switch your wallet to ${networkNames[store.network]} or change the app network.`,
+        };
+      }
+    } catch (e) {
+      console.warn('Could not verify wallet network:', e);
+    }
+
+    return { valid: true };
+  };
+
   const signAndSubmit = async (transaction: object) => {
     if (!store.walletType) {
       throw new Error('No wallet connected');
     }
+    
+    // Validate wallet state before signing
+    const validation = await validateWalletState();
+    if (!validation.valid) {
+      throw new Error(validation.error || 'Wallet state validation failed');
+    }
+    
     return signAndSubmitTransaction(store.walletType, transaction);
   };
 
@@ -161,6 +218,13 @@ export function useWallet() {
     if (!store.walletType) {
       throw new Error('No wallet connected');
     }
+    
+    // Validate wallet state before signing
+    const validation = await validateWalletState();
+    if (!validation.valid) {
+      throw new Error(validation.error || 'Wallet state validation failed');
+    }
+    
     return signTransaction(store.walletType, transaction);
   };
 
@@ -175,5 +239,81 @@ export function useWallet() {
     disconnect,
     signAndSubmit,
     sign,
+    validateWalletState,
   };
+}
+
+// Helper to detect wallet network
+async function detectWalletNetwork(type: WalletType): Promise<string | null> {
+  try {
+    if (type === 'crossmark' && window.crossmark?.sdk?.getNetwork) {
+      const result = await window.crossmark.sdk.getNetwork();
+      if (result?.type) {
+        return mapNetworkType(result.type);
+      }
+    }
+    if (type === 'gemwallet') {
+      // Gemwallet doesn't expose network API directly, skip for now
+      return null;
+    }
+  } catch (e) {
+
+
+
+
+
+    console.warn('Failed to detect wallet network:', e);
+  }
+  return null;
+}
+
+// Helper to get current wallet address
+async function getWalletAddress(type: WalletType): Promise<string | null> {
+  try {
+    if (type === 'crossmark' && window.crossmark?.sdk?.getAddress) {
+      const result = await window.crossmark.sdk.getAddress();
+      return result?.address || null;
+    }
+    if (type === 'gemwallet') {
+      // Gemwallet address check would go here
+      return null;
+    }
+  } catch (e) {
+    console.warn('Failed to get wallet address:', e);
+  }
+  return null;
+}
+
+function mapNetworkType(walletNetwork: string): string {
+  const network = walletNetwork?.toLowerCase() || '';
+  if (network.includes('mainnet') || network === 'main') {
+    return 'mainnet';
+  }
+  if (network.includes('testnet') || network === 'test' || network.includes('altnet')) {
+    return 'testnet';
+  }
+  if (network.includes('devnet') || network === 'dev') {
+    return 'devnet';
+  }
+  return 'mainnet';
+}
+
+// Add global type declarations
+declare global {
+  interface Window {
+    crossmark?: {
+      sdk?: {
+        on?: (event: string, callback: (data: unknown) => void) => void;
+        off?: (event: string, callback: (data: unknown) => void) => void;
+        getNetwork?: () => Promise<{ type: string }>;
+        getAddress?: () => Promise<{ address: string }>;
+      };
+    };
+    gemwallet?: {
+      on?: (event: string, callback: (data: unknown) => void) => void;
+      off?: (event: string, callback: (data: unknown) => void) => void;
+      getNetwork?: () => Promise<{ result?: { type: string } }>;
+      getAddress?: () => Promise<{ result?: { address: string } }>;
+    };
+  }
 }
