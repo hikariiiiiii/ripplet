@@ -47,29 +47,63 @@ npm run preview      # Preview production build
 npm run lint         # Run ESLint
 ```
 
-## XRPL Transaction Types (85 Total)
+## XRPL Transaction Types (67+ Total)
 
-### Core Transactions
-- Account: AccountSet, AccountDelete, SetRegularKey, SignerListSet, TicketCreate
-- Payment: Payment, Check*, PaymentChannel*, DepositPreauth
-- Token: TrustSet, Clawback
+### 🔴 High Priority (29 types)
 
-### DEX & AMM
-- DEX: OfferCreate, OfferCancel
-- AMM: AMMCreate, AMMDeposit/Withdraw, AMMBid/Vote, AMMDelete, AMMClawback
+#### 1. Account (5 types)
+- AccountSet ✅ | AccountDelete | SetRegularKey | SignerListSet | TicketCreate
 
-### NFT & MPT
-- NFT: NFTokenMint/Burn/CreateOffer/AcceptOffer/CancelOffer, NFTokenModify
-- MPT: MPTokenIssuanceCreate/Set/Destroy, MPTokenAuthorize
+#### 2. Payment (8 types)
+- Payment ✅ | CheckCreate | CheckCash | CheckCancel | PaymentChannelCreate | PaymentChannelFund | PaymentChannelClaim | DepositPreauth
 
-### New Features (2024-2025)
-- Credential: CredentialCreate/Accept/Delete
-- Vault: VaultCreate/Set/Delete, VaultDeposit/Withdraw/Clawback
-- Lending: LoanBroker*, Loan*
-- DID: DIDSet, DIDDelete
-- Oracle: OracleSet, OracleDelete
-- Cross-chain: XChain*
-- Permission: PermissionedDomain*, DelegateSet
+#### 3. Token/IOU (4 types)
+- TrustSet ✅ | Clawback | OfferCreate | OfferCancel
+
+#### 4. NFT (6 types)
+- NFTokenMint | NFTokenBurn | NFTokenCreateOffer | NFTokenAcceptOffer | NFTokenCancelOffer | NFTokenModify
+
+#### 5. MPT (4 types)
+- MPTokenIssuanceCreate | MPTokenIssuanceSet | MPTokenIssuanceDestroy | MPTokenAuthorize
+
+#### 6. Credential (3 types)
+- CredentialCreate | CredentialAccept | CredentialDelete
+
+### 🟡 Medium Priority (13 types)
+
+#### 7. DID (2 types)
+- DIDSet | DIDDelete
+
+#### 8. Oracle (2 types)
+- OracleSet | OracleDelete
+
+#### 9. Permission (3 types)
+- PermissionedDomainSet | PermissionedDomainDelete | DelegateSet
+
+#### 10. Vault (6 types)
+- VaultCreate | VaultSet | VaultDelete | VaultDeposit | VaultWithdraw | VaultClawback
+
+### 🟢 Low Priority (25+ types)
+
+#### 11. AMM (7 types)
+- AMMCreate | AMMDeposit | AMMWithdraw | AMMBid | AMMVote | AMMDelete | AMMClawback
+
+#### 12. Lending (~10 types)
+- LoanBrokerSet | LoanBrokerDelete | LoanSet | LoanManage | LoanPay | LoanDelete | LoanBrokerCoverDeposit | LoanBrokerCoverWithdraw | LoanBrokerClawback
+
+#### 13. Cross-chain (6 types)
+- XChainCreateBridge | XChainModifyBridge | XChainCreateClaimID | XChainCommit | XChainClaim | XChainAccountCreateCommit
+
+#### 14. Other
+- EnableAmendment | SetFee | UNLModify
+
+### Implementation Progress
+| Priority | Total | Done | Progress |
+|----------|-------|------|----------|
+| 🔴 High | 29 | 3 | 10.3% |
+| 🟡 Medium | 13 | 0 | 0% |
+| 🟢 Low | 25+ | 0 | 0% |
+| **Total** | **67+** | **3** | **4.5%** |
 
 ## Code Style Guidelines
 

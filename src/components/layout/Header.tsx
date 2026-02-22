@@ -1,33 +1,62 @@
-import { Button } from '@/components/ui/button';
-import { Wallet } from 'lucide-react';
+import { Wallet, Copy, Check } from 'lucide-react';
 import { NetworkSwitcher } from '@/components/common/NetworkSwitcher';
 import { LanguageToggle } from '@/components/common/LanguageToggle';
+import { useWalletStore } from '@/stores/wallet';
+import { useState } from 'react';
+import { RippletLogo } from '@/components/common/RippletLogo';
 
 export function Header() {
+  const { address, connected } = useWalletStore();
+  const [copied, setCopied] = useState(false);
+
+  const truncateAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-700/50 flex items-center px-6 shrink-0">
+    <header className="h-16 glass-card-intense border-b border-border/50 flex items-center px-6 shrink-0 sticky top-0 z-50">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-          <span className="text-white font-bold text-sm">R</span>
+        <RippletLogo />
+        <div>
+          <span className="text-xl font-display font-bold text-gradient-animated">Ripplet</span>
         </div>
-        <span className="text-xl font-semibold text-white tracking-tight">Ripplet</span>
       </div>
 
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
         <NetworkSwitcher />
-
         <LanguageToggle />
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 gap-2"
-        >
-          <Wallet className="w-4 h-4" />
-          <span>Connect Wallet</span>
-        </Button>
+        {connected && address ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card border border-primary/20 hover:border-primary/40 transition-colors">
+            <div className="w-2 h-2 rounded-full bg-primary status-pulse" />
+            <span className="font-mono-address text-base text-primary">{truncateAddress(address)}</span>
+            <button
+              onClick={copyAddress}
+              className="p-1.5 rounded-md hover:bg-primary/10 transition-all group"
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-primary transition-all" />
+              ) : (
+                <Copy className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+              )}
+            </button>
+          </div>
+        ) : (
+          <button className="btn-primary text-background font-semibold px-4 py-2 rounded-lg text-sm transition-all duration-300 hover:scale-105 flex items-center gap-2">
+            <Wallet className="w-4 h-4" />
+            <span>Connect</span>
+          </button>
+        )}
       </div>
     </header>
   );

@@ -1,8 +1,28 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Send, Shield, Settings, Wallet, ArrowRight, Zap } from 'lucide-react';
+import { 
+  Send, 
+  Shield, 
+  Settings, 
+  Wallet, 
+  ArrowRight, 
+  Layers,
+  Coins,
+  FileCheck,
+  Database,
+  Activity,
+  Copy,
+  Check,
+  Terminal,
+  Globe,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
+import { RippletLogo } from '@/components/common/RippletLogo';
+import { useState, useEffect, useRef } from 'react';
+import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
@@ -12,6 +32,31 @@ function truncateAddress(address: string): string {
 export default function Home() {
   const { t } = useTranslation();
   const { connected, address, networkInfo } = useWalletStore();
+  const [copied, setCopied] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setMousePosition({ x, y });
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const quickActions = [
     {
@@ -19,126 +64,219 @@ export default function Home() {
       description: t('home.paymentDescription'),
       icon: Send,
       href: '/payment',
-      gradient: 'from-emerald-500/20 to-teal-500/20',
-      iconBg: 'bg-emerald-500/20',
-      iconColor: 'text-emerald-400',
-      border: 'border-emerald-500/20 hover:border-emerald-500/40',
+      iconColor: 'text-accent',
     },
     {
       title: t('home.trustSetTitle'),
       description: t('home.trustSetDescription'),
       icon: Shield,
       href: '/trustset',
-      gradient: 'from-violet-500/20 to-purple-500/20',
-      iconBg: 'bg-violet-500/20',
-      iconColor: 'text-violet-400',
-      border: 'border-violet-500/20 hover:border-violet-500/40',
+      iconColor: 'text-neon-cyan',
     },
     {
       title: t('home.accountSetTitle'),
       description: t('home.accountSetDescription'),
       icon: Settings,
       href: '/accountset',
-      gradient: 'from-amber-500/20 to-orange-500/20',
-      iconBg: 'bg-amber-500/20',
-      iconColor: 'text-amber-400',
-      border: 'border-amber-500/20 hover:border-amber-500/40',
+      iconColor: 'text-neon-purple',
     },
+  ];
+
+  const comingSoonFeatures = [
+    { title: 'NFT', icon: Layers, description: 'Non-Fungible Tokens' },
+    { title: 'MPT', icon: Coins, description: 'Multi-Purpose Tokens' },
+    { title: 'Credential', icon: FileCheck, description: 'Identity Verification' },
+    { title: 'Vault', icon: Database, description: 'Secure Storage' },
   ];
 
   if (!connected) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-lg text-center">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-cyan-500/10 via-transparent to-transparent rounded-full blur-3xl" />
-          </div>
-
-          <div className="relative mb-8">
-            <div className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-2xl shadow-cyan-500/25">
-              <Zap className="w-12 h-12 text-white" />
+      <div className="flex-1 flex items-center justify-center p-6 bg-animated-gradient bg-grid relative overflow-hidden">
+        {/* Background orbs */}
+        <div className="absolute inset-0 bg-floating-orbs pointer-events-none" />
+        
+        <div className="max-w-md w-full text-center space-y-8 relative z-10">
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-400/20 flex items-center justify-center shadow-lg border border-primary/30">
+              <RippletLogo size={48} />
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">
-            {t('home.welcome')}
-          </h1>
-          <p className="text-lg text-slate-400 mb-8 leading-relaxed">
-            {t('home.welcomeDescription')}
-          </p>
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold text-foreground">
+              {t('home.welcome')}
+            </h1>
+            <p className="text-muted-foreground">
+              {t('home.welcomeDescription')}
+            </p>
+          </div>
 
           <Button
             size="lg"
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-8 py-6 text-lg shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300"
+            className="btn-primary text-background font-semibold px-8 py-6"
+            onClick={() => setShowWalletModal(true)}
           >
             <Wallet className="w-5 h-5 mr-2" />
             {t('wallet.connect')}
           </Button>
 
-          <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-500">
-            <div className={`w-2 h-2 rounded-full ${networkInfo.type === 'mainnet' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-            <span>{networkInfo.name}</span>
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-muted-foreground">{networkInfo.name}</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
+              <Sparkles className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">67+ Transaction Types</span>
+            </div>
           </div>
+
+          <WalletSelectModal open={showWalletModal} onOpenChange={setShowWalletModal} />
         </div>
-      </div>
+        </div>
     );
   }
 
   return (
-    <div className="flex-1 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="relative mb-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-2xl blur-xl" />
-          <div className="relative bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Wallet className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-400 mb-1">{t('home.connectedAs')}</p>
-                  <p className="text-lg font-mono text-white tracking-wide">
-                    {address && truncateAddress(address)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/50 border border-slate-700/50">
-                <div className={`w-2 h-2 rounded-full animate-pulse ${networkInfo.type === 'mainnet' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                <span className="text-sm text-slate-300">{networkInfo.name}</span>
+    <div className="flex-1 p-6 space-y-6 overflow-auto bg-animated-gradient bg-grid relative">
+      {/* Background orbs */}
+      <div className="absolute inset-0 bg-floating-orbs pointer-events-none" />
+      
+      <div 
+        ref={cardRef}
+        className="glass-card rounded-xl p-5 relative z-10"
+        style={{ '--mouse-x': `${mousePosition.x}%`, '--mouse-y': `${mousePosition.y}%` } as React.CSSProperties}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-neon-blue flex items-center justify-center">
+              <Wallet className="w-7 h-7 text-background" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                {t('home.connectedAs')}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="font-mono-address text-lg text-foreground">
+                  {address && truncateAddress(address)}
+                </span>
+                <button
+                  onClick={copyAddress}
+                  className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-accent" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm">{networkInfo.name}</span>
+            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+          </div>
         </div>
+      </div>
 
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-            <span>{t('home.quickActions')}</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link
-                  key={action.href}
-                  to={action.href}
-                  className={`group relative bg-gradient-to-br ${action.gradient} backdrop-blur-sm border ${action.border} rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl ${action.iconBg} flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 ${action.iconColor}`} />
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {quickActions.map((action, index) => {
+          const Icon = action.icon;
+          return (
+            <Link
+              key={action.href}
+              to={action.href}
+              className="feature-card p-5 group"
+              style={{ animationDelay: `${(index + 1) * 100}ms` } as React.CSSProperties}
+            >
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center">
+                    <Icon className={`w-6 h-6 ${action.iconColor}`} />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {action.title}
-                  </h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">
-                    {action.description}
-                  </p>
-                </Link>
-              );
-            })}
+                  <ArrowRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                </div>
+                
+                <h3 className="text-lg font-semibold mb-1 group-hover:text-accent transition-colors">
+                  {action.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {action.description}
+                </p>
+                
+                <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Terminal className="w-3 h-3 text-accent" />
+                  <span className="font-mono-address">Build & Sign</span>
+                  <ChevronRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-muted-foreground" />
+            <h3 className="font-semibold">Coming Soon</h3>
+          </div>
+          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-secondary/50">
+            Q2 2026
+          </span>
+        </div>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {comingSoonFeatures.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <div
+                key={feature.title}
+                className="p-4 rounded-xl bg-secondary/30 border border-border/30 hover:border-accent/30 transition-colors"
+              >
+                <Icon className="w-5 h-5 text-muted-foreground mb-2" />
+                <p className="font-medium text-sm">{feature.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{feature.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="glass-card rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Terminal className="w-4 h-4 text-accent" />
+          <span className="text-xs font-mono-address text-muted-foreground uppercase tracking-wider">Terminal</span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            <span className="text-xs text-muted-foreground">Live</span>
+          </div>
+        </div>
+        
+        <div className="code-block">
+          <div className="space-y-1">
+            <div>
+              <span className="code-key">status</span>
+              <span className="text-muted-foreground">: </span>
+              <span className="code-string">"connected"</span>
+            </div>
+            <div>
+              <span className="code-key">network</span>
+              <span className="text-muted-foreground">: </span>
+              <span className="code-string">"{networkInfo.type}"</span>
+            </div>
+            <div>
+              <span className="code-key">address</span>
+              <span className="text-muted-foreground">: </span>
+              <span className="code-string">"{address?.slice(0, 20)}..."</span>
+            </div>
+            <div>
+              <span className="code-key">ready</span>
+              <span className="text-muted-foreground">: </span>
+              <span className="code-boolean">true</span>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Network, ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { NETWORKS, type NetworkType } from '@/types';
+import { cn } from '@/lib/utils';
 
 export function NetworkSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,50 +24,69 @@ export function NetworkSwitcher() {
     setIsOpen(false);
   };
 
-  const getBadgeColor = (net: NetworkType) => {
-    return net === 'mainnet' 
-      ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-      : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+  const networkStyles: Record<NetworkType, { bg: string; text: string; dot: string }> = {
+    mainnet: {
+      bg: 'bg-network-mainnet/15',
+      text: 'text-network-mainnet',
+      dot: 'bg-network-mainnet',
+    },
+    testnet: {
+      bg: 'bg-network-testnet/15',
+      text: 'text-network-testnet',
+      dot: 'bg-network-testnet',
+    },
   };
+
+  const currentStyle = networkStyles[network];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+        className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200',
+          'border border-current/20 hover:border-current/40',
+          currentStyle.bg,
+          currentStyle.text
+        )}
       >
-        <Network className="w-4 h-4" />
-        <span className="hidden sm:inline text-sm">{NETWORKS[network].name}</span>
-        <span 
-          className={`sm:hidden text-xs px-2 py-0.5 rounded border ${getBadgeColor(network)}`}
-        >
+        <span className="relative flex h-2 w-2">
+          <span className={cn('animate-pulse-ring absolute inline-flex h-full w-full rounded-full opacity-75', currentStyle.dot)} />
+          <span className={cn('relative inline-flex rounded-full h-2 w-2', currentStyle.dot)} />
+        </span>
+        <span className="hidden sm:inline text-sm font-medium">{NETWORKS[network].name}</span>
+        <span className="sm:hidden text-xs font-medium">
           {network === 'mainnet' ? 'Main' : 'Test'}
         </span>
-        <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', isOpen && 'rotate-180')} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50 overflow-hidden">
-          <div className="py-1">
-            {(Object.keys(NETWORKS) as NetworkType[]).map((net) => (
-              <button
-                key={net}
-                onClick={() => handleSelect(net)}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-slate-700 transition-colors ${
-                  network === net ? 'text-white' : 'text-slate-400'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span 
-                    className={`w-2 h-2 rounded-full ${net === 'mainnet' ? 'bg-green-500' : 'bg-yellow-500'}`}
-                  />
-                  <span>{NETWORKS[net].name}</span>
-                </div>
-                {network === net && (
-                  <Check className="w-4 h-4 text-cyan-400" />
-                )}
-              </button>
-            ))}
+        <div className="absolute right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
+          <div className="p-1">
+            {(Object.keys(NETWORKS) as NetworkType[]).map((net) => {
+              const style = networkStyles[net];
+              return (
+                <button
+                  key={net}
+                  onClick={() => handleSelect(net)}
+                  className={cn(
+                    'w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-150',
+                    network === net
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                  )}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={cn('w-2 h-2 rounded-full', style.dot)} />
+                    <span>{NETWORKS[net].name}</span>
+                  </div>
+                  {network === net && (
+                    <Check className="w-4 h-4 text-xrpl-green" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

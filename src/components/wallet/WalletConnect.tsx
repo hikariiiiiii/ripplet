@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Wallet, ChevronDown, Copy, Check, LogOut, Loader2, Zap } from 'lucide-react'
+import { Wallet, ChevronDown, Copy, Check, LogOut, Loader2, Zap, AlertTriangle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -97,24 +97,27 @@ function XamanIcon({ className }: { className?: string }) {
   )
 }
 
-const WALLET_OPTIONS: { type: WalletType; name: string; description: string; Icon: React.ComponentType<{ className?: string }> }[] = [
+const WALLET_OPTIONS: { type: WalletType; name: string; description: string; Icon: React.ComponentType<{ className?: string }>; installUrl?: string }[] = [
   {
     type: 'crossmark',
     name: 'Crossmark',
     description: 'Browser extension wallet',
     Icon: CrossmarkIcon,
+    installUrl: 'https://crossmark.io/',
   },
   {
     type: 'gemwallet',
     name: 'Gemwallet',
     description: 'Browser extension wallet',
     Icon: GemwalletIcon,
+    installUrl: 'https://gemwallet.app/',
   },
   {
     type: 'xaman',
     name: 'Xaman',
     description: 'Mobile wallet app',
     Icon: XamanIcon,
+    installUrl: 'https://xaman.app/',
   },
 ]
 
@@ -130,7 +133,8 @@ export function WalletConnect() {
       await connect(type)
       setModalOpen(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect wallet')
+      const message = err instanceof Error ? err.message : 'Failed to connect wallet'
+      setError(message)
     }
   }
 
@@ -160,18 +164,15 @@ export function WalletConnect() {
           onClick={() => setModalOpen(true)}
           className={cn(
             'flex items-center gap-2 px-3 py-2 rounded-lg',
-            'bg-gradient-to-r from-emerald-500/10 to-teal-500/10',
-            'border border-emerald-500/20',
-            'hover:border-emerald-500/40 transition-all duration-200',
+            'bg-secondary/50',
+            'border border-border/50',
+            'hover:border-accent/30 transition-all duration-200',
             'group'
           )}
         >
-          <div className="relative">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75" />
-          </div>
+          <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
           {selectedWallet && <selectedWallet.Icon className="w-5 h-5" />}
-          <span className="font-mono text-sm text-emerald-100">{formatAddress(address)}</span>
+          <span className="font-mono text-sm text-foreground">{formatAddress(address)}</span>
           <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
 
@@ -179,7 +180,7 @@ export function WalletConnect() {
           <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
                 Wallet Connected
               </DialogTitle>
               <DialogDescription>
@@ -213,14 +214,14 @@ export function WalletConnect() {
                     className="shrink-0"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <Check className="w-4 h-4 text-accent" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
                   </Button>
                 </div>
                 {copied && (
-                  <p className="text-xs text-emerald-400 animate-in fade-in slide-in-from-top-1">
+                  <p className="text-xs text-accent animate-in fade-in slide-in-from-top-1">
                     Copied to clipboard!
                   </p>
                 )}
@@ -244,9 +245,9 @@ export function WalletConnect() {
   return (
     <Dialog open={modalOpen} onOpenChange={setModalOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 border-0">
+        <Button className="gap-2">
           <Wallet className="w-4 h-4" />
-          Connect Wallet
+          Connect
         </Button>
       </DialogTrigger>
 
@@ -266,10 +267,9 @@ export function WalletConnect() {
               disabled={connecting}
               className={cn(
                 'flex items-center gap-4 p-4 rounded-xl',
-                'bg-gradient-to-r from-secondary/80 to-secondary/40',
-                'border border-border/50 hover:border-primary/50',
+                'bg-secondary/50 hover:bg-secondary/70',
+                'border border-border/50 hover:border-accent/30',
                 'transition-all duration-200',
-                'hover:shadow-lg hover:shadow-primary/5',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'group text-left'
               )}
@@ -278,33 +278,58 @@ export function WalletConnect() {
                 <wallet.Icon className="w-10 h-10" />
                 {connecting && walletType === wallet.type && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    <Loader2 className="w-5 h-5 animate-spin text-accent" />
                   </div>
                 )}
               </div>
               <div className="flex-1">
-                <p className="font-semibold group-hover:text-primary transition-colors">
+                <p className="font-semibold group-hover:text-accent transition-colors">
                   {wallet.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {wallet.description}
                 </p>
               </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground -rotate-90 group-hover:text-primary transition-colors" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground -rotate-90 group-hover:text-accent transition-colors" />
             </button>
           ))}
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-            <p className="text-sm text-destructive">{error}</p>
+          <div className="mt-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-destructive font-medium mb-1">Connection Failed</p>
+                <p className="text-xs text-destructive/80">{error}</p>
+              </div>
+            </div>
+            {(error.includes('not found') || error.includes('not installed')) && (
+              <div className="mt-3 pt-3 border-t border-destructive/20">
+                <p className="text-xs text-muted-foreground mb-2">Install a wallet extension:</p>
+                <div className="flex flex-wrap gap-2">
+                  {WALLET_OPTIONS.filter(w => w.installUrl).map(wallet => (
+                    <a
+                      key={wallet.type}
+                      href={wallet.installUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                    >
+                      {wallet.name}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {connecting && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <Loader2 className="w-8 h-8 animate-spin text-accent" />
               <p className="text-sm text-muted-foreground">Connecting...</p>
             </div>
           </div>

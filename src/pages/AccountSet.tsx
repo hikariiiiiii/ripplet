@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Wallet, AlertCircle } from 'lucide-react'
+import { AlertCircle, Settings } from 'lucide-react'
 import { AccountSetForm } from '@/components/transaction/AccountSetForm'
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult'
 import { useWallet } from '@/lib/wallets'
 import { useWalletStore } from '@/stores/wallet'
+import { WalletConnectPrompt } from '@/components/wallet/WalletConnectPrompt'
 import type { TransactionResult } from '@/types'
 import type { AccountSet } from 'xrpl'
 
@@ -54,33 +55,34 @@ export default function AccountSetPage() {
 
   if (!connected || !address) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto">
-          <div className="flex flex-col items-center justify-center p-8 space-y-6 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
-            <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full" />
-              <div className="relative bg-gradient-to-br from-blue-400 to-indigo-600 p-4 rounded-full shadow-lg shadow-blue-500/30">
-                <Wallet className="w-8 h-8 text-white" />
-              </div>
-            </div>
-            
-            <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold">{t('wallet.connect')}</h2>
-              <p className="text-sm text-muted-foreground">
-                Connect your wallet to modify account settings
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <WalletConnectPrompt 
+        title={t('wallet.connect')}
+        description="Connect your wallet to modify account settings"
+        accentColor="blue"
+      />
     )
   }
 
   if (pageState === 'result' && result) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto">
-          <div className="rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm">
+        <div className="max-w-md mx-auto space-y-6">
+
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-neon-blue/10 border border-neon-blue/20">
+              <Settings className="w-5 h-5 text-neon-blue" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold animated-gradient-text">
+                {t('accountset.title')}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Configure your XRPL account settings and flags
+              </p>
+            </div>
+          </div>
+
+          <div className="glass-card border border-border/50 rounded-2xl overflow-hidden">
             <TransactionResultDisplay
               result={result}
               onRetry={handleRetry}
@@ -95,21 +97,34 @@ export default function AccountSetPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold">{t('accountset.title')}</h1>
-          <p className="text-sm text-muted-foreground">
-            Configure your XRPL account settings and flags
-          </p>
+
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-neon-blue/10 border border-neon-blue/20">
+            <Settings className="w-5 h-5 text-neon-blue" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold animated-gradient-text">
+              {t('accountset.title')}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Configure your XRPL account settings and flags
+            </p>
+          </div>
         </div>
 
+
         {error && (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
-            <p className="text-sm text-destructive">{error}</p>
+          <div className="glass-card p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
           </div>
         )}
 
-        <div className="rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm p-6">
+
+        <div className="glass-card border border-border/50 rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-blue/50 to-transparent" />
           <AccountSetForm
             account={address}
             onSubmit={handleSubmit}

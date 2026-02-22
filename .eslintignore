@@ -1,0 +1,20 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Config files (usually don't need linting)
+*.config.js
+*.config.ts
+
+# Generated files
+coverage/
+
+# AI tools
+.agent/
+.agents/
+.claude/
+.sisyphus/
+.opencode/
