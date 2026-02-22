@@ -38,21 +38,6 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'XRP',
-    titleKey: 'nav.xrp',
-    items: [
-      { to: '/payment', icon: Coins, label: 'Payment' },
-    ],
-  },
-  {
-    title: 'Tokens',
-    titleKey: 'nav.tokens',
-    items: [
-      { to: '/trustset', icon: Link2, label: 'TrustSet' },
-      { to: undefined, icon: TrendingUp, label: 'Offers', comingSoon: true },
-    ],
-  },
-  {
     title: 'Account',
     titleKey: 'nav.account',
     items: [
@@ -61,10 +46,19 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'NFT',
-    titleKey: 'nav.nft',
+    title: 'XRP',
+    titleKey: 'nav.xrp',
     items: [
-      { to: undefined, icon: Layers, label: 'NFT', comingSoon: true },
+      { to: '/payment', icon: Coins, label: 'Payment' },
+    ],
+  },
+  {
+    title: 'IOU',
+    titleKey: 'nav.iou',
+    items: [
+      { to: '/trustset', icon: Link2, label: 'TrustSet' },
+      { to: '/accountset', icon: User, label: 'AccountSet (Issuer)' },
+      { to: undefined, icon: TrendingUp, label: 'Offers', comingSoon: true },
     ],
   },
   {
@@ -72,6 +66,13 @@ const navSections: NavSection[] = [
     titleKey: 'nav.mpt',
     items: [
       { to: undefined, icon: Box, label: 'MPT', comingSoon: true },
+    ],
+  },
+  {
+    title: 'NFT',
+    titleKey: 'nav.nft',
+    items: [
+      { to: undefined, icon: Layers, label: 'NFT', comingSoon: true },
     ],
   },
   {
