@@ -39,7 +39,7 @@ export function TransactionResultDisplay({
   }
 
   if (result.success) {
-    const explorerUrl = `${NETWORKS[networkType]?.explorerUrl || 'https://xrpscan.com'}/tx/${result.hash}`;
+    const explorerUrl = `${NETWORKS[networkType]?.explorerUrl || 'https://livenet.xrpl.org'}/transactions/${result.hash}`;
 
     const handleCopy = async () => {
       try {

@@ -32,8 +32,8 @@ export function Header() {
   };
 
   const getExplorerUrl = () => {
-    const explorerUrl = NETWORKS[network]?.explorerUrl || 'https://xrpscan.com';
-    return `${explorerUrl}/account/${address}`;
+    const explorerUrl = NETWORKS[network]?.explorerUrl || 'https://livenet.xrpl.org';
+    return `${explorerUrl}/accounts/${address}`;
   };
 
   return (
