@@ -38,60 +38,19 @@ const accentColors = {
   },
 };
 
-function CrossmarkIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="16" cy="16" r="15" fill="#2B71FF" />
-      <circle cx="16" cy="16" r="15" fill="url(#crossmark-official-prompt)" />
-      <path d="M16 8C11.5817 8 8 11.5817 8 16C8 20.4183 11.5817 24 16 24C16 24 16 24 16 24" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="3" fill="white" />
-      <defs>
-        <linearGradient id="crossmark-official-prompt" x1="1" y1="1" x2="31" y2="31" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#4D8BFF" />
-          <stop offset="1" stopColor="#1A5FFF" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
+interface WalletIconProps {
+  className?: string;
+  src: string;
+  alt: string;
 }
 
-function GemwalletIcon({ className }: { className?: string }) {
+function WalletIcon({ className, src, alt }: WalletIconProps) {
   return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 3L29 12L16 29L3 12L16 3Z" fill="url(#gemwallet-official-prompt)" />
-      <path d="M16 3L29 12L16 17L3 12L16 3Z" fill="url(#gemwallet-top-prompt)" opacity="0.9" />
-      <path d="M3 12L16 17L16 29L3 12Z" fill="url(#gemwallet-left-prompt)" opacity="0.7" />
-      <path d="M29 12L16 17L16 29L29 12Z" fill="url(#gemwallet-right-prompt)" opacity="0.5" />
-      <circle cx="16" cy="11" r="2" fill="white" opacity="0.6" />
-      <defs>
-        <linearGradient id="gemwallet-official-prompt" x1="3" y1="3" x2="29" y2="29" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#6D28D9" />
-        </linearGradient>
-        <linearGradient id="gemwallet-top-prompt" x1="3" y1="3" x2="29" y2="17" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#C4B5FD" />
-          <stop offset="1" stopColor="#A78BFA" />
-        </linearGradient>
-        <linearGradient id="gemwallet-left-prompt" x1="3" y1="12" x2="16" y2="29" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7C3AED" />
-          <stop offset="1" stopColor="#5B21B6" />
-        </linearGradient>
-        <linearGradient id="gemwallet-right-prompt" x1="29" y1="12" x2="16" y2="29" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#9333EA" />
-          <stop offset="1" stopColor="#581C87" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function XamanIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="30" height="30" rx="7" fill="#23292F" />
-      <path d="M8 12.5L12 8.5L16 12.5L20 8.5L24 12.5L20 16.5L24 20.5L20 24.5L16 20.5L12 24.5L8 20.5L12 16.5L8 12.5Z" fill="white" />
-      <rect x="1" y="1" width="30" height="30" rx="7" stroke="#3A4550" strokeWidth="1" />
-    </svg>
+    <img 
+      src={src} 
+      alt={alt} 
+      className={cn("object-contain", className)}
+    />
   );
 }
 
@@ -99,13 +58,32 @@ const WALLET_OPTIONS: {
   type: WalletType; 
   name: string; 
   description: string; 
-  Icon: React.ComponentType<{ className?: string }>; 
+  iconSrc: string;
   installUrl: string;
   comingSoon?: boolean;
 }[] = [
-  { type: 'crossmark', name: 'Crossmark', description: 'Browser extension wallet', Icon: CrossmarkIcon, installUrl: 'https://crossmark.io/' },
-  { type: 'gemwallet', name: 'Gemwallet', description: 'Browser extension wallet', Icon: GemwalletIcon, installUrl: 'https://gemwallet.app/' },
-  { type: 'xaman', name: 'Xaman', description: 'Mobile wallet app', Icon: XamanIcon, installUrl: 'https://xaman.app/', comingSoon: true },
+  { 
+    type: 'crossmark', 
+    name: 'Crossmark', 
+    description: 'Browser extension wallet', 
+    iconSrc: '/crossmark.png', 
+    installUrl: 'https://crossmark.io/' 
+  },
+  { 
+    type: 'gemwallet', 
+    name: 'Gemwallet', 
+    description: 'Browser extension wallet', 
+    iconSrc: '/gemwallet.svg', 
+    installUrl: 'https://gemwallet.app/' 
+  },
+  { 
+    type: 'xaman', 
+    name: 'Xaman', 
+    description: 'Mobile wallet app', 
+    iconSrc: '/xaman.webp', 
+    installUrl: 'https://xaman.app/', 
+    comingSoon: true 
+  },
 ];
 
 export function WalletConnectPrompt({ 
@@ -235,7 +213,11 @@ export function WalletConnectPrompt({
 
               <div className="py-6">
                 <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/50 border border-border/50 mb-4">
-                  <selectedWallet.Icon className="w-12 h-12" />
+                  <WalletIcon 
+                    src={selectedWallet.iconSrc} 
+                    alt={selectedWallet.name}
+                    className="w-12 h-12"
+                  />
                   <div className="flex-1">
                     <p className="font-semibold">{selectedWallet.name}</p>
                     <p className="text-sm text-muted-foreground">{selectedWallet.description}</p>
@@ -301,14 +283,18 @@ export function WalletConnectPrompt({
                     )}
                   >
                     <div className="relative">
-                      <wallet.Icon className="w-10 h-10" />
+                      <WalletIcon 
+                        src={wallet.iconSrc} 
+                        alt={wallet.name}
+                        className="w-10 h-10"
+                      />
                       {connecting && walletType === wallet.type && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
                           <Loader2 className="w-5 h-5 animate-spin text-primary" />
                         </div>
                       )}
                       {wallet.comingSoon && (
-                        <div className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                        <div className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
                           {t('wallet.comingSoon')}
                         </div>
                       )}
