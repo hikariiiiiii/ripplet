@@ -1,4 +1,15 @@
 {
+  "nav": {
+    "overview": "Overview",
+    "xrp": "XRP",
+    "tokens": "Tokens",
+    "account": "Account",
+    "nft": "NFT",
+    "mpt": "MPT",
+    "credential": "Credential",
+    "defi": "DeFi",
+    "crossChain": "Cross-Chain"
+  },
   "home": {
     "welcome": "Welcome to Ripplet",
     "welcomeDescription": "Your gateway to the XRP Ledger. Connect your wallet to get started.",

@@ -22,14 +22,19 @@ interface WalletIconProps {
   className?: string;
   src: string;
   alt: string;
+  rounded?: boolean;
 }
 
-function WalletIcon({ className, src, alt }: WalletIconProps) {
+function WalletIcon({ className, src, alt, rounded }: WalletIconProps) {
   return (
     <img 
       src={src} 
       alt={alt} 
-      className={cn("object-contain", className)}
+      className={cn(
+        "object-contain",
+        rounded && "rounded-xl",
+        className
+      )}
     />
   );
 }
@@ -41,20 +46,21 @@ const WALLET_OPTIONS: {
   iconSrc: string;
   installUrl: string;
   comingSoon?: boolean;
+  iconRounded?: boolean;
 }[] = [
   { 
     type: 'crossmark', 
     name: 'Crossmark', 
     description: 'Browser extension wallet', 
     iconSrc: '/crossmark.png', 
-    installUrl: 'https://crossmark.io/' 
+    installUrl: 'https://crossmark.io/'
   },
   { 
     type: 'gemwallet', 
     name: 'Gemwallet', 
     description: 'Browser extension wallet', 
     iconSrc: '/gemwallet.svg', 
-    installUrl: 'https://gemwallet.app/' 
+    installUrl: 'https://gemwallet.app/'
   },
   { 
     type: 'xaman', 
@@ -62,7 +68,8 @@ const WALLET_OPTIONS: {
     description: 'Mobile wallet app', 
     iconSrc: '/xaman.webp', 
     installUrl: 'https://xaman.app/', 
-    comingSoon: true 
+    comingSoon: true,
+    iconRounded: true
   },
 ];
 
@@ -143,6 +150,7 @@ export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps
                   src={selectedWallet.iconSrc} 
                   alt={selectedWallet.name}
                   className="w-12 h-12"
+                  rounded={selectedWallet.iconRounded}
                 />
                 <div className="flex-1">
                   <p className="font-semibold">{selectedWallet.name}</p>
@@ -213,15 +221,11 @@ export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps
                       src={wallet.iconSrc} 
                       alt={wallet.name}
                       className="w-10 h-10"
+                      rounded={wallet.iconRounded}
                     />
                     {connecting && walletType === wallet.type && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
                         <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                      </div>
-                    )}
-                    {wallet.comingSoon && (
-                      <div className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
-                        {t('wallet.comingSoon')}
                       </div>
                     )}
                   </div>

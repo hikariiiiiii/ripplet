@@ -1,4 +1,15 @@
 {
+  "nav": {
+    "overview": "概览",
+    "xrp": "XRP",
+    "tokens": "代币",
+    "account": "账户",
+    "nft": "NFT",
+    "mpt": "MPT",
+    "credential": "凭证",
+    "defi": "DeFi",
+    "crossChain": "跨链"
+  },
   "home": {
     "welcome": "欢迎使用 Ripplet",
     "welcomeDescription": "您的 XRP 账本入口。连接钱包开始使用。",
