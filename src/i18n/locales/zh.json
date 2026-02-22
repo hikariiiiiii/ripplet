@@ -13,8 +13,21 @@
   },
   "wallet": {
     "connect": "连接钱包",
+    "connectDescription": "选择一个钱包连接到 Ripplet",
+    "connectDescriptionPrompt": "连接您的钱包以开始签署 XRPL 交易",
+    "connecting": "连接中...",
+    "connected": "已连接",
     "disconnect": "断开连接",
-    "connected": "已连接"
+    "connectionFailed": "连接失败",
+    "notInstalled": "钱包未安装",
+    "notInstalledDescription": "请安装钱包扩展以继续。",
+    "noAddressReceived": "钱包未就绪",
+    "noAddressReceivedDescription": "请确保您已在 {{wallet}} 中创建或导入钱包账户后再连接。",
+    "installPrompt": "请安装钱包扩展并刷新页面。",
+    "connectionRejected": "连接被拒绝",
+    "connectionRejectedDescription": "您拒绝了连接请求。请重试并批准连接。",
+    "comingSoon": "即将推出",
+    "comingSoonDescription": "此钱包支持即将推出，敬请期待！"
   },
   "network": {
     "mainnet": "主网",

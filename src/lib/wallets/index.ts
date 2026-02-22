@@ -34,6 +34,11 @@ function getUserFriendlyError(error: unknown): string {
     return 'Wallet extension not found. Please install the wallet extension and refresh the page.';
   }
   
+  // Crossmark specific: wallet installed but no address (user hasn't created wallet yet)
+  if (message.includes('No address received') || message.includes('sign-in failed')) {
+    return 'No address received';
+  }
+  
   if (message.includes('rejected') || message.includes('cancelled')) {
     return 'Connection request was rejected. Please try again and approve the connection.';
   }

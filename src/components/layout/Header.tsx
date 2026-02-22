@@ -1,13 +1,15 @@
-import { Wallet, Copy, Check } from 'lucide-react';
+import { Wallet, Copy, Check, LogOut } from 'lucide-react';
 import { NetworkSwitcher } from '@/components/common/NetworkSwitcher';
 import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { useWalletStore } from '@/stores/wallet';
 import { useState } from 'react';
 import { RippletLogo } from '@/components/common/RippletLogo';
+import { cn } from '@/lib/utils';
 
 export function Header() {
-  const { address, connected } = useWalletStore();
+  const { address, connected, disconnect } = useWalletStore();
   const [copied, setCopied] = useState(false);
+  const [showDisconnect, setShowDisconnect] = useState(false);
 
   const truncateAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -19,6 +21,11 @@ export function Header() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setShowDisconnect(false);
   };
 
   return (
@@ -37,7 +44,11 @@ export function Header() {
         <LanguageToggle />
 
         {connected && address ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card border border-primary/20 hover:border-primary/40 transition-colors">
+          <div 
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card border border-primary/20 hover:border-primary/40 transition-colors relative"
+            onMouseEnter={() => setShowDisconnect(true)}
+            onMouseLeave={() => setShowDisconnect(false)}
+          >
             <div className="w-2 h-2 rounded-full bg-primary status-pulse" />
             <span className="font-mono-address text-base text-primary">{truncateAddress(address)}</span>
             <button
@@ -49,6 +60,20 @@ export function Header() {
               ) : (
                 <Copy className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
               )}
+            </button>
+            
+            {/* Disconnect button - appears on hover */}
+            <button
+              onClick={handleDisconnect}
+              className={cn(
+                "p-1.5 rounded-md transition-all",
+                showDisconnect 
+                  ? "opacity-100 hover:bg-destructive/20" 
+                  : "opacity-0 pointer-events-none"
+              )}
+              title="Disconnect wallet"
+            >
+              <LogOut className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
             </button>
           </div>
         ) : (

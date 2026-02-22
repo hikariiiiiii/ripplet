@@ -13,8 +13,21 @@
   },
   "wallet": {
     "connect": "Connect Wallet",
+    "connectDescription": "Select a wallet to connect to Ripplet",
+    "connectDescriptionPrompt": "Connect your wallet to start signing XRPL transactions",
+    "connecting": "Connecting...",
+    "connected": "Connected",
     "disconnect": "Disconnect",
-    "connected": "Connected"
+    "connectionFailed": "Connection Failed",
+    "notInstalled": "Wallet not installed",
+    "notInstalledDescription": "Please install the wallet extension to continue.",
+    "noAddressReceived": "Wallet not ready",
+    "noAddressReceivedDescription": "Please make sure you have created or imported a wallet account in {{wallet}} before connecting.",
+    "installPrompt": "Please install the wallet extension and refresh the page.",
+    "connectionRejected": "Connection rejected",
+    "connectionRejectedDescription": "You rejected the connection request. Please try again and approve the connection.",
+    "comingSoon": "Coming Soon",
+    "comingSoonDescription": "Support for this wallet is coming soon. Stay tuned!"
   },
   "network": {
     "mainnet": "Mainnet",
