@@ -19,9 +19,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="payment" element={<Payment />} />
-          <Route path="trustset" element={<TrustSet />} />
-          <Route path="accountset" element={<AccountSet />} />
+          <Route path="account/accountset" element={<AccountSet />} />
+          <Route path="xrp/payment" element={<Payment />} />
+          <Route path="iou/trustset" element={<TrustSet />} />
+          <Route path="iou/accountset" element={<AccountSet />} />
         </Route>
       </Routes>
       <Toaster />

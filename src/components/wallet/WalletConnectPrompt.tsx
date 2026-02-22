@@ -158,9 +158,7 @@ export function WalletConnectPrompt({
 
   return (
     <>
-      <div className="flex-1 flex items-center justify-center p-6 bg-animated-gradient bg-grid relative overflow-hidden">
-        <div className="absolute inset-0 bg-floating-orbs pointer-events-none" />
-        
+      <div className="flex-1 flex items-center justify-center p-6 relative">
         <div className="max-w-md w-full relative z-10">
           <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center space-y-6 relative overflow-hidden">
             <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} via-transparent to-transparent opacity-50`} />

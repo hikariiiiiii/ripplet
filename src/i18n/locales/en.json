@@ -65,7 +65,10 @@
     "cancel": "Cancel",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "tryAgain": "Try Again",
+    "download": "Download",
+    "back": "Back"
   },
   "transaction": {
     "pending": "Transaction in progress...",
@@ -130,5 +133,13 @@
       "requireDestTag": "Require Destination Tag",
       "requireDestTagTooltip": "Require a destination tag on all incoming payments. Useful for exchanges and hosted wallets to identify recipients."
     }
+  },
+  "toast": {
+    "networkChanged": "Network Changed",
+    "networkChangedDesc": "Wallet network switched to {{network}}",
+    "accountChanged": "Account Changed",
+    "accountChangedDesc": "Wallet account has been switched",
+    "walletDisconnected": "Wallet Disconnected",
+    "walletDisconnectedDesc": "Your wallet has been disconnected"
   }
 }

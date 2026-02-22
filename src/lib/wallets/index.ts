@@ -1,76 +1,221 @@
-import { XRPLWalletConnect, WalletType as LibWalletType } from 'xrpl-wallet-connect';
 import { useWalletStore } from '@/stores/wallet';
-import type { WalletType } from '@/types';
+import type { WalletType, NetworkType } from '@/types';
+import { WalletMismatchError } from '@/types';
+import { checkWalletConnection } from '@/hooks/useWalletEvents';
+import sdk from '@crossmarkio/sdk';
+import { 
+  isInstalled as gemIsInstalled,
+  getAddress as gemGetAddress,
+  getNetwork as gemGetNetwork,
+  signTransaction as gemSignTransaction,
+  submitTransaction as gemSubmitTransaction
+} from '@gemwallet/api';
 
-// Map our WalletType to library's WalletType enum
-const walletTypeMap: Record<WalletType, LibWalletType> = {
-  xaman: LibWalletType.Xaman,
-  crossmark: LibWalletType.Crossmark,
-  gemwallet: LibWalletType.GemWallet,
-};
-
-// User-friendly error messages
 const errorMessages: Record<string, string> = {
-  'Xaman wallet requires a public API key.': 
-    'Xaman wallet is not configured. Please contact the administrator.',
-  'No wallet selected. Please call selectWallet() first.': 
-    'Wallet selection failed. Please try again.',
-  'Wallet adapter not implemented.': 
-    'This wallet type is not supported yet.',
-  'Unsupported wallet type': 
-    'This wallet type is not supported.',
+  'not installed': 'Wallet extension not found. Please install the wallet extension.',
+  'not found': 'Wallet extension not found. Please install the wallet extension.',
+  'rejected': 'Connection request was rejected. Please try again.',
+  'cancelled': 'Connection request was cancelled.',
+  'public key': 'Wallet not ready. Please open Crossmark extension and ensure you have an account.',
+  'locked': 'Wallet is locked. Please unlock Crossmark and try again.',
+  'no account': 'No wallet account found. Please create or import an account in Crossmark.',
+  'no address': 'No address received from wallet. Please try again.',
 };
 
 function getUserFriendlyError(error: unknown): string {
   const message = error instanceof Error ? error.message : 'Unknown error occurred';
   
   for (const [pattern, friendlyMessage] of Object.entries(errorMessages)) {
-    if (message.includes(pattern)) {
+    if (message.toLowerCase().includes(pattern.toLowerCase())) {
       return friendlyMessage;
     }
-  }
-  
-  if (message.includes('not found') || message.includes('not installed')) {
-    return 'Wallet extension not found. Please install the wallet extension and refresh the page.';
-  }
-  
-  // Crossmark specific: wallet installed but no address (user hasn't created wallet yet)
-  if (message.includes('No address received') || message.includes('sign-in failed')) {
-    return 'No address received';
-  }
-  
-  if (message.includes('rejected') || message.includes('cancelled')) {
-    return 'Connection request was rejected. Please try again and approve the connection.';
-  }
-  
-  if (message.includes('network')) {
-    return 'Network error. Please check your internet connection and try again.';
   }
   
   return `Failed to connect wallet: ${message}`;
 }
 
-// Create wallet connect instance with lazy initialization
-let walletConnectInstance: XRPLWalletConnect | null = null;
-
-function getWalletConnect(): XRPLWalletConnect {
-  if (!walletConnectInstance) {
-    const xamanApiKey = import.meta.env.VITE_XAMM_API_KEY;
-    walletConnectInstance = new XRPLWalletConnect({
-      xamanApiKey: xamanApiKey || undefined,
-    });
-  }
-  return walletConnectInstance;
+function mapNetworkType(walletNetwork: string): NetworkType {
+  const network = walletNetwork?.toLowerCase() || '';
+  if (network.includes('mainnet') || network === 'main') return 'mainnet';
+  if (network.includes('testnet') || network === 'test') return 'testnet';
+  if (network.includes('devnet') || network === 'dev') return 'devnet';
+  return 'mainnet';
 }
 
-export async function connectWallet(type: WalletType): Promise<string> {
-  const walletConnect = getWalletConnect();
-  const libWalletType = walletTypeMap[type];
+// Crossmark
+async function connectCrossmark(): Promise<string> {
+  const crossmarkSDK = sdk as any;
   
+  // Check if extension is installed
+  if (!crossmarkSDK?.sync?.isInstalled?.()) {
+    throw new Error('Crossmark extension is not installed');
+  }
+  
+  // Check if wallet is locked
   try {
-    walletConnect.selectWallet(libWalletType);
-    const result = await walletConnect.signIn();
-    return result.address;
+    const lockResult = await crossmarkSDK.async?.isLockedAndWait?.();
+    if (lockResult?.response?.data?.locked === true) {
+      throw new Error('locked');
+    }
+  } catch (e: any) {
+    if (e?.message === 'locked') {
+      throw e;
+    }
+    console.warn('Lock check failed:', e);
+  }
+  
+  // If there's an existing valid session, use it
+  const existingSession = crossmarkSDK?.session;
+  if (existingSession?.address && existingSession?.isOpen) {
+    return existingSession.address;
+  }
+  
+  // Attempt sign-in
+  try {
+    const { response } = await sdk.methods.signInAndWait();
+    
+    if (!response?.data?.address) {
+      throw new Error('no address');
+    }
+    
+    return response.data.address;
+  } catch (error: any) {
+    const errorMsg = error?.message || '';
+    
+    if (errorMsg.includes('public key')) {
+      throw new Error('public key');
+    }
+    if (errorMsg.includes('rejected') || errorMsg.includes('cancelled')) {
+      throw new Error('rejected');
+    }
+    if (errorMsg.includes('locked')) {
+      throw new Error('locked');
+    }
+    
+    throw error;
+  }
+}
+
+async function signAndSubmitCrossmark(transaction: object): Promise<{ hash: string }> {
+  const crossmarkSDK = sdk as any;
+  const address = crossmarkSDK?.session?.address;
+  
+  if (!address) {
+    throw new Error('Not signed in to Crossmark');
+  }
+  
+  const tx = { ...transaction, Account: address };
+  const { response } = await sdk.methods.signAndSubmitAndWait(tx);
+  
+  const txResult = response?.data?.resp as any;
+  const hash = txResult?.result?.hash || txResult?.hash;
+  
+  if (!hash) {
+    throw new Error('Transaction failed or was rejected');
+  }
+  
+  return { hash };
+}
+
+async function signCrossmark(transaction: object): Promise<{ signedTx: string; txJson: unknown }> {
+  const crossmarkSDK = sdk as any;
+  const address = crossmarkSDK?.session?.address;
+  
+  if (!address) {
+    throw new Error('Not signed in to Crossmark');
+  }
+  
+  const tx = { ...transaction, Account: address };
+  const { response } = await sdk.methods.signAndWait(tx);
+  
+  if (!response?.data?.txBlob) {
+    throw new Error('Signing failed or was rejected');
+  }
+  
+  return { signedTx: response.data.txBlob, txJson: tx };
+}
+
+function getCrossmarkNetwork(): string | null {
+  const crossmarkSDK = sdk as any;
+  const networkType = crossmarkSDK?.session?.network?.type;
+  return networkType ? mapNetworkType(networkType) : null;
+}
+
+// Gemwallet
+async function connectGemwallet(): Promise<string> {
+  const installed = await gemIsInstalled();
+  
+  if (!installed?.result?.isInstalled) {
+    throw new Error('Gemwallet extension is not installed');
+  }
+  
+  const response = await gemGetAddress();
+  
+  if (response?.type !== 'response' || !response.result?.address) {
+    throw new Error('No address received from Gemwallet');
+  }
+  
+  return response.result.address;
+}
+
+async function signAndSubmitGemwallet(transaction: object): Promise<{ hash: string }> {
+  const response = await gemSubmitTransaction({ transaction: transaction as any });
+  
+  if (response?.type === 'reject') {
+    throw new Error('rejected');
+  }
+  
+  if (response?.type !== 'response') {
+    throw new Error('Transaction failed');
+  }
+  
+  if (!response.result?.hash) {
+    throw new Error('No transaction hash returned');
+  }
+  
+  return { hash: response.result.hash };
+}
+
+async function signGemwallet(transaction: object): Promise<{ signedTx: string; txJson: unknown }> {
+  const response = await gemSignTransaction({ transaction: transaction as any });
+  
+  if (response?.type === 'reject') {
+    throw new Error('rejected');
+  }
+  
+  if (response?.type !== 'response') {
+    throw new Error('Signing failed');
+  }
+  
+  if (!response.result?.signature) {
+    throw new Error('No signature returned');
+  }
+  
+  return { signedTx: response.result.signature, txJson: transaction };
+}
+
+async function getGemwalletNetwork(): Promise<string | null> {
+  try {
+    const response = await gemGetNetwork();
+    if (response?.type === 'response' && response.result?.network) {
+      return mapNetworkType(response.result.network);
+    }
+  } catch (e) {
+    console.warn('Failed to get Gemwallet network:', e);
+  }
+  return null;
+}
+
+// Unified API
+export async function connectWallet(type: WalletType): Promise<string> {
+  try {
+    if (type === 'crossmark') {
+      return connectCrossmark();
+    }
+    if (type === 'gemwallet') {
+      return connectGemwallet();
+    }
+    throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
     console.error(`Wallet connection error (${type}):`, error);
     throw new Error(getUserFriendlyError(error));
@@ -81,15 +226,16 @@ export async function signAndSubmitTransaction(
   type: WalletType, 
   transaction: object
 ): Promise<{ hash: string }> {
-  const walletConnect = getWalletConnect();
-  const libWalletType = walletTypeMap[type];
-  
   try {
-    walletConnect.selectWallet(libWalletType);
-    const result = await walletConnect.signAndSubmit(transaction);
-    return { hash: result.hash };
+    if (type === 'crossmark') {
+      return signAndSubmitCrossmark(transaction);
+    }
+    if (type === 'gemwallet') {
+      return signAndSubmitGemwallet(transaction);
+    }
+    throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
-    console.error(`Transaction signing error (${type}):`, error);
+    console.error(`Transaction error (${type}):`, error);
     throw new Error(getUserFriendlyError(error));
   }
 }
@@ -98,34 +244,68 @@ export async function signTransaction(
   type: WalletType, 
   transaction: object
 ): Promise<{ signedTx: string; txJson: unknown }> {
-  const walletConnect = getWalletConnect();
-  const libWalletType = walletTypeMap[type];
-  
   try {
-    walletConnect.selectWallet(libWalletType);
-    const result = await walletConnect.sign(transaction);
-    return { signedTx: result.signedTx, txJson: result.txJson };
+    if (type === 'crossmark') {
+      return signCrossmark(transaction);
+    }
+    if (type === 'gemwallet') {
+      return signGemwallet(transaction);
+    }
+    throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
-    console.error(`Transaction signing error (${type}):`, error);
+    console.error(`Signing error (${type}):`, error);
     throw new Error(getUserFriendlyError(error));
   }
 }
 
 export async function disconnectWallet(type: WalletType): Promise<void> {
-  const walletConnect = getWalletConnect();
-  const libWalletType = walletTypeMap[type];
-  
   try {
-    walletConnect.selectWallet(libWalletType);
-    await walletConnect.logout();
-  } catch (error) {
-    // Logout errors are not critical, just log them
-    console.warn(`Wallet logout warning (${type}):`, error);
+    if (type === 'crossmark') {
+      const crossmarkSDK = sdk as any;
+      if (crossmarkSDK?.methods?.signOut) {
+        await crossmarkSDK.methods.signOut();
+      }
+    }
+  } catch (e) {
+    console.warn(`Disconnect warning (${type}):`, e);
   }
 }
 
 export function useWallet() {
   const store = useWalletStore();
+
+  const getCurrentWalletState = async (): Promise<{ address: string | null; network: string | null }> => {
+    if (!store.walletType) return { address: null, network: null };
+    
+    try {
+      if (store.walletType === 'crossmark') {
+        const crossmarkSDK = sdk as any;
+        const session = crossmarkSDK?.session;
+        return {
+          address: session?.address || null,
+          network: session?.network?.type 
+            ? mapNetworkType(session.network.type) 
+            : null,
+        };
+      }
+      if (store.walletType === 'gemwallet') {
+        const { getAddress, getNetwork } = await import('@gemwallet/api');
+        const [addrRes, netRes] = await Promise.all([
+          getAddress(),
+          getNetwork(),
+        ]);
+        return {
+          address: addrRes?.result?.address || null,
+          network: netRes?.result?.network 
+            ? mapNetworkType(netRes.result.network) 
+            : null,
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to get current wallet state:', e);
+    }
+    return { address: null, network: null };
+  };
 
   const connect = async (type: WalletType) => {
     store.setConnecting(true);
@@ -135,11 +315,15 @@ export function useWallet() {
       store.setWalletType(type);
       store.setConnected(true);
       
-      // Try to detect wallet network on connect
       try {
-        const walletNetwork = await detectWalletNetwork(type);
-        if (walletNetwork) {
-          store.setNetwork(walletNetwork as import('@/types').NetworkType);
+        let network: string | null = null;
+        if (type === 'crossmark') {
+          network = getCrossmarkNetwork();
+        } else if (type === 'gemwallet') {
+          network = await getGemwalletNetwork();
+        }
+        if (network) {
+          store.setNetwork(network as NetworkType);
         }
       } catch (e) {
         console.warn('Could not detect wallet network:', e);
@@ -161,54 +345,44 @@ export function useWallet() {
     store.disconnect();
   };
 
-  const validateWalletState = async (): Promise<{ valid: boolean; error?: string }> => {
-    if (!store.walletType || !store.address) {
-      return { valid: false, error: 'No wallet connected' };
-    }
-
-    // Check if wallet address has changed
-    try {
-      const currentAddress = await getWalletAddress(store.walletType);
-      if (currentAddress && currentAddress !== store.address) {
-        return {
-          valid: false,
-          error: `Wallet address changed. Please reconnect your wallet.\nExpected: ${store.address.slice(0, 8)}...\nCurrent: ${currentAddress.slice(0, 8)}...`,
-        };
-      }
-    } catch (e) {
-      console.warn('Could not verify wallet address:', e);
-    }
-
-    // Check if wallet network matches app network
-    try {
-      const walletNetwork = await detectWalletNetwork(store.walletType);
-      if (walletNetwork && walletNetwork !== store.network) {
-        const networkNames: Record<string, string> = {
-          mainnet: 'Mainnet',
-          testnet: 'Testnet',
-          devnet: 'Devnet',
-        };
-        return {
-          valid: false,
-          error: `Network mismatch!\nApp is set to ${networkNames[store.network]}, but wallet is on ${networkNames[walletNetwork]}.\nPlease switch your wallet to ${networkNames[store.network]} or change the app network.`,
-        };
-      }
-    } catch (e) {
-      console.warn('Could not verify wallet network:', e);
-    }
-
-    return { valid: true };
-  };
-
   const signAndSubmit = async (transaction: object) => {
     if (!store.walletType) {
       throw new Error('No wallet connected');
     }
     
-    // Validate wallet state before signing
-    const validation = await validateWalletState();
-    if (!validation.valid) {
-      throw new Error(validation.error || 'Wallet state validation failed');
+    // Check current wallet state
+    const { address, network } = await getCurrentWalletState();
+    
+    // Check if address matches
+    if (address && address !== store.address) {
+      throw new WalletMismatchError(
+        'Account mismatch',
+        'account',
+        address,
+        store.address || undefined
+      );
+    }
+    
+    // Check if network matches
+    if (network && network !== store.network) {
+      throw new WalletMismatchError(
+        'Network mismatch',
+        'network',
+        network,
+        store.network
+      );
+    }
+    
+    const isActuallyConnected = await checkWalletConnection(store.walletType);
+    if (!isActuallyConnected) {
+      try {
+        const newAddress = await connectWallet(store.walletType);
+        store.setAddress(newAddress);
+        store.setConnected(true);
+      } catch {
+        store.disconnect();
+        throw new Error('Wallet disconnected. Please reconnect.');
+      }
     }
     
     return signAndSubmitTransaction(store.walletType, transaction);
@@ -219,10 +393,39 @@ export function useWallet() {
       throw new Error('No wallet connected');
     }
     
-    // Validate wallet state before signing
-    const validation = await validateWalletState();
-    if (!validation.valid) {
-      throw new Error(validation.error || 'Wallet state validation failed');
+    // Check current wallet state
+    const { address, network } = await getCurrentWalletState();
+    
+    // Check if address matches
+    if (address && address !== store.address) {
+      throw new WalletMismatchError(
+        'Account mismatch',
+        'account',
+        address,
+        store.address || undefined
+      );
+    }
+    
+    // Check if network matches
+    if (network && network !== store.network) {
+      throw new WalletMismatchError(
+        'Network mismatch',
+        'network',
+        network,
+        store.network
+      );
+    }
+    
+    const isActuallyConnected = await checkWalletConnection(store.walletType);
+    if (!isActuallyConnected) {
+      try {
+        const newAddress = await connectWallet(store.walletType);
+        store.setAddress(newAddress);
+        store.setConnected(true);
+      } catch {
+        store.disconnect();
+        throw new Error('Wallet disconnected. Please reconnect.');
+      }
     }
     
     return signTransaction(store.walletType, transaction);
@@ -239,81 +442,6 @@ export function useWallet() {
     disconnect,
     signAndSubmit,
     sign,
-    validateWalletState,
+    setConnecting: store.setConnecting,
   };
-}
-
-// Helper to detect wallet network
-async function detectWalletNetwork(type: WalletType): Promise<string | null> {
-  try {
-    if (type === 'crossmark' && window.crossmark?.sdk?.getNetwork) {
-      const result = await window.crossmark.sdk.getNetwork();
-      if (result?.type) {
-        return mapNetworkType(result.type);
-      }
-    }
-    if (type === 'gemwallet') {
-      // Gemwallet doesn't expose network API directly, skip for now
-      return null;
-    }
-  } catch (e) {
-
-
-
-
-
-    console.warn('Failed to detect wallet network:', e);
-  }
-  return null;
-}
-
-// Helper to get current wallet address
-async function getWalletAddress(type: WalletType): Promise<string | null> {
-  try {
-    if (type === 'crossmark' && window.crossmark?.sdk?.getAddress) {
-      const result = await window.crossmark.sdk.getAddress();
-      return result?.address || null;
-    }
-    if (type === 'gemwallet') {
-      // Gemwallet address check would go here
-      return null;
-    }
-  } catch (e) {
-    console.warn('Failed to get wallet address:', e);
-  }
-  return null;
-}
-
-function mapNetworkType(walletNetwork: string): string {
-  const network = walletNetwork?.toLowerCase() || '';
-  if (network.includes('mainnet') || network === 'main') {
-    return 'mainnet';
-  }
-  if (network.includes('testnet') || network === 'test' || network.includes('altnet')) {
-    return 'testnet';
-  }
-  if (network.includes('devnet') || network === 'dev') {
-    return 'devnet';
-  }
-  return 'mainnet';
-}
-
-// Add global type declarations
-declare global {
-  interface Window {
-    crossmark?: {
-      sdk?: {
-        on?: (event: string, callback: (data: unknown) => void) => void;
-        off?: (event: string, callback: (data: unknown) => void) => void;
-        getNetwork?: () => Promise<{ type: string }>;
-        getAddress?: () => Promise<{ address: string }>;
-      };
-    };
-    gemwallet?: {
-      on?: (event: string, callback: (data: unknown) => void) => void;
-      off?: (event: string, callback: (data: unknown) => void) => void;
-      getNetwork?: () => Promise<{ result?: { type: string } }>;
-      getAddress?: () => Promise<{ result?: { address: string } }>;
-    };
-  }
 }

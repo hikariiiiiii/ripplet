@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Wallet, ChevronDown, Loader2, AlertTriangle, ExternalLink, Download, Clock } from 'lucide-react';
 import {
@@ -12,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { useWallet } from '@/lib/wallets';
 import type { WalletType } from '@/types';
 import { cn } from '@/lib/utils';
+import sdk from '@crossmarkio/sdk';
+import { isInstalled as gemIsInstalled } from '@gemwallet/api';
 
 interface WalletSelectModalProps {
   open: boolean;
@@ -75,11 +78,24 @@ const WALLET_OPTIONS: {
 
 export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps) {
   const { t } = useTranslation();
-  const { connect, connecting, walletType } = useWallet();
+  const navigate = useNavigate();
+  const { connect, connecting, walletType, setConnecting } = useWallet();
   const [error, setError] = useState<string | null>(null);
   const [errorTitle, setErrorTitle] = useState<string>('');
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<typeof WALLET_OPTIONS[0] | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setError(null);
+      setErrorTitle('');
+      setShowInstallPrompt(false);
+      setSelectedWallet(null);
+      if (connecting) {
+        setConnecting(false);
+      }
+    }
+  }, [open, connecting, setConnecting]);
 
   const handleConnect = async (wallet: typeof WALLET_OPTIONS[0]) => {
     if (wallet.comingSoon) {
@@ -90,17 +106,37 @@ export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps
     setErrorTitle('');
     setSelectedWallet(wallet);
     
+    // Check if wallet is installed before attempting to connect
+    let isInstalled = false;
+    if (wallet.type === 'crossmark') {
+      try {
+        isInstalled = await (sdk as any).async?.detect?.(3000) ?? false;
+      } catch {
+        isInstalled = false;
+      }
+    } else if (wallet.type === 'gemwallet') {
+      try {
+        const result = await gemIsInstalled();
+        isInstalled = result?.result?.isInstalled === true;
+      } catch {
+        isInstalled = false;
+      }
+    }
+    
+    if (!isInstalled) {
+      setShowInstallPrompt(true);
+      return;
+    }
+    
     try {
       await connect(wallet.type);
       onOpenChange(false);
       setShowInstallPrompt(false);
+      navigate('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to connect wallet';
       
-      if (message.includes('not found') || message.includes('not installed')) {
-        setShowInstallPrompt(true);
-        setError(null);
-      } else if (message.includes('No address received') || message.includes('sign-in failed')) {
+      if (message.includes('No address received') || message.includes('sign-in failed')) {
         setErrorTitle(t('wallet.noAddressReceived'));
         setError(t('wallet.noAddressReceivedDescription', { wallet: wallet.name }));
         setShowInstallPrompt(false);

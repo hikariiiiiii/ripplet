@@ -46,3 +46,15 @@ export interface TransactionResult {
   code: string
   message?: string
 }
+
+export class WalletMismatchError extends Error {
+  constructor(
+    message: string,
+    public type: 'account' | 'network',
+    public current?: string,
+    public expected?: string
+  ) {
+    super(message)
+    this.name = 'WalletMismatchError'
+  }
+}

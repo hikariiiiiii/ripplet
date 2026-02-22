@@ -1,166 +1,122 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWalletStore } from '@/stores/wallet';
 import type { NetworkType } from '@/types';
-
-declare global {
-  interface Window {
-    crossmark?: {
-      sdk?: {
-        on?: (event: string, callback: (data: unknown) => void) => void;
-        off?: (event: string, callback: (data: unknown) => void) => void;
-        getNetwork?: () => Promise<{ type: string }>;
-        getAddress?: () => Promise<{ address: string }>;
-      };
-    };
-    gemwallet?: {
-      on?: (event: string, callback: (data: unknown) => void) => void;
-      off?: (event: string, callback: (data: unknown) => void) => void;
-      getNetwork?: () => Promise<{ result?: { type: string } }>;
-      getAddress?: () => Promise<{ result?: { address: string } }>;
-    };
-  }
-}
-
-const CROSSMARK_EVENTS = {
-  NETWORK_CHANGE: 'network-change',
-  USER_CHANGE: 'user-change',
-};
-
-const GEMWALLET_EVENTS = {
-  ACCOUNT_CHANGE: 'accountChange',
-  NETWORK_CHANGE: 'networkChange',
-};
+import { useToast } from '@/hooks/useToast';
+import { on } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
 
 function mapNetworkType(walletNetwork: string): NetworkType {
   const network = walletNetwork?.toLowerCase() || '';
-  if (network.includes('mainnet') || network === 'main') {
-    return 'mainnet';
-  }
-  if (network.includes('testnet') || network === 'test' || network.includes('altnet')) {
-    return 'testnet';
-  }
-  if (network.includes('devnet') || network === 'dev') {
-    return 'devnet';
-  }
+  if (network.includes('mainnet') || network === 'main') return 'mainnet';
+  if (network.includes('testnet') || network === 'test') return 'testnet';
+  if (network.includes('devnet') || network === 'dev') return 'devnet';
   return 'mainnet';
 }
 
 export function useWalletEvents() {
-  const { connected, walletType, setAddress, setNetwork } = useWalletStore();
-  const callbacksRef = useRef<{
-    networkChange?: (data: unknown) => void;
-    userChange?: (data: unknown) => void;
-    accountChange?: (data: unknown) => void;
-  }>({});
+  const { connected, walletType, setAddress, setNetwork, disconnect } = useWalletStore();
+  const { t } = useTranslation();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!connected || !walletType) return;
 
-    if (walletType === 'crossmark' && window.crossmark?.sdk) {
-      const sdk = window.crossmark.sdk;
+    if (walletType === 'crossmark') {
+      console.log('[Crossmark] Setting up event listeners');
 
-      callbacksRef.current.networkChange = (data: unknown) => {
-        const networkData = data as { type?: string };
-        if (networkData?.type) {
-          setNetwork(mapNetworkType(networkData.type));
+      const handleNetworkChange = (network: { type: string }) => {
+        console.log('[Crossmark] network-change:', network);
+        if (network?.type) {
+          const newNetwork = mapNetworkType(network.type);
+          setNetwork(newNetwork);
+          toast({
+            title: t('toast.networkChanged'),
+            description: t('toast.networkChangedDesc', { network: newNetwork }),
+          });
         }
       };
 
-      callbacksRef.current.userChange = async () => {
-        try {
-          const result = await sdk?.getAddress?.();
-          if (result?.address) {
-            setAddress(result.address);
+      const handleUserChange = () => {
+        console.log('[Crossmark] user-change');
+        setTimeout(() => {
+          const session = (sdk as any).session;
+          if (session?.address) {
+            setAddress(session.address);
+            toast({ title: t('toast.accountChanged'), description: t('toast.accountChangedDesc') });
           }
-        } catch (error) {
-          console.warn('Failed to get updated address from Crossmark:', error);
-        }
+        }, 100);
       };
 
-      sdk?.on?.(CROSSMARK_EVENTS.NETWORK_CHANGE, callbacksRef.current.networkChange);
-      sdk?.on?.(CROSSMARK_EVENTS.USER_CHANGE, callbacksRef.current.userChange);
+      const handleSignout = () => {
+        console.log('[Crossmark] signout');
+        disconnect();
+        toast({ title: t('toast.walletDisconnected'), description: t('toast.walletDisconnectedDesc'), variant: 'destructive' });
+      };
+
+      sdk.on('network-change', handleNetworkChange);
+      sdk.on('user-change', handleUserChange);
+      sdk.on('signout', handleSignout);
 
       return () => {
-        if (callbacksRef.current.networkChange) {
-          sdk?.off?.(CROSSMARK_EVENTS.NETWORK_CHANGE, callbacksRef.current.networkChange);
-        }
-        if (callbacksRef.current.userChange) {
-          sdk?.off?.(CROSSMARK_EVENTS.USER_CHANGE, callbacksRef.current.userChange);
-        }
+        sdk.off('network-change', handleNetworkChange);
+        sdk.off('user-change', handleUserChange);
+        sdk.off('signout', handleSignout);
       };
     }
 
-    if (walletType === 'gemwallet' && window.gemwallet) {
-      const gem = window.gemwallet;
+    if (walletType === 'gemwallet') {
+      console.log('[Gemwallet] Setting up event listeners');
 
-      callbacksRef.current.networkChange = (data: unknown) => {
-        const networkData = data as { type?: string };
-        if (networkData?.type) {
-          setNetwork(mapNetworkType(networkData.type));
+      on('EVENT_NETWORK_CHANGED', (result: { network?: { name?: string } }) => {
+        console.log('[Gemwallet] EVENT_NETWORK_CHANGED:', result);
+        const networkName = result?.network?.name;
+        if (networkName) {
+          const newNetwork = mapNetworkType(networkName);
+          setNetwork(newNetwork);
+          toast({ title: t('toast.networkChanged'), description: t('toast.networkChangedDesc', { network: newNetwork }) });
         }
-      };
+      });
 
-      callbacksRef.current.accountChange = (data: unknown) => {
-        const accountData = data as { address?: string };
-        if (accountData?.address) {
-          setAddress(accountData.address);
+      on('EVENT_WALLET_CHANGED', (result: { wallet?: { publicAddress?: string } }) => {
+        console.log('[Gemwallet] EVENT_WALLET_CHANGED:', result);
+        const address = result?.wallet?.publicAddress;
+        if (address) {
+          setAddress(address);
+          toast({ title: t('toast.accountChanged'), description: t('toast.accountChangedDesc') });
         }
-      };
+      });
 
-      gem?.on?.(GEMWALLET_EVENTS.NETWORK_CHANGE, callbacksRef.current.networkChange);
-      gem?.on?.(GEMWALLET_EVENTS.ACCOUNT_CHANGE, callbacksRef.current.accountChange);
+      on('EVENT_LOGOUT', () => {
+        console.log('[Gemwallet] EVENT_LOGOUT');
+        disconnect();
+        toast({ title: t('toast.walletDisconnected'), description: t('toast.walletDisconnectedDesc'), variant: 'destructive' });
+      });
 
       return () => {
-        if (callbacksRef.current.networkChange) {
-          gem?.off?.(GEMWALLET_EVENTS.NETWORK_CHANGE, callbacksRef.current.networkChange);
-        }
-        if (callbacksRef.current.accountChange) {
-          gem?.off?.(GEMWALLET_EVENTS.ACCOUNT_CHANGE, callbacksRef.current.accountChange);
-        }
+        console.log('[Gemwallet] Cleanup (on() does not support removal)');
       };
     }
 
     return undefined;
-  }, [connected, walletType, setAddress, setNetwork]);
+  }, [connected, walletType, setAddress, setNetwork, disconnect]);
 }
 
-export function useNetworkValidation() {
-  const { network, address, connected } = useWalletStore();
-
-  const validateNetwork = async (requiredNetwork: NetworkType): Promise<{ valid: boolean; message?: string }> => {
-    if (!connected) {
-      return { valid: false, message: 'Wallet not connected' };
+export async function checkWalletConnection(walletType: string): Promise<boolean> {
+  try {
+    if (walletType === 'crossmark') {
+      const crossmarkSDK = sdk as any;
+      return !!crossmarkSDK?.sync?.isConnected?.() && !!crossmarkSDK?.session?.address;
     }
-
-    if (network !== requiredNetwork) {
-      const networkNames: Record<NetworkType, string> = {
-        mainnet: 'Mainnet',
-        testnet: 'Testnet',
-        devnet: 'Devnet',
-      };
-      return {
-        valid: false,
-        message: `Please switch your wallet to ${networkNames[requiredNetwork]}. Current network: ${networkNames[network]}`,
-      };
+    if (walletType === 'gemwallet') {
+      const { isInstalled, getAddress } = await import('@gemwallet/api');
+      const installed = await isInstalled();
+      if (!installed?.result?.isInstalled) return false;
+      const response = await getAddress();
+      return response?.type === 'response' && !!response.result?.address;
     }
-
-    return { valid: true };
-  };
-
-  const validateAddress = (requiredAddress: string): { valid: boolean; message?: string } => {
-    if (!connected) {
-      return { valid: false, message: 'Wallet not connected' };
-    }
-
-    if (address !== requiredAddress) {
-      return {
-        valid: false,
-        message: `Wallet address changed. Please reconnect or switch back to the original account.`,
-      };
-    }
-
-    return { valid: true };
-  };
-
-  return { validateNetwork, validateAddress, currentNetwork: network, currentAddress: address };
+  } catch (e) {
+    console.warn('Wallet connection check failed:', e);
+  }
+  return false;
 }

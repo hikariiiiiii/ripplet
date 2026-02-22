@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { AlertCircle, Link2 } from 'lucide-react'
 import { TrustSetForm } from '@/components/transaction/TrustSetForm'
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult'
+import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog'
 import { useWallet } from '@/lib/wallets'
 import { useWalletStore } from '@/stores/wallet'
 import { WalletConnectPrompt } from '@/components/wallet/WalletConnectPrompt'
-import type { TransactionResult } from '@/types'
+import type { TransactionResult, WalletMismatchError } from '@/types'
 import type { TrustSet as TrustSetTransaction } from 'xrpl'
 
 export default function TrustSet() {
@@ -17,6 +18,8 @@ export default function TrustSet() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<TransactionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showMismatchDialog, setShowMismatchDialog] = useState(false)
+  const [mismatchError, setMismatchError] = useState<WalletMismatchError | null>(null)
 
   const handleSubmit = async (transaction: TrustSetTransaction) => {
     setIsSubmitting(true)
@@ -32,15 +35,20 @@ export default function TrustSet() {
         code: 'tesSUCCESS',
       })
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Transaction failed'
-      
-      setResult({
-        hash: '',
-        success: false,
-        code: 'UNKNOWN',
-        message: errorMessage,
-      })
-      setError(errorMessage)
+      if (err instanceof Error && err.name === 'WalletMismatchError') {
+        setMismatchError(err as WalletMismatchError)
+        setShowMismatchDialog(true)
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Transaction failed'
+        
+        setResult({
+          hash: '',
+          success: false,
+          code: 'UNKNOWN',
+          message: errorMessage,
+        })
+        setError(errorMessage)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -130,6 +138,12 @@ export default function TrustSet() {
           />
         </div>
       </div>
+
+      <NetworkMismatchDialog
+        open={showMismatchDialog}
+        onOpenChange={setShowMismatchDialog}
+        error={mismatchError}
+      />
     </div>
   )
 }

@@ -1,6 +1,8 @@
 {
-  "active_plan": "/Volumes/WD SN5000 1TB/CODELIFE/Opencode Workspace/Ripplet/.sisyphus/plans/ripplet-dapp.md",
-  "started_at": "2026-02-18T19:08:01.658Z",
-  "session_ids": ["ses_38dec3432ffexYqrCa3hGH6rgl"],
-  "plan_name": "ripplet-dapp"
+  "active_plan": "/Volumes/WD SN5000 1TB/CODELIFE/Opencode Workspace/Ripplet/.sisyphus/plans/fix-wallet-events.md",
+  "started_at": "2026-02-22T17:53:11.814Z",
+  "session_ids": [
+    "ses_38e131b7effeYsk3rF5QE7BmBo"
+  ],
+  "plan_name": "fix-wallet-events"
 }

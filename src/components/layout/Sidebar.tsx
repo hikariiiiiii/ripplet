@@ -45,21 +45,21 @@ const navSections: NavSection[] = [
   {
     titleKey: 'nav.account',
     items: [
-      { to: '/accountset', icon: User, labelKey: 'nav.accountSet' },
+      { to: '/account/accountset', icon: User, labelKey: 'nav.accountSet' },
       { to: undefined, icon: Shield, labelKey: 'nav.security', comingSoon: true },
     ],
   },
   {
     titleKey: 'nav.xrp',
     items: [
-      { to: '/payment', icon: Coins, labelKey: 'nav.payment' },
+      { to: '/xrp/payment', icon: Coins, labelKey: 'nav.payment' },
     ],
   },
   {
     titleKey: 'nav.iou',
     items: [
-      { to: '/trustset', icon: Link2, labelKey: 'nav.trustSet' },
-      { to: '/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
+      { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
+      { to: '/iou/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
       { to: undefined, icon: TrendingUp, labelKey: 'nav.offers', comingSoon: true },
     ],
   },
@@ -171,7 +171,7 @@ export function Sidebar() {
                             'stagger-in group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                             isActive
                               ? 'bg-white/10 text-white border border-white/20 shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
                           )
                         }
                       >

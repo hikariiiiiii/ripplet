@@ -91,11 +91,8 @@ export default function Home() {
 
   if (!connected) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 bg-animated-gradient bg-grid relative overflow-hidden">
-        {/* Background orbs */}
-        <div className="absolute inset-0 bg-floating-orbs pointer-events-none" />
-        
-        <div className="max-w-md w-full text-center space-y-8 relative z-10">
+      <div className="flex-1 flex items-center justify-center p-6 relative">
+        <div className="max-w-md w-full text-center space-y-8">
           <div className="flex justify-center">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-400/20 flex items-center justify-center shadow-lg border border-primary/30">
               <RippletLogo size={48} />
@@ -138,10 +135,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-auto bg-animated-gradient bg-grid relative">
-      {/* Background orbs */}
-      <div className="absolute inset-0 bg-floating-orbs pointer-events-none" />
-      
+    <div className="flex-1 p-6 space-y-6 overflow-auto relative">
       <div 
         ref={cardRef}
         className="glass-card rounded-xl p-5 relative z-10"

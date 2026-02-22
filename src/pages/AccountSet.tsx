@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { AlertCircle, Settings } from 'lucide-react'
 import { AccountSetForm } from '@/components/transaction/AccountSetForm'
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult'
+import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog'
 import { useWallet } from '@/lib/wallets'
 import { useWalletStore } from '@/stores/wallet'
 import { WalletConnectPrompt } from '@/components/wallet/WalletConnectPrompt'
-import type { TransactionResult } from '@/types'
+import type { TransactionResult, WalletMismatchError } from '@/types'
 import type { AccountSet } from 'xrpl'
 
 type PageState = 'form' | 'submitting' | 'result'
@@ -19,6 +20,8 @@ export default function AccountSetPage() {
   const [pageState, setPageState] = useState<PageState>('form')
   const [result, setResult] = useState<TransactionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showMismatchDialog, setShowMismatchDialog] = useState(false)
+  const [mismatchError, setMismatchError] = useState<WalletMismatchError | null>(null)
 
   const handleSubmit = async (transaction: AccountSet) => {
     setError(null)
@@ -35,15 +38,21 @@ export default function AccountSetPage() {
       })
       setPageState('result')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Transaction failed'
-      
-      setResult({
-        hash: '',
-        success: false,
-        code: 'UNKNOWN',
-        message: errorMessage,
-      })
-      setPageState('result')
+      if (err instanceof Error && err.name === 'WalletMismatchError') {
+        setMismatchError(err as WalletMismatchError)
+        setShowMismatchDialog(true)
+        setPageState('form')
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Transaction failed'
+        
+        setResult({
+          hash: '',
+          success: false,
+          code: 'UNKNOWN',
+          message: errorMessage,
+        })
+        setPageState('result')
+      }
     }
   }
 
@@ -132,6 +141,12 @@ export default function AccountSetPage() {
           />
         </div>
       </div>
+
+      <NetworkMismatchDialog
+        open={showMismatchDialog}
+        onOpenChange={setShowMismatchDialog}
+        error={mismatchError}
+      />
     </div>
   )
 }

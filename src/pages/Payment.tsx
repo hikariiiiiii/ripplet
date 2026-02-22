@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Send } from 'lucide-react';
 import { PaymentForm } from '@/components/transaction/PaymentForm';
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult';
+import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog';
 import { useWallet } from '@/lib/wallets';
 import { Button } from '@/components/ui/button';
 import { WalletConnectPrompt } from '@/components/wallet/WalletConnectPrompt';
 import type { Payment } from 'xrpl';
-import type { TransactionResult } from '@/types';
+import type { TransactionResult, WalletMismatchError } from '@/types';
 
 type ViewState = 'form' | 'submitting' | 'result';
 
@@ -16,6 +17,8 @@ export default function PaymentPage() {
   const { address, connected, signAndSubmit, network } = useWallet();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [result, setResult] = useState<TransactionResult | null>(null);
+  const [showMismatchDialog, setShowMismatchDialog] = useState(false);
+  const [mismatchError, setMismatchError] = useState<WalletMismatchError | null>(null);
 
   const handleSubmit = async (transaction: Payment) => {
     setViewState('submitting');
@@ -30,14 +33,20 @@ export default function PaymentPage() {
       });
       setViewState('result');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setResult({
-        hash: '',
-        success: false,
-        code: 'FAILED',
-        message: errorMessage,
-      });
-      setViewState('result');
+      if (err instanceof Error && err.name === 'WalletMismatchError') {
+        setMismatchError(err as WalletMismatchError);
+        setShowMismatchDialog(true);
+        setViewState('form');
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setResult({
+          hash: '',
+          success: false,
+          code: 'FAILED',
+          message: errorMessage,
+        });
+        setViewState('result');
+      }
     }
   };
 
@@ -91,17 +100,18 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        {/* Form State */}
-        {viewState === 'form' && (
-          <div className="glass-card border border-border/50 rounded-2xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-xrpl-green/50 to-transparent" />
-            <PaymentForm
-              account={address}
-              onSubmit={handleSubmit}
-              isSubmitting={false}
-            />
-          </div>
-        )}
+        {/* Form State - 使用 hidden 保留表单数据 */}
+        <div 
+          className="glass-card border border-border/50 rounded-2xl p-6 relative overflow-hidden"
+          hidden={viewState !== 'form'}
+        >
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-xrpl-green/50 to-transparent" />
+          <PaymentForm
+            account={address}
+            onSubmit={handleSubmit}
+            isSubmitting={false}
+          />
+        </div>
 
         {/* Submitting State */}
         {viewState === 'submitting' && (
@@ -121,6 +131,12 @@ export default function PaymentPage() {
           </div>
         )}
       </div>
+
+      <NetworkMismatchDialog
+        open={showMismatchDialog}
+        onOpenChange={setShowMismatchDialog}
+        error={mismatchError}
+      />
     </div>
   );
 }

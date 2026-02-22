@@ -65,7 +65,10 @@
     "cancel": "取消",
     "loading": "加载中...",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "tryAgain": "重试",
+    "download": "下载",
+    "back": "返回"
   },
   "transaction": {
     "pending": "交易处理中...",
@@ -130,5 +133,13 @@
       "requireDestTag": "需要目标标签",
       "requireDestTagTooltip": "要求所有传入付款都包含目标标签。适用于交易所和托管钱包识别收款人。"
     }
+  },
+  "toast": {
+    "networkChanged": "网络已切换",
+    "networkChangedDesc": "钱包网络已切换至 {{network}}",
+    "accountChanged": "账户已切换",
+    "accountChangedDesc": "钱包账户已切换",
+    "walletDisconnected": "钱包已断开",
+    "walletDisconnectedDesc": "您的钱包已断开连接"
   }
 }
