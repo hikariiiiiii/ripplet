@@ -142,8 +142,8 @@ export function Sidebar() {
   const isSectionCollapsed = (title: string) => collapsed.includes(title);
 
   return (
-    <aside className="w-64 glass-card border-r border-border/50 shrink-0 flex flex-col">
-      <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
+    <aside className="w-64 glass-card border-r border-border/50 shrink-0 flex flex-col h-full">
+      <nav className="flex-1 p-3 space-y-4 overflow-y-auto overflow-x-hidden min-h-0">
         {navSections.map((section) => {
           const sectionTitle = t(section.titleKey);
           return (
