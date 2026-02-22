@@ -1,18 +1,30 @@
 {
   "nav": {
     "overview": "概览",
+    "dashboard": "仪表盘",
     "xrp": "XRP",
     "iou": "IOU",
     "account": "账户",
+    "accountSet": "账户设置",
+    "accountSetIssuer": "账户设置 (发行方)",
+    "security": "安全",
+    "payment": "支付",
+    "trustSet": "信任设置",
+    "offers": "挂单",
     "nft": "NFT",
     "mpt": "MPT",
     "credential": "凭证",
     "defi": "DeFi",
+    "amm": "AMM",
+    "vault": "金库",
+    "lending": "借贷",
     "crossChain": "跨链",
+    "bridge": "桥接",
     "officialResources": "官方资源",
     "explorer": "区块链浏览器",
     "faucet": "水龙头",
-    "docs": "开发文档"
+    "docs": "开发文档",
+    "soon": "即将推出"
   },
   "home": {
     "welcome": "欢迎使用 Ripplet",

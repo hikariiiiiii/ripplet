@@ -1,18 +1,30 @@
 {
   "nav": {
     "overview": "Overview",
+    "dashboard": "Dashboard",
     "xrp": "XRP",
     "iou": "IOU",
     "account": "Account",
+    "accountSet": "AccountSet",
+    "accountSetIssuer": "AccountSet (Issuer)",
+    "security": "Security",
+    "payment": "Payment",
+    "trustSet": "TrustSet",
+    "offers": "Offers",
     "nft": "NFT",
     "mpt": "MPT",
     "credential": "Credential",
     "defi": "DeFi",
+    "amm": "AMM",
+    "vault": "Vault",
+    "lending": "Lending",
     "crossChain": "Cross-Chain",
+    "bridge": "Bridge",
     "officialResources": "Official Resources",
     "explorer": "Explorer",
     "faucet": "Faucet",
-    "docs": "Docs"
+    "docs": "Docs",
+    "soon": "Soon"
   },
   "home": {
     "welcome": "Welcome to Ripplet",

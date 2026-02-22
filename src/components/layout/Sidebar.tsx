@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Home, 
   Coins, 
@@ -23,121 +24,110 @@ import { useState, useMemo } from 'react';
 interface NavItem {
   to?: string;
   icon: React.ElementType;
-  label: string;
+  labelKey: string;
   comingSoon?: boolean;
   external?: boolean;
   href?: string;
 }
 
 interface NavSection {
-  title: string;
   titleKey: string;
   items: NavItem[];
 }
 
 const navSections: NavSection[] = [
   {
-    title: 'Overview',
     titleKey: 'nav.overview',
     items: [
-      { to: '/', icon: Home, label: 'Dashboard' },
+      { to: '/', icon: Home, labelKey: 'nav.dashboard' },
     ],
   },
   {
-    title: 'Account',
     titleKey: 'nav.account',
     items: [
-      { to: '/accountset', icon: User, label: 'AccountSet' },
-      { to: undefined, icon: Shield, label: 'Security', comingSoon: true },
+      { to: '/accountset', icon: User, labelKey: 'nav.accountSet' },
+      { to: undefined, icon: Shield, labelKey: 'nav.security', comingSoon: true },
     ],
   },
   {
-    title: 'XRP',
     titleKey: 'nav.xrp',
     items: [
-      { to: '/payment', icon: Coins, label: 'Payment' },
+      { to: '/payment', icon: Coins, labelKey: 'nav.payment' },
     ],
   },
   {
-    title: 'IOU',
     titleKey: 'nav.iou',
     items: [
-      { to: '/trustset', icon: Link2, label: 'TrustSet' },
-      { to: '/accountset', icon: User, label: 'AccountSet (Issuer)' },
-      { to: undefined, icon: TrendingUp, label: 'Offers', comingSoon: true },
+      { to: '/trustset', icon: Link2, labelKey: 'nav.trustSet' },
+      { to: '/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
+      { to: undefined, icon: TrendingUp, labelKey: 'nav.offers', comingSoon: true },
     ],
   },
   {
-    title: 'MPT',
     titleKey: 'nav.mpt',
     items: [
-      { to: undefined, icon: Box, label: 'MPT', comingSoon: true },
+      { to: undefined, icon: Box, labelKey: 'nav.mpt', comingSoon: true },
     ],
   },
   {
-    title: 'NFT',
     titleKey: 'nav.nft',
     items: [
-      { to: undefined, icon: Layers, label: 'NFT', comingSoon: true },
+      { to: undefined, icon: Layers, labelKey: 'nav.nft', comingSoon: true },
     ],
   },
   {
-    title: 'Credential',
     titleKey: 'nav.credential',
     items: [
-      { to: undefined, icon: BadgeCheck, label: 'Credential', comingSoon: true },
+      { to: undefined, icon: BadgeCheck, labelKey: 'nav.credential', comingSoon: true },
     ],
   },
   {
-    title: 'DeFi',
     titleKey: 'nav.defi',
     items: [
-      { to: undefined, icon: TrendingUp, label: 'AMM', comingSoon: true },
-      { to: undefined, icon: Box, label: 'Vault', comingSoon: true },
-      { to: undefined, icon: Coins, label: 'Lending', comingSoon: true },
+      { to: undefined, icon: TrendingUp, labelKey: 'nav.amm', comingSoon: true },
+      { to: undefined, icon: Box, labelKey: 'nav.vault', comingSoon: true },
+      { to: undefined, icon: Coins, labelKey: 'nav.lending', comingSoon: true },
     ],
   },
   {
-    title: 'Cross-Chain',
     titleKey: 'nav.crossChain',
     items: [
-      { to: undefined, icon: ArrowRightLeft, label: 'Bridge', comingSoon: true },
+      { to: undefined, icon: ArrowRightLeft, labelKey: 'nav.bridge', comingSoon: true },
     ],
   },
 ];
 
 const officialResources: NavSection = {
-  title: 'Official Resources',
   titleKey: 'nav.officialResources',
   items: [
-    { icon: Globe, label: 'Explorer', external: true, href: 'https://xrpscan.com' },
-    { icon: Droplets, label: 'Faucet', external: true, href: 'https://xrpl.org/xrp-testnet-faucet.html' },
-    { icon: BookOpen, label: 'Docs', external: true, href: 'https://xrpl.org/docs.html' },
+    { icon: Globe, labelKey: 'nav.explorer', external: true, href: 'https://livenet.xrpl.org' },
+    { icon: Droplets, labelKey: 'nav.faucet', external: true, href: 'https://xrpl.org/xrp-testnet-faucet.html' },
+    { icon: BookOpen, labelKey: 'nav.docs', external: true, href: 'https://xrpl.org/docs.html' },
   ],
 };
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   
-  // Calculate default collapsed state: only expand Overview and current page's section
   const defaultCollapsed = useMemo(() => {
-    const expanded: string[] = ['Overview'];
+    const expanded: string[] = [t('nav.overview')];
     
     for (const section of navSections) {
       for (const item of section.items) {
         if (item.to && location.pathname === item.to) {
-          if (!expanded.includes(section.title)) {
-            expanded.push(section.title);
+          const sectionTitle = t(section.titleKey);
+          if (!expanded.includes(sectionTitle)) {
+            expanded.push(sectionTitle);
           }
         }
       }
     }
     
-    // Return all sections except those that should be expanded
     return navSections
-      .map(s => s.title)
+      .map(s => t(s.titleKey))
       .filter(title => !expanded.includes(title));
-  }, [location.pathname]);
+  }, [location.pathname, t]);
   
   const [collapsed, setCollapsed] = useState<string[]>(defaultCollapsed);
 
@@ -154,84 +144,86 @@ export function Sidebar() {
   return (
     <aside className="w-64 glass-card border-r border-border/50 shrink-0 flex flex-col">
       <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
-        {navSections.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <button
-              onClick={() => toggleSection(section.title)}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
-            >
-              <span>{section.title}</span>
-              {isSectionCollapsed(section.title) ? (
-                <ChevronRight className="w-3 h-3 transition-transform duration-200" />
-              ) : (
-                <ChevronDown className="w-3 h-3 transition-transform duration-200" />
+        {navSections.map((section) => {
+          const sectionTitle = t(section.titleKey);
+          return (
+            <div key={section.titleKey} className="space-y-1">
+              <button
+                onClick={() => toggleSection(sectionTitle)}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+              >
+                <span>{sectionTitle}</span>
+                {isSectionCollapsed(sectionTitle) ? (
+                  <ChevronRight className="w-3 h-3 transition-transform duration-200" />
+                ) : (
+                  <ChevronDown className="w-3 h-3 transition-transform duration-200" />
+                )}
+              </button>
+              {!isSectionCollapsed(sectionTitle) && (
+                <div className="space-y-0.5 mt-1 pl-3">
+                  {section.items.map((item, index) => (
+                    item.to ? (
+                      <NavLink
+                        key={`${item.to}-${index}`}
+                        to={item.to}
+                        className={({ isActive }) =>
+                          cn(
+                            'stagger-in group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                            isActive
+                              ? 'bg-white/10 text-white border border-white/20 shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                          )
+                        }
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{t(item.labelKey)}</span>
+                      </NavLink>
+                    ) : (
+                      <button
+                        key={`${item.labelKey}-${index}`}
+                        disabled
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground/40 cursor-not-allowed"
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{t(item.labelKey)}</span>
+                        {item.comingSoon && (
+                          <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white font-medium">
+                            {t('nav.soon')}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  ))}
+                </div>
               )}
-            </button>
-            {!isSectionCollapsed(section.title) && (
-              <div className="space-y-0.5 mt-1 pl-3">
-                {section.items.map((item, index) => (
-                  item.to ? (
-                    <NavLink
-                      key={`${item.to}-${index}`}
-                      to={item.to}
-                      className={({ isActive }) =>
-                        cn(
-                          'stagger-in group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                          isActive
-                            ? 'bg-white/10 text-white border border-white/20 shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                        )
-                      }
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </NavLink>
-                  ) : (
-                    <button
-                      key={`${item.label}-${index}`}
-                      disabled
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground/40 cursor-not-allowed"
-                    >
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                      {item.comingSoon && (
-                        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white font-medium">
-                          Soon
-                        </span>
-                      )}
-                    </button>
-                  )
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
         
-        {/* Official Resources Section */}
         <div className="space-y-1 pt-4 border-t border-border/30">
           <button
-            onClick={() => toggleSection(officialResources.title)}
+            onClick={() => toggleSection(t(officialResources.titleKey))}
             className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
           >
-            <span>{officialResources.title}</span>
-            {isSectionCollapsed(officialResources.title) ? (
+            <span>{t(officialResources.titleKey)}</span>
+            {isSectionCollapsed(t(officialResources.titleKey)) ? (
               <ChevronRight className="w-3 h-3 transition-transform duration-200" />
             ) : (
               <ChevronDown className="w-3 h-3 transition-transform duration-200" />
             )}
           </button>
-          {!isSectionCollapsed(officialResources.title) && (
+          {!isSectionCollapsed(t(officialResources.titleKey)) && (
             <div className="space-y-0.5 mt-1 pl-3">
               {officialResources.items.map((item, index) => (
                 <a
-                  key={`${item.label}-${index}`}
+                  key={`${item.labelKey}-${index}`}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
                 >
                   <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <span>{t(item.labelKey)}</span>
                   <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
                 </a>
               ))}

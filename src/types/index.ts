@@ -14,21 +14,21 @@ export const NETWORKS: Record<NetworkType, Network> = {
     type: 'mainnet',
     wsUrl: 'wss://xrplcluster.com',
     apiUrl: 'https://xrplcluster.com',
-    explorerUrl: 'https://xrpscan.com',
+    explorerUrl: 'https://livenet.xrpl.org',
   },
   testnet: {
     name: 'XRPL Testnet',
     type: 'testnet',
     wsUrl: 'wss://s.altnet.rippletest.net:51233',
     apiUrl: 'https://s.altnet.rippletest.net:51234',
-    explorerUrl: 'https://testnet.xrpscan.com',
+    explorerUrl: 'https://testnet.xrpl.org',
   },
   devnet: {
     name: 'XRPL Devnet',
     type: 'devnet',
     wsUrl: 'wss://s.devnet.rippletest.net:51233',
     apiUrl: 'https://s.devnet.rippletest.net:51234',
-    explorerUrl: 'https://devnet.xrpscan.com',
+    explorerUrl: 'https://devnet.xrpl.org',
   },
 }
 
