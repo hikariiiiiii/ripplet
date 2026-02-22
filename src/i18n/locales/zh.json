@@ -8,7 +8,11 @@
     "mpt": "MPT",
     "credential": "凭证",
     "defi": "DeFi",
-    "crossChain": "跨链"
+    "crossChain": "跨链",
+    "officialResources": "官方资源",
+    "explorer": "区块链浏览器",
+    "faucet": "水龙头",
+    "docs": "开发文档"
   },
   "home": {
     "welcome": "欢迎使用 Ripplet",

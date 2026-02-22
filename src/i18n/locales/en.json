@@ -8,7 +8,11 @@
     "mpt": "MPT",
     "credential": "Credential",
     "defi": "DeFi",
-    "crossChain": "Cross-Chain"
+    "crossChain": "Cross-Chain",
+    "officialResources": "Official Resources",
+    "explorer": "Explorer",
+    "faucet": "Faucet",
+    "docs": "Docs"
   },
   "home": {
     "welcome": "Welcome to Ripplet",

@@ -1,4 +1,4 @@
-import { Wallet, Copy, Check, LogOut } from 'lucide-react';
+import { Wallet, Copy, Check, LogOut, ExternalLink } from 'lucide-react';
 import { NetworkSwitcher } from '@/components/common/NetworkSwitcher';
 import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { useWalletStore } from '@/stores/wallet';
@@ -6,9 +6,10 @@ import { useState } from 'react';
 import { RippletLogo } from '@/components/common/RippletLogo';
 import { cn } from '@/lib/utils';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
+import { NETWORKS } from '@/types';
 
 export function Header() {
-  const { address, connected, disconnect } = useWalletStore();
+  const { address, connected, disconnect, network } = useWalletStore();
   const [copied, setCopied] = useState(false);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -30,6 +31,11 @@ export function Header() {
     setShowDisconnect(false);
   };
 
+  const getExplorerUrl = () => {
+    const explorerUrl = NETWORKS[network]?.explorerUrl || 'https://xrpscan.com';
+    return `${explorerUrl}/account/${address}`;
+  };
+
   return (
     <>
       <header className="h-16 glass-card-intense border-b border-border/50 flex items-center px-6 shrink-0 sticky top-0 z-50">
@@ -43,8 +49,9 @@ export function Header() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-3">
-          <NetworkSwitcher />
           <LanguageToggle />
+          
+          {connected && <NetworkSwitcher />}
 
           {connected && address ? (
             <div 
@@ -54,9 +61,11 @@ export function Header() {
             >
               <div className="w-2 h-2 rounded-full bg-primary status-pulse" />
               <span className="font-mono-address text-base text-primary">{truncateAddress(address)}</span>
+              
               <button
                 onClick={copyAddress}
                 className="p-1.5 rounded-md hover:bg-primary/10 transition-all group"
+                title="Copy address"
               >
                 {copied ? (
                   <Check className="w-4 h-4 text-primary transition-all" />
@@ -64,6 +73,16 @@ export function Header() {
                   <Copy className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                 )}
               </button>
+              
+              <a
+                href={getExplorerUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-md hover:bg-primary/10 transition-all"
+                title="View on explorer"
+              >
+                <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+              </a>
               
               <button
                 onClick={handleDisconnect}

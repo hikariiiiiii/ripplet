@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Home, 
   Coins, 
@@ -11,16 +11,22 @@ import {
   BadgeCheck,
   ArrowRightLeft,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  ExternalLink,
+  Globe,
+  Droplets,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface NavItem {
   to?: string;
   icon: React.ElementType;
   label: string;
   comingSoon?: boolean;
+  external?: boolean;
+  href?: string;
 }
 
 interface NavSection {
@@ -100,8 +106,40 @@ const navSections: NavSection[] = [
   },
 ];
 
+const officialResources: NavSection = {
+  title: 'Official Resources',
+  titleKey: 'nav.officialResources',
+  items: [
+    { icon: Globe, label: 'Explorer', external: true, href: 'https://xrpscan.com' },
+    { icon: Droplets, label: 'Faucet', external: true, href: 'https://xrpl.org/xrp-testnet-faucet.html' },
+    { icon: BookOpen, label: 'Docs', external: true, href: 'https://xrpl.org/docs.html' },
+  ],
+};
+
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState<string[]>([]);
+  const location = useLocation();
+  
+  // Calculate default collapsed state: only expand Overview and current page's section
+  const defaultCollapsed = useMemo(() => {
+    const expanded: string[] = ['Overview'];
+    
+    for (const section of navSections) {
+      for (const item of section.items) {
+        if (item.to && location.pathname === item.to) {
+          if (!expanded.includes(section.title)) {
+            expanded.push(section.title);
+          }
+        }
+      }
+    }
+    
+    // Return all sections except those that should be expanded
+    return navSections
+      .map(s => s.title)
+      .filter(title => !expanded.includes(title));
+  }, [location.pathname]);
+  
+  const [collapsed, setCollapsed] = useState<string[]>(defaultCollapsed);
 
   const toggleSection = (title: string) => {
     setCollapsed(prev => 
@@ -110,6 +148,8 @@ export function Sidebar() {
         : [...prev, title]
     );
   };
+
+  const isSectionCollapsed = (title: string) => collapsed.includes(title);
 
   return (
     <aside className="w-64 glass-card border-r border-border/50 shrink-0 flex flex-col">
@@ -121,18 +161,18 @@ export function Sidebar() {
               className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
             >
               <span>{section.title}</span>
-              {collapsed.includes(section.title) ? (
+              {isSectionCollapsed(section.title) ? (
                 <ChevronRight className="w-3 h-3 transition-transform duration-200" />
               ) : (
                 <ChevronDown className="w-3 h-3 transition-transform duration-200" />
               )}
             </button>
-            {!collapsed.includes(section.title) && (
-              <div className="space-y-0.5 mt-1">
-                {section.items.map((item) => (
+            {!isSectionCollapsed(section.title) && (
+              <div className="space-y-0.5 mt-1 pl-3">
+                {section.items.map((item, index) => (
                   item.to ? (
                     <NavLink
-                      key={item.to}
+                      key={`${item.to}-${index}`}
                       to={item.to}
                       className={({ isActive }) =>
                         cn(
@@ -148,7 +188,7 @@ export function Sidebar() {
                     </NavLink>
                   ) : (
                     <button
-                      key={item.label}
+                      key={`${item.label}-${index}`}
                       disabled
                       className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground/40 cursor-not-allowed"
                     >
@@ -166,6 +206,38 @@ export function Sidebar() {
             )}
           </div>
         ))}
+        
+        {/* Official Resources Section */}
+        <div className="space-y-1 pt-4 border-t border-border/30">
+          <button
+            onClick={() => toggleSection(officialResources.title)}
+            className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+          >
+            <span>{officialResources.title}</span>
+            {isSectionCollapsed(officialResources.title) ? (
+              <ChevronRight className="w-3 h-3 transition-transform duration-200" />
+            ) : (
+              <ChevronDown className="w-3 h-3 transition-transform duration-200" />
+            )}
+          </button>
+          {!isSectionCollapsed(officialResources.title) && (
+            <div className="space-y-0.5 mt-1 pl-3">
+              {officialResources.items.map((item, index) => (
+                <a
+                  key={`${item.label}-${index}`}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                  <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
       <div className="p-4 border-t border-border/50">
         <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">

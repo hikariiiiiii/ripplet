@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, XCircle, Loader2, Copy, ExternalLink, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { TransactionResult } from '@/types';
+import type { TransactionResult, NetworkType } from '@/types';
+import { NETWORKS } from '@/types';
 
 interface TransactionResultDisplayProps {
   result: TransactionResult | null;
   onRetry?: () => void;
-  networkType?: 'mainnet' | 'testnet';
+  networkType?: NetworkType;
 }
 
 export function TransactionResultDisplay({
@@ -38,9 +39,7 @@ export function TransactionResultDisplay({
   }
 
   if (result.success) {
-    const explorerUrl = networkType === 'mainnet'
-      ? `https://xrpscan.com/tx/${result.hash}`
-      : `https://testnet.xrpscan.com/tx/${result.hash}`;
+    const explorerUrl = `${NETWORKS[networkType]?.explorerUrl || 'https://xrpscan.com'}/tx/${result.hash}`;
 
     const handleCopy = async () => {
       try {

@@ -35,9 +35,14 @@ export function NetworkSwitcher() {
       text: 'text-network-testnet',
       dot: 'bg-network-testnet',
     },
+    devnet: {
+      bg: 'bg-amber-500/15',
+      text: 'text-amber-500',
+      dot: 'bg-amber-500',
+    },
   };
 
-  const currentStyle = networkStyles[network];
+  const currentStyle = networkStyles[network] || networkStyles.mainnet;
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -54,9 +59,9 @@ export function NetworkSwitcher() {
           <span className={cn('animate-pulse-ring absolute inline-flex h-full w-full rounded-full opacity-75', currentStyle.dot)} />
           <span className={cn('relative inline-flex rounded-full h-2 w-2', currentStyle.dot)} />
         </span>
-        <span className="hidden sm:inline text-sm font-medium">{NETWORKS[network].name}</span>
+        <span className="hidden sm:inline text-sm font-medium">{NETWORKS[network]?.name || 'Unknown'}</span>
         <span className="sm:hidden text-xs font-medium">
-          {network === 'mainnet' ? 'Main' : 'Test'}
+          {network === 'mainnet' ? 'Main' : network === 'testnet' ? 'Test' : 'Dev'}
         </span>
         <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', isOpen && 'rotate-180')} />
       </button>
@@ -65,7 +70,7 @@ export function NetworkSwitcher() {
         <div className="absolute right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden animate-fade-in">
           <div className="p-1">
             {(Object.keys(NETWORKS) as NetworkType[]).map((net) => {
-              const style = networkStyles[net];
+              const style = networkStyles[net] || networkStyles.mainnet;
               return (
                 <button
                   key={net}
