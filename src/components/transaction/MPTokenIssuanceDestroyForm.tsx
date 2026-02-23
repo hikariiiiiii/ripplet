@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AlertCircle, Loader2, HelpCircle, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { AlertCircle, Loader2, Eye, EyeOff, HelpCircle, AlertTriangle, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
@@ -23,16 +24,25 @@ interface MPTokenIssuanceDestroyFormProps {
   account: string;
   onSubmit: (transaction: MPTokenIssuanceDestroy) => void | Promise<void>;
   isSubmitting?: boolean;
+  isConnected?: boolean;
+  onConnectWallet?: () => void;
 }
 
 export function MPTokenIssuanceDestroyForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: MPTokenIssuanceDestroyFormProps) {
+  const { t } = useTranslation();
+  const [showPreview, setShowPreview] = useState(false);
+  const [transactionJson, setTransactionJson] = useState<MPTokenIssuanceDestroy | null>(null);
   const {
     register,
     handleSubmit,
+    watch,
+    trigger,
     formState: { errors },
   } = useForm<MPTokenIssuanceDestroyFormData>({
     defaultValues: {
@@ -40,7 +50,32 @@ export function MPTokenIssuanceDestroyForm({
     },
   });
 
+  const watchedFields = watch();
+
+  const handlePreviewToggle = async () => {
+    if (showPreview) {
+      setShowPreview(false);
+      setTransactionJson(null);
+      return;
+    }
+
+    const isValid = await trigger();
+    if (!isValid) return;
+
+    const tx = buildMPTokenIssuanceDestroy({
+      Account: account,
+      MPTokenIssuanceID: watchedFields.mptIssuanceId,
+    });
+    setTransactionJson(tx);
+    setShowPreview(true);
+  };
+
   const onFormSubmit = async (data: MPTokenIssuanceDestroyFormData) => {
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet();
+      return;
+    }
+
     const transaction = buildMPTokenIssuanceDestroy({
       Account: account,
       MPTokenIssuanceID: data.mptIssuanceId,
@@ -50,7 +85,7 @@ export function MPTokenIssuanceDestroyForm({
   };
 
   return (
-    <TooltipProvider>
+    
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
           <div className="flex items-start gap-3">
@@ -101,22 +136,65 @@ export function MPTokenIssuanceDestroyForm({
           )}
         </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          variant="destructive"
-          className="w-full"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Destroying...
-            </>
-          ) : (
-            'Destroy MPT Issuance'
-          )}
-        </Button>
+      {/* JSON Preview Toggle */}
+      {transactionJson && showPreview && (
+        <div className="code-block scanlines">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">
+              Transaction JSON
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
+              className="h-6 text-xs"
+            >
+              Copy
+            </Button>
+          </div>
+          <pre className="text-xs overflow-x-auto">
+            {JSON.stringify(transactionJson, null, 2)}
+          </pre>
+        </div>
+      )}
+
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePreviewToggle}
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {t('common.loading')}
+              </>
+            ) : isConnected ? (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                Sign & Send
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                {t('wallet.connect')}
+              </>
+            )}
+          </Button>
+        </div>
       </form>
-    </TooltipProvider>
+    
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,12 +25,16 @@ interface AccountDeleteFormProps {
   account: string
   onSubmit: (transaction: AccountDelete) => void | Promise<void>
   isSubmitting?: boolean
+  isConnected?: boolean
+  onConnectWallet?: () => void
 }
 
 export function AccountDeleteForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: AccountDeleteFormProps) {
   const { t } = useTranslation()
   const [formData, setFormData] = useState<AccountDeleteFormData>({
@@ -39,6 +43,8 @@ export function AccountDeleteForm({
     confirmDelete: false,
   })
   const [errors, setErrors] = useState<AccountDeleteFormErrors>({})
+  const [showPreview, setShowPreview] = useState(false)
+  const [transactionJson, setTransactionJson] = useState<AccountDelete | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: AccountDeleteFormErrors = {}
@@ -67,6 +73,11 @@ export function AccountDeleteForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet()
+      return
+    }
+
     if (!validateForm()) {
       return
     }
@@ -84,16 +95,40 @@ export function AccountDeleteForm({
     await onSubmit(transaction)
   }
 
+  const handlePreviewToggle = () => {
+    if (showPreview) {
+      setShowPreview(false)
+      setTransactionJson(null)
+      return
+    }
+    if (!formData.destination.trim()) return
+
+    try {
+      const destinationTag = formData.destinationTag
+        ? parseInt(formData.destinationTag, 10)
+        : undefined
+      const tx = buildAccountDelete({
+        Account: account,
+        Destination: formData.destination,
+        DestinationTag: destinationTag,
+      })
+      setTransactionJson(tx)
+      setShowPreview(true)
+    } catch {
+      setTransactionJson(null)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="glass-card p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold text-destructive">
+          <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
               {t('accountdelete.warningTitle')}
             </p>
-            <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+            <ul className="text-sm text-amber-600/80 dark:text-amber-400/80 space-y-1 list-disc list-inside">
               <li>{t('accountdelete.warning1')}</li>
               <li>{t('accountdelete.warning2')}</li>
               <li>{t('accountdelete.warning3')}</li>
@@ -166,21 +201,65 @@ export function AccountDeleteForm({
         />
       </div>
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        variant="destructive"
-        className="w-full"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('common.loading')}
-          </>
-        ) : (
-          t('accountdelete.deleteAccount')
-        )}
-      </Button>
+      {/* JSON Preview */}
+      {transactionJson && showPreview && (
+        <div className="code-block scanlines">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">
+              Transaction JSON
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
+              className="h-6 text-xs"
+            >
+              Copy
+            </Button>
+          </div>
+          <pre className="text-xs overflow-x-auto">
+            {JSON.stringify(transactionJson, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePreviewToggle}
+          disabled={isSubmitting}
+          className="flex items-center gap-2"
+        >
+          {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+        </Button>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {t('common.loading')}
+            </>
+          ) : isConnected ? (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              Sign & Send
+            </>
+          ) : (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('wallet.connect')}
+            </>
+          )}
+        </Button>
+      </div>
     </form>
   )
 }

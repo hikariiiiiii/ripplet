@@ -22,6 +22,12 @@ import NFTokenMint from '@/pages/NFTokenMint';
 import NFTokenBurn from '@/pages/NFTokenBurn';
 import NFTokenCreateOffer from '@/pages/NFTokenCreateOffer';
 import NFTokenAcceptOffer from '@/pages/NFTokenAcceptOffer';
+import IOUPayment from '@/pages/IOUPayment';
+import IOUEscrowCreate from '@/pages/IOUEscrowCreate';
+import IOUEscrowFinish from '@/pages/IOUEscrowFinish';
+import MPTTransfer from '@/pages/MPTTransfer';
+import MPTLock from '@/pages/MPTLock';
+import MPTClawback from '@/pages/MPTClawback';
 import { useWalletEvents } from '@/hooks/useWalletEvents';
 
 function WalletEventListener() {
@@ -45,11 +51,17 @@ export default function App() {
           <Route path="iou/trustset" element={<TrustSet />} />
           <Route path="iou/accountset" element={<AccountSet />} />
           <Route path="iou/offercreate" element={<OfferCreate />} />
+          <Route path="iou/payment" element={<IOUPayment />} />
+          <Route path="iou/escrow/create" element={<IOUEscrowCreate />} />
+          <Route path="iou/escrow/finish" element={<IOUEscrowFinish />} />
           <Route path="iou/offercancel" element={<OfferCancel />} />
           <Route path="mpt/create" element={<MPTokenIssuanceCreate />} />
           <Route path="mpt/set" element={<MPTokenIssuanceSet />} />
           <Route path="mpt/destroy" element={<MPTokenIssuanceDestroy />} />
           <Route path="mpt/authorize" element={<MPTokenAuthorize />} />
+          <Route path="mpt/transfer" element={<MPTTransfer />} />
+          <Route path="mpt/lock" element={<MPTLock />} />
+          <Route path="mpt/clawback" element={<MPTClawback />} />
           <Route path="credential/create" element={<CredentialCreate />} />
           <Route path="credential/accept" element={<CredentialAccept />} />
           <Route path="credential/delete" element={<CredentialDelete />} />

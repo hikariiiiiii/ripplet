@@ -25,7 +25,9 @@ import {
   PlusCircle,
   XCircle,
   Flame,
-  Tags
+  Tags,
+  Send,
+  Undo2
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -73,9 +75,12 @@ const navSections: NavSection[] = [
     titleKey: 'nav.iou',
     items: [
       { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
+      { to: '/iou/payment', icon: Coins, labelKey: 'nav.iouPayment' },
       { to: '/iou/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
       { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
       { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },
+      { to: '/iou/escrow/create', icon: Lock, labelKey: 'nav.iouEscrowCreate' },
+      { to: '/iou/escrow/finish', icon: Lock, labelKey: 'nav.iouEscrowFinish' },
     ],
   },
   {
@@ -85,6 +90,9 @@ const navSections: NavSection[] = [
       { to: '/mpt/set', icon: Settings, labelKey: 'nav.mptSet' },
       { to: '/mpt/destroy', icon: Trash2, labelKey: 'nav.mptDestroy' },
       { to: '/mpt/authorize', icon: UserCheck, labelKey: 'nav.mptAuthorize' },
+      { to: '/mpt/transfer', icon: Send, labelKey: 'nav.mptTransfer' },
+      { to: '/mpt/lock', icon: Lock, labelKey: 'nav.mptLock' },
+      { to: '/mpt/clawback', icon: Undo2, labelKey: 'nav.mptClawback' },
     ],
   },
   {

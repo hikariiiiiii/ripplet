@@ -1,41 +1,44 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  buildTrustSet,
-  isValidCurrency,
-  isValidXRPLAddress,
-} from '@/lib/xrpl/transactions/trustset'
-import type { TrustSet } from 'xrpl'
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { buildIOUEscrowFinish } from '@/lib/xrpl/transactions/escrow'
+import { isValidXRPLAddress } from '@/lib/xrpl/transactions/payment'
+import type { EscrowFinish } from 'xrpl'
 
-interface TrustSetFormData {
-  currency: string
-  issuer: string
-  limit: string
+interface IOUEscrowFinishFormData {
+  owner: string
+  offerSequence: string
+  condition: string
+  fulfillment: string
 }
 
-interface TrustSetFormProps {
+interface IOUEscrowFinishFormProps {
   account: string
-  onSubmit: (transaction: TrustSet) => void | Promise<void>
+  onSubmit: (transaction: EscrowFinish) => void | Promise<void>
   isSubmitting?: boolean
   isConnected?: boolean
   onConnectWallet?: () => void
 }
 
-export function TrustSetForm({
+export function IOUEscrowFinishForm({
   account,
   onSubmit,
   isSubmitting = false,
   isConnected = true,
   onConnectWallet,
-}: TrustSetFormProps) {
+}: IOUEscrowFinishFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
-  const [transactionJson, setTransactionJson] = useState<TrustSet | null>(null)
+  const [transactionJson, setTransactionJson] = useState<EscrowFinish | null>(null)
   const [buildError, setBuildError] = useState<string | null>(null)
 
   const {
@@ -44,11 +47,12 @@ export function TrustSetForm({
     watch,
     trigger,
     formState: { errors },
-  } = useForm<TrustSetFormData>({
+  } = useForm<IOUEscrowFinishFormData>({
     defaultValues: {
-      currency: '',
-      issuer: '',
-      limit: '',
+      owner: '',
+      offerSequence: '',
+      condition: '',
+      fulfillment: '',
     },
   })
 
@@ -61,163 +65,149 @@ export function TrustSetForm({
       return
     }
 
-    // Validate required fields
-    const isValid = await trigger(['currency', 'issuer', 'limit'])
+    const isValid = await trigger(['owner', 'offerSequence'])
     if (!isValid) return
 
-    // Double check fields have values
-    if (!watchedFields.currency || !watchedFields.issuer || !watchedFields.limit) {
-      return
-    }
-
-    // Check if issuer is same as account
-    if (watchedFields.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
     try {
-      const tx = buildTrustSet({
+      const tx = buildIOUEscrowFinish({
         Account: account,
-        LimitAmount: {
-          currency: watchedFields.currency.toUpperCase(),
-          issuer: watchedFields.issuer,
-          value: watchedFields.limit,
-        },
+        Owner: watchedFields.owner,
+        OfferSequence: parseInt(watchedFields.offerSequence, 10),
+        Condition: watchedFields.condition || undefined,
+        Fulfillment: watchedFields.fulfillment || undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
       setBuildError(errorMsg)
-      setTransactionJson(null)
     }
   }
 
-  const onFormSubmit = async (data: TrustSetFormData) => {
+  const onFormSubmit = async (data: IOUEscrowFinishFormData) => {
     if (!isConnected && onConnectWallet) {
       onConnectWallet()
       return
     }
 
-    // Check if issuer is same as account
-    if (data.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
-    const transaction = buildTrustSet({
-      Account: account,
-      LimitAmount: {
-        currency: data.currency.toUpperCase(),
-        issuer: data.issuer,
-        value: data.limit,
-      },
-    })
-
-    await onSubmit(transaction)
+    try {
+      const transaction = buildIOUEscrowFinish({
+        Account: account,
+        Owner: data.owner,
+        OfferSequence: parseInt(data.offerSequence, 10),
+        Condition: data.condition || undefined,
+        Fulfillment: data.fulfillment || undefined,
+      })
+      await onSubmit(transaction)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
+      setBuildError(errorMsg)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="currency">{t('trustset.currency')}</Label>
+        <Label htmlFor="owner">{t('ioudEscrowFinish.owner')}</Label>
         <Input
-          id="currency"
-          type="text"
-          placeholder="USD"
-          maxLength={40}
-          {...register('currency', {
-            required: t('trustset.currencyRequired'),
-            validate: (value: string) => {
-              const upperValue = value.toUpperCase()
-              if (!isValidCurrency(upperValue)) {
-                return t('trustset.currencyInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.currency ? 'border-destructive' : ''}
-        />
-        {errors.currency && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.currency.message}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.currencyHint')}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="issuer">{t('trustset.issuer')}</Label>
-        <Input
-          id="issuer"
+          id="owner"
           type="text"
           placeholder="r..."
-          {...register('issuer', {
-            required: t('trustset.issuerRequired'),
+          className={`font-mono-address text-sm ${errors.owner ? 'border-destructive' : ''}`}
+          {...register('owner', {
+            required: t('ioudEscrowFinish.ownerRequired'),
             validate: (value: string) => {
               if (!isValidXRPLAddress(value)) {
-                return t('trustset.issuerInvalid')
+                return t('ioudEscrowFinish.ownerInvalid')
               }
               return true
             },
           })}
-          className={errors.issuer ? 'border-destructive' : ''}
         />
-        {errors.issuer && (
+        {errors.owner && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.issuer.message}
+            {errors.owner.message}
           </p>
         )}
         <p className="text-xs text-muted-foreground">
-          {t('trustset.issuerHint')}
+          {t('ioudEscrowFinish.ownerHint')}
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="limit">{t('trustset.limit')}</Label>
+        <Label htmlFor="offerSequence">{t('ioudEscrowFinish.offerSequence')}</Label>
         <Input
-          id="limit"
+          id="offerSequence"
           type="number"
-          step="any"
-          min="0"
-          placeholder="0.00"
-          {...register('limit', {
-            required: t('trustset.limitRequired'),
+          placeholder={t('ioudEscrowFinish.offerSequencePlaceholder')}
+          className={errors.offerSequence ? 'border-destructive' : ''}
+          {...register('offerSequence', {
+            required: t('ioudEscrowFinish.offerSequenceRequired'),
             validate: (value: string) => {
-              const num = parseFloat(value)
+              const num = parseInt(value, 10)
               if (isNaN(num) || num < 0) {
-                return t('trustset.limitInvalid')
+                return t('ioudEscrowFinish.offerSequenceInvalid')
               }
               return true
             },
           })}
-          className={errors.limit ? 'border-destructive' : ''}
         />
-        {errors.limit && (
+        {errors.offerSequence && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.limit.message}
+            {errors.offerSequence.message}
           </p>
         )}
+        <p className="text-xs text-muted-foreground">
+          {t('ioudEscrowFinish.offerSequenceHint')}
+        </p>
       </div>
 
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            {t('trustset.limitZeroInfo')}
-          </p>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="condition">{t('ioudEscrowFinish.condition')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('ioudEscrowFinish.conditionHint')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
+        <Input
+          id="condition"
+          type="text"
+          placeholder={t('ioudEscrowFinish.conditionPlaceholder')}
+          {...register('condition')}
+        />
       </div>
 
-      {/* Build Error */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="fulfillment">{t('ioudEscrowFinish.fulfillment')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('ioudEscrowFinish.fulfillmentHint')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <Input
+          id="fulfillment"
+          type="text"
+          placeholder={t('ioudEscrowFinish.fulfillmentPlaceholder')}
+          {...register('fulfillment')}
+        />
+      </div>
+
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
           <div className="flex items-start gap-3">
@@ -229,7 +219,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* JSON Preview */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
@@ -252,7 +241,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <Button
           type="button"

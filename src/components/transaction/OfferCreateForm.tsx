@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Loader2, HelpCircle } from 'lucide-react'
+import { AlertCircle, Loader2, HelpCircle, Wallet, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
@@ -30,6 +29,8 @@ interface OfferCreateFormProps {
   account: string
   onSubmit: (transaction: OfferCreate) => void | Promise<void>
   isSubmitting?: boolean
+  isConnected?: boolean
+  onConnectWallet?: () => void
 }
 
 function isValidAddress(address: string): boolean {
@@ -40,19 +41,23 @@ export function OfferCreateForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: OfferCreateFormProps) {
   const { t } = useTranslation()
   const [formData, setFormData] = useState<OfferCreateFormData>({
     takerGetsAmount: '',
-    takerGetsCurrency: 'XRP',
+    takerGetsCurrency: '',
     takerGetsIssuer: '',
     takerPaysAmount: '',
-    takerPaysCurrency: 'XRP',
+    takerPaysCurrency: '',
     takerPaysIssuer: '',
     expiration: '',
     offerSequence: '',
   })
   const [errors, setErrors] = useState<Partial<OfferCreateFormData>>({})
+  const [showPreview, setShowPreview] = useState(false)
+  const [transactionJson, setTransactionJson] = useState<OfferCreate | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: Partial<OfferCreateFormData> = {}
@@ -103,9 +108,56 @@ export function OfferCreateForm({
     return Object.keys(newErrors).length === 0
   }
 
+  const handlePreviewToggle = () => {
+    if (showPreview) {
+      setShowPreview(false)
+      setTransactionJson(null)
+      return
+    }
+
+    if (!validateForm()) return
+
+    try {
+      const takerGets = formData.takerGetsCurrency === 'XRP'
+        ? formData.takerGetsAmount
+        : {
+            currency: formData.takerGetsCurrency,
+            issuer: formData.takerGetsIssuer,
+            value: formData.takerGetsAmount,
+          }
+
+      const takerPays = formData.takerPaysCurrency === 'XRP'
+        ? formData.takerPaysAmount
+        : {
+            currency: formData.takerPaysCurrency,
+            issuer: formData.takerPaysIssuer,
+            value: formData.takerPaysAmount,
+          }
+
+      const tx = buildOfferCreate({
+        Account: account,
+        TakerGets: takerGets,
+        TakerPays: takerPays,
+        Expiration: formData.expiration ? parseInt(formData.expiration, 10) : undefined,
+        OfferSequence: formData.offerSequence ? parseInt(formData.offerSequence, 10) : undefined,
+      })
+      setTransactionJson(tx)
+      setShowPreview(true)
+    } catch {
+      setTransactionJson(null)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Connection check FIRST (no validation)
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet()
+      return
+    }
+
+    // Form validation SECOND
     if (!validateForm()) return
 
     const takerGets = formData.takerGetsCurrency === 'XRP'
@@ -136,10 +188,10 @@ export function OfferCreateForm({
   }
 
   return (
-    <TooltipProvider>
+    
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-muted-foreground">You Offer (Taker Gets)</h3>
+        <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/20">
+          <h3 className="text-base font-semibold text-xrpl-green">You Offer (Taker Gets)</h3>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -206,8 +258,8 @@ export function OfferCreateForm({
           )}
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-muted-foreground">You Want (Taker Pays)</h3>
+        <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/20">
+          <h3 className="text-base font-semibold text-xrpl-blue">You Want (Taker Pays)</h3>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -335,17 +387,66 @@ export function OfferCreateForm({
           />
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('common.loading')}
-            </>
-          ) : (
-            t('common.submit')
-          )}
-        </Button>
+        {/* JSON Preview Toggle */}
+        {transactionJson && showPreview && (
+          <div className="code-block scanlines">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                Transaction JSON
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
+                className="h-6 text-xs"
+              >
+                Copy
+              </Button>
+            </div>
+            <pre className="text-xs overflow-x-auto">
+              {JSON.stringify(transactionJson, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePreviewToggle}
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {t('common.loading')}
+              </>
+            ) : isConnected ? (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                Sign & Send
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                {t('wallet.connect')}
+              </>
+            )}
+          </Button>
+        </div>
       </form>
-    </TooltipProvider>
+    
   )
 }

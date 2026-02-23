@@ -1,21 +1,21 @@
 import { useTranslation } from 'react-i18next';
-import { Settings } from 'lucide-react';
-import { AccountSetForm } from '@/components/transaction/AccountSetForm';
+import { Lock } from 'lucide-react';
+import { MPTLockForm } from '@/components/transaction/MPTLockForm';
 import { TransactionPageWrapper } from '@/components/transaction/TransactionPageWrapper';
 
-export default function AccountSetPage() {
+export default function MPTLockPage() {
   const { t } = useTranslation();
 
   return (
     <TransactionPageWrapper
-      title={t('accountset.title')}
-      subtitle={t('accountset.subtitle')}
-      icon={<Settings className="w-5 h-5 text-purple-500" />}
-      iconBgColor="bg-purple-500/10"
-      borderColor="border-purple-500/20"
+      title={t('mptLock.title')}
+      subtitle={t('mptLock.subtitle')}
+      icon={<Lock className="w-5 h-5 text-red-500" />}
+      iconBgColor="bg-red-500/10"
+      borderColor="border-red-500/20"
     >
       {({ address, onSubmit, isSubmitting, isConnected, onConnectWallet }) => (
-        <AccountSetForm
+        <MPTLockForm
           account={address}
           onSubmit={(tx) => onSubmit(tx)}
           isSubmitting={isSubmitting}

@@ -3,6 +3,8 @@ import type {
   MPTokenIssuanceSet,
   MPTokenIssuanceDestroy,
   MPTokenAuthorize,
+  Payment,
+  Clawback,
 } from 'xrpl';
 import type { BaseTransactionParams } from './types';
 
@@ -554,4 +556,189 @@ export function buildMPTokenAuthorize(
   }
 
   return transaction;
+}
+
+
+
+export interface MPTAmount {
+  mpt_issuance_id: string
+  value: string
+}
+
+export interface MPTTransferParams extends BaseTransactionParams {
+  Destination: string
+  Amount: MPTAmount
+  DestinationTag?: number
+}
+
+export function buildMPTTransfer(params: MPTTransferParams): Payment {
+  const {
+    Account,
+    Destination,
+    Amount,
+    DestinationTag,
+    Fee,
+    Sequence,
+    LastLedgerSequence,
+    Memos,
+    Signers,
+    SigningPubKey,
+    SourceTag,
+    TxnSignature,
+  } = params
+
+  if (!isValidXRPLAddress(Destination)) {
+    throw new Error('Invalid destination address')
+  }
+
+  if (!Amount.mpt_issuance_id || !isValidMPTIssuanceID(Amount.mpt_issuance_id)) {
+    throw new Error('Invalid MPT Issuance ID')
+  }
+
+  if (!Amount.value || parseFloat(Amount.value) <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
+
+  const transaction: Payment = {
+    TransactionType: 'Payment',
+    Account,
+    Destination,
+    Amount: {
+      mpt_issuance_id: Amount.mpt_issuance_id,
+      value: Amount.value,
+    },
+  }
+
+  if (DestinationTag !== undefined) {
+    if (!Number.isInteger(DestinationTag) || DestinationTag < 0 || DestinationTag > 4294967295) {
+      throw new Error('DestinationTag must be an integer between 0 and 4294967295')
+    }
+    transaction.DestinationTag = DestinationTag
+  }
+
+  if (Fee !== undefined) transaction.Fee = Fee
+  if (Sequence !== undefined) transaction.Sequence = Sequence
+  if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence
+  if (Memos !== undefined) transaction.Memos = Memos
+  if (Signers !== undefined) transaction.Signers = Signers
+  if (SigningPubKey !== undefined) transaction.SigningPubKey = SigningPubKey
+  if (SourceTag !== undefined) transaction.SourceTag = SourceTag
+  if (TxnSignature !== undefined) transaction.TxnSignature = TxnSignature
+
+  return transaction
+}
+
+export interface MPTLockParams extends BaseTransactionParams {
+  Holder: string
+  MPTokenIssuanceID: string
+  LockedAmount?: string
+  Flags?: number
+}
+
+export const MPT_LOCK_FLAGS = {
+  tfMPTLock: 0x00000001,
+  tfMPTUnlock: 0x00000002,
+} as const
+
+export function buildMPTLock(params: MPTLockParams): MPTokenAuthorize {
+  const {
+    Account,
+    Holder,
+    MPTokenIssuanceID,
+    LockedAmount,
+    Flags,
+    Fee,
+    Sequence,
+    LastLedgerSequence,
+    Memos,
+    Signers,
+    SigningPubKey,
+    SourceTag,
+    TxnSignature,
+  } = params
+
+  if (!isValidXRPLAddress(Holder)) {
+    throw new Error('Invalid holder address')
+  }
+
+  if (!isValidMPTIssuanceID(MPTokenIssuanceID)) {
+    throw new Error('Invalid MPT Issuance ID')
+  }
+
+  const transaction: MPTokenAuthorize = {
+    TransactionType: 'MPTokenAuthorize',
+    Account,
+    MPTokenIssuanceID,
+    Holder,
+  }
+
+  if (LockedAmount !== undefined) {
+    transaction.LockedAmount = LockedAmount
+  }
+
+  if (Flags !== undefined) transaction.Flags = Flags
+  if (Fee !== undefined) transaction.Fee = Fee
+  if (Sequence !== undefined) transaction.Sequence = Sequence
+  if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence
+  if (Memos !== undefined) transaction.Memos = Memos
+  if (Signers !== undefined) transaction.Signers = Signers
+  if (SigningPubKey !== undefined) transaction.SigningPubKey = SigningPubKey
+  if (SourceTag !== undefined) transaction.SourceTag = SourceTag
+  if (TxnSignature !== undefined) transaction.TxnSignature = TxnSignature
+
+  return transaction
+}
+
+export interface MPTClawbackParams extends BaseTransactionParams {
+  Holder: string
+  Amount: MPTAmount
+}
+
+export function buildMPTClawback(params: MPTClawbackParams): Clawback {
+  const {
+    Account,
+    Holder,
+    Amount,
+    Fee,
+    Sequence,
+    LastLedgerSequence,
+    Memos,
+    Signers,
+    SigningPubKey,
+    SourceTag,
+    TxnSignature,
+  } = params
+
+  if (!isValidXRPLAddress(Holder)) {
+    throw new Error('Invalid holder address')
+  }
+
+  if (!Amount.mpt_issuance_id || !isValidMPTIssuanceID(Amount.mpt_issuance_id)) {
+    throw new Error('Invalid MPT Issuance ID')
+  }
+
+  if (!Amount.value || parseFloat(Amount.value) <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
+
+  const transaction: Clawback = {
+    TransactionType: 'Clawback',
+    Account,
+    Holder,
+    Amount: {
+      mpt_issuance_id: Amount.mpt_issuance_id,
+      value: Amount.value,
+    },
+  }
+
+  if (Fee !== undefined) transaction.Fee = Fee
+  if (Sequence !== undefined) transaction.Sequence = Sequence
+  if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence
+  if (Memos !== undefined) transaction.Memos = Memos
+  if (Signers !== undefined) transaction.Signers = Signers
+  if (SigningPubKey !== undefined) transaction.SigningPubKey = SigningPubKey
+  if (SourceTag !== undefined) transaction.SourceTag = SourceTag
+  if (TxnSignature !== undefined) transaction.TxnSignature = TxnSignature
+
+  return transaction
 }

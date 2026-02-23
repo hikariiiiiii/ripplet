@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,14 +23,20 @@ interface EscrowFinishFormProps {
   account: string
   onSubmit: (transaction: EscrowFinish) => void | Promise<void>
   isSubmitting?: boolean
+  isConnected?: boolean
+  onConnectWallet?: () => void
 }
 
 export function EscrowFinishForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: EscrowFinishFormProps) {
   const { t } = useTranslation()
+  const [showPreview, setShowPreview] = useState(false)
+  const [transactionJson, setTransactionJson] = useState<EscrowFinish | null>(null)
   const [formData, setFormData] = useState<EscrowFinishFormData>({
     owner: '',
     offerSequence: '',
@@ -61,8 +67,33 @@ export function EscrowFinishForm({
     return Object.keys(newErrors).length === 0
   }
 
+  const handlePreviewToggle = () => {
+    if (showPreview) {
+      setShowPreview(false)
+      setTransactionJson(null)
+      return
+    }
+
+    if (!validateForm()) return
+
+    const tx = buildEscrowFinish({
+      Account: account,
+      Owner: formData.owner,
+      OfferSequence: parseInt(formData.offerSequence, 10),
+      Condition: formData.condition || undefined,
+      Fulfillment: formData.fulfillment || undefined,
+    })
+    setTransactionJson(tx)
+    setShowPreview(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet()
+      return
+    }
 
     if (!validateForm()) return
 
@@ -151,16 +182,64 @@ export function EscrowFinishForm({
         </p>
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('common.loading')}
-          </>
-        ) : (
-          t('escrow.finishEscrow')
-        )}
-      </Button>
+      {/* JSON Preview Toggle */}
+      {transactionJson && showPreview && (
+        <div className="code-block scanlines">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">
+              Transaction JSON
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
+              className="h-6 text-xs"
+            >
+              Copy
+            </Button>
+          </div>
+          <pre className="text-xs overflow-x-auto">
+            {JSON.stringify(transactionJson, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePreviewToggle}
+          disabled={isSubmitting}
+          className="flex items-center gap-2"
+        >
+          {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+        </Button>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {t('common.loading')}
+            </>
+          ) : isConnected ? (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              Sign & Send
+            </>
+          ) : (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('wallet.connect')}
+            </>
+          )}
+        </Button>
+      </div>
     </form>
   )
 }

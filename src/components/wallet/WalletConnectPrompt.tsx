@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Wallet, Sparkles, ChevronDown, Loader2, AlertTriangle, ExternalLink, Download, Clock } from 'lucide-react';
-import { useWalletStore } from '@/stores/wallet';
+import { Wallet, ChevronDown, Loader2, AlertTriangle, ExternalLink, Download, Clock } from 'lucide-react';
 import { useWallet } from '@/lib/wallets';
 import { Button } from '@/components/ui/button';
 import {
@@ -99,7 +98,6 @@ export function WalletConnectPrompt({
   accentColor = 'green'
 }: WalletConnectPromptProps) {
   const { t } = useTranslation();
-  const { networkInfo } = useWalletStore();
   const { connect, connecting, walletType } = useWallet();
   const colors = accentColors[accentColor];
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -188,16 +186,7 @@ export function WalletConnectPrompt({
               {t('wallet.connect')}
             </Button>
 
-            <div className="flex items-center justify-center gap-4 text-sm relative z-10">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-muted-foreground">{networkInfo.name}</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-                <Sparkles className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">XRPL</span>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

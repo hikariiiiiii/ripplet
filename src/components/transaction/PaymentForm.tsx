@@ -32,12 +32,16 @@ interface PaymentFormProps {
   account: string;
   onSubmit: (transaction: Payment) => void | Promise<void>;
   isSubmitting?: boolean;
+  isConnected?: boolean;
+  onConnectWallet?: () => void;
 }
 
 export function PaymentForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: PaymentFormProps) {
   const { t } = useTranslation();
   const [showPreview, setShowPreview] = useState(false);
@@ -48,6 +52,7 @@ export function PaymentForm({
     register,
     handleSubmit,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<PaymentFormData>({
     defaultValues: {
@@ -60,9 +65,19 @@ export function PaymentForm({
 
   const watchedFields = watch();
 
-  const generatePreview = () => {
-    if (!watchedFields.destination || !watchedFields.amount) return null;
-    
+  const handlePreviewToggle = async () => {
+    if (showPreview) {
+      // If already showing, hide it
+      setShowPreview(false);
+      setTransactionJson(null);
+      return;
+    }
+
+    // Validate form first
+    const isValid = await trigger(['destination', 'amount']);
+    if (!isValid) return;
+
+    // If validation passes, build and show preview
     try {
       const drops = xrpToDrops(watchedFields.amount);
       const tx = buildPayment({
@@ -84,8 +99,12 @@ export function PaymentForm({
   };
 
   const onFormSubmit = async (data: PaymentFormData) => {
-    const drops = xrpToDrops(data.amount);
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet();
+      return;
+    }
 
+    const drops = xrpToDrops(data.amount);
     const transaction = buildPayment({
       Account: account,
       Destination: data.destination,
@@ -97,7 +116,6 @@ export function PaymentForm({
         ? [{ data: data.memo }]
         : undefined,
     });
-
     await onSubmit(transaction);
   };
 
@@ -123,7 +141,7 @@ export function PaymentForm({
             id="destination"
             type="text"
             placeholder="r..."
-            className={`font-mono-address text-sm ${errors.destination ? 'border-destructive neon-border' : 'focus:border-xrpl-green/50'}`}
+            className={`font-mono-address text-sm ${errors.destination ? 'border-destructive neon-border' : 'focus:border-white/40'}`}
             {...register('destination', {
               required: t('payment.destinationRequired'),
               validate: (value: string) => {
@@ -164,7 +182,7 @@ export function PaymentForm({
           step="any"
           min="0.000001"
           placeholder="0.00"
-          className={`font-mono-address text-sm ${errors.amount ? 'border-destructive' : 'focus:border-xrpl-green/50'}`}
+          className={`font-mono-address text-sm ${errors.amount ? 'border-destructive' : 'focus:border-white/40'}`}
           {...register('amount', {
             required: t('payment.amountRequired'),
             validate: (value: string) => {
@@ -288,8 +306,8 @@ export function PaymentForm({
         <Button
           type="button"
           variant="outline"
-          onClick={generatePreview}
-          disabled={!watchedFields.destination || !watchedFields.amount || isSubmitting}
+          onClick={handlePreviewToggle}
+          disabled={isSubmitting}
           className="flex items-center gap-2"
         >
           {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -306,10 +324,15 @@ export function PaymentForm({
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               {t('common.loading')}
             </>
-          ) : (
+          ) : isConnected ? (
             <>
               <Wallet className="w-4 h-4 mr-2" />
               Sign & Send
+            </>
+          ) : (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('wallet.connect')}
             </>
           )}
         </Button>

@@ -1,41 +1,40 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  buildTrustSet,
-  isValidCurrency,
-  isValidXRPLAddress,
-} from '@/lib/xrpl/transactions/trustset'
-import type { TrustSet } from 'xrpl'
+import { Switch } from '@/components/ui/switch'
+import { buildMPTLock, isValidMPTIssuanceID, MPT_LOCK_FLAGS } from '@/lib/xrpl/transactions/mpt'
+import { isValidXRPLAddress } from '@/lib/xrpl/transactions/payment'
+import type { MPTokenAuthorize } from 'xrpl'
 
-interface TrustSetFormData {
-  currency: string
-  issuer: string
-  limit: string
+interface MPTLockFormData {
+  holder: string
+  mptIssuanceId: string
+  lockedAmount: string
+  action: 'lock' | 'unlock'
 }
 
-interface TrustSetFormProps {
+interface MPTLockFormProps {
   account: string
-  onSubmit: (transaction: TrustSet) => void | Promise<void>
+  onSubmit: (transaction: MPTokenAuthorize) => void | Promise<void>
   isSubmitting?: boolean
   isConnected?: boolean
   onConnectWallet?: () => void
 }
 
-export function TrustSetForm({
+export function MPTLockForm({
   account,
   onSubmit,
   isSubmitting = false,
   isConnected = true,
   onConnectWallet,
-}: TrustSetFormProps) {
+}: MPTLockFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
-  const [transactionJson, setTransactionJson] = useState<TrustSet | null>(null)
+  const [transactionJson, setTransactionJson] = useState<MPTokenAuthorize | null>(null)
   const [buildError, setBuildError] = useState<string | null>(null)
 
   const {
@@ -43,12 +42,14 @@ export function TrustSetForm({
     handleSubmit,
     watch,
     trigger,
+    setValue,
     formState: { errors },
-  } = useForm<TrustSetFormData>({
+  } = useForm<MPTLockFormData>({
     defaultValues: {
-      currency: '',
-      issuer: '',
-      limit: '',
+      holder: '',
+      mptIssuanceId: '',
+      lockedAmount: '',
+      action: 'lock',
     },
   })
 
@@ -61,163 +62,154 @@ export function TrustSetForm({
       return
     }
 
-    // Validate required fields
-    const isValid = await trigger(['currency', 'issuer', 'limit'])
+    const isValid = await trigger(['holder', 'mptIssuanceId'])
     if (!isValid) return
 
-    // Double check fields have values
-    if (!watchedFields.currency || !watchedFields.issuer || !watchedFields.limit) {
-      return
-    }
-
-    // Check if issuer is same as account
-    if (watchedFields.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
     try {
-      const tx = buildTrustSet({
+      const flags = watchedFields.action === 'lock' 
+        ? MPT_LOCK_FLAGS.tfMPTLock 
+        : MPT_LOCK_FLAGS.tfMPTUnlock
+      
+      const tx = buildMPTLock({
         Account: account,
-        LimitAmount: {
-          currency: watchedFields.currency.toUpperCase(),
-          issuer: watchedFields.issuer,
-          value: watchedFields.limit,
-        },
+        Holder: watchedFields.holder,
+        MPTokenIssuanceID: watchedFields.mptIssuanceId,
+        LockedAmount: watchedFields.lockedAmount || undefined,
+        Flags: flags,
       })
       setTransactionJson(tx)
       setShowPreview(true)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
       setBuildError(errorMsg)
-      setTransactionJson(null)
     }
   }
 
-  const onFormSubmit = async (data: TrustSetFormData) => {
+  const onFormSubmit = async (data: MPTLockFormData) => {
     if (!isConnected && onConnectWallet) {
       onConnectWallet()
       return
     }
 
-    // Check if issuer is same as account
-    if (data.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
-    const transaction = buildTrustSet({
-      Account: account,
-      LimitAmount: {
-        currency: data.currency.toUpperCase(),
-        issuer: data.issuer,
-        value: data.limit,
-      },
-    })
-
-    await onSubmit(transaction)
+    try {
+      const flags = data.action === 'lock' 
+        ? MPT_LOCK_FLAGS.tfMPTLock 
+        : MPT_LOCK_FLAGS.tfMPTUnlock
+      
+      const transaction = buildMPTLock({
+        Account: account,
+        Holder: data.holder,
+        MPTokenIssuanceID: data.mptIssuanceId,
+        LockedAmount: data.lockedAmount || undefined,
+        Flags: flags,
+      })
+      await onSubmit(transaction)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
+      setBuildError(errorMsg)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="currency">{t('trustset.currency')}</Label>
+        <Label htmlFor="holder">{t('mptLock.holder')}</Label>
         <Input
-          id="currency"
-          type="text"
-          placeholder="USD"
-          maxLength={40}
-          {...register('currency', {
-            required: t('trustset.currencyRequired'),
-            validate: (value: string) => {
-              const upperValue = value.toUpperCase()
-              if (!isValidCurrency(upperValue)) {
-                return t('trustset.currencyInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.currency ? 'border-destructive' : ''}
-        />
-        {errors.currency && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.currency.message}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.currencyHint')}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="issuer">{t('trustset.issuer')}</Label>
-        <Input
-          id="issuer"
+          id="holder"
           type="text"
           placeholder="r..."
-          {...register('issuer', {
-            required: t('trustset.issuerRequired'),
+          className={`font-mono-address text-sm ${errors.holder ? 'border-destructive' : ''}`}
+          {...register('holder', {
+            required: t('mptLock.holderRequired'),
             validate: (value: string) => {
               if (!isValidXRPLAddress(value)) {
-                return t('trustset.issuerInvalid')
+                return t('mptLock.holderInvalid')
               }
               return true
             },
           })}
-          className={errors.issuer ? 'border-destructive' : ''}
         />
-        {errors.issuer && (
+        {errors.holder && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.issuer.message}
+            {errors.holder.message}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.issuerHint')}
-        </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="limit">{t('trustset.limit')}</Label>
+        <Label htmlFor="mptIssuanceId">{t('mptLock.mptIssuanceId')}</Label>
         <Input
-          id="limit"
-          type="number"
-          step="any"
-          min="0"
-          placeholder="0.00"
-          {...register('limit', {
-            required: t('trustset.limitRequired'),
+          id="mptIssuanceId"
+          type="text"
+          placeholder="0000..."
+          className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
+          {...register('mptIssuanceId', {
+            required: t('mptLock.mptIssuanceIdRequired'),
             validate: (value: string) => {
-              const num = parseFloat(value)
-              if (isNaN(num) || num < 0) {
-                return t('trustset.limitInvalid')
+              if (!isValidMPTIssuanceID(value)) {
+                return t('mptLock.mptIssuanceIdInvalid')
               }
               return true
             },
           })}
-          className={errors.limit ? 'border-destructive' : ''}
         />
-        {errors.limit && (
+        {errors.mptIssuanceId && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.limit.message}
+            {errors.mptIssuanceId.message}
           </p>
         )}
       </div>
 
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            {t('trustset.limitZeroInfo')}
+      <div className="space-y-2">
+        <Label htmlFor="lockedAmount">{t('mptLock.lockedAmount')}</Label>
+        <Input
+          id="lockedAmount"
+          type="text"
+          placeholder={t('mptLock.lockedAmountPlaceholder')}
+          className={errors.lockedAmount ? 'border-destructive' : ''}
+          {...register('lockedAmount', {
+            validate: (value: string) => {
+              if (!value) return true
+              const num = parseFloat(value)
+              if (isNaN(num) || num <= 0) {
+                return t('mptLock.lockedAmountInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.lockedAmount && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.lockedAmount.message}
           </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>{t('mptLock.action')}</Label>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm ${watchedFields.action === 'lock' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {t('mptLock.actionLock')}
+            </span>
+            <Switch
+              checked={watchedFields.action === 'unlock'}
+              onCheckedChange={(checked) => setValue('action', checked ? 'unlock' : 'lock')}
+            />
+            <span className={`text-sm ${watchedFields.action === 'unlock' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {t('mptLock.actionUnlock')}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Build Error */}
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
           <div className="flex items-start gap-3">
@@ -229,7 +221,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* JSON Preview */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
@@ -252,7 +243,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <Button
           type="button"

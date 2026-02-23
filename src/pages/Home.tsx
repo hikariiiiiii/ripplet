@@ -16,7 +16,7 @@ import {
   Terminal,
   Globe,
   ChevronRight,
-  Sparkles
+
 } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
@@ -117,16 +117,7 @@ export default function Home() {
             {t('wallet.connect')}
           </Button>
 
-          <div className="flex items-center justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-muted-foreground">{networkInfo.name}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-              <Sparkles className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">67+ Transaction Types</span>
-            </div>
-          </div>
+
 
           <WalletSelectModal open={showWalletModal} onOpenChange={setShowWalletModal} />
         </div>

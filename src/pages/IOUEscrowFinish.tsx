@@ -1,21 +1,21 @@
 import { useTranslation } from 'react-i18next';
-import { Settings } from 'lucide-react';
-import { AccountSetForm } from '@/components/transaction/AccountSetForm';
+import { Lock } from 'lucide-react';
+import { IOUEscrowFinishForm } from '@/components/transaction/IOUEscrowFinishForm';
 import { TransactionPageWrapper } from '@/components/transaction/TransactionPageWrapper';
 
-export default function AccountSetPage() {
+export default function IOUEscrowFinishPage() {
   const { t } = useTranslation();
 
   return (
     <TransactionPageWrapper
-      title={t('accountset.title')}
-      subtitle={t('accountset.subtitle')}
-      icon={<Settings className="w-5 h-5 text-purple-500" />}
-      iconBgColor="bg-purple-500/10"
-      borderColor="border-purple-500/20"
+      title={t('ioudEscrowFinish.title')}
+      subtitle={t('ioudEscrowFinish.subtitle')}
+      icon={<Lock className="w-5 h-5 text-cyan-500" />}
+      iconBgColor="bg-cyan-500/10"
+      borderColor="border-cyan-500/20"
     >
       {({ address, onSubmit, isSubmitting, isConnected, onConnectWallet }) => (
-        <AccountSetForm
+        <IOUEscrowFinishForm
           account={address}
           onSubmit={(tx) => onSubmit(tx)}
           isSubmitting={isSubmitting}

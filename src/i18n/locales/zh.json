@@ -119,8 +119,29 @@
     "amountInvalid": "金额必须大于0",
     "destinationTagInvalid": "目标标签必须在0到4294967295之间"
   },
+  "offerCreate": {
+    "title": "创建挂单",
+    "subtitle": "在 XRPL DEX 上创建新挂单"
+  },
+  "offerCancel": {
+    "title": "取消挂单",
+    "subtitle": "在 XRPL DEX 上取消现有挂单"
+  },
+  "credentialCreate": {
+    "title": "创建凭证",
+    "subtitle": "为账户签发凭证"
+  },
+  "credentialAccept": {
+    "title": "接受凭证",
+    "subtitle": "接受签发给您的凭证"
+  },
+  "credentialDelete": {
+    "title": "删除凭证",
+    "subtitle": "从账本中移除凭证"
+  },
   "trustset": {
     "title": "信任设置",
+    "subtitle": "创建或修改发行货币的信任线",
     "currency": "货币",
     "currencyHint": "3字母ISO代码（如USD）或40字符十六进制",
     "currencyRequired": "货币代码为必填项",
@@ -136,7 +157,8 @@
   },
   "accountset": {
     "title": "账户设置",
-    "flags": "账户标志",
+    "subtitle": "配置您的 XRPL 账户设置和标志",
+    "flagsTitle": "账户标志",
     "domain": "域名",
     "domainPlaceholder": "example.com",
     "domainHint": "可选的账户域名（将被十六进制编码）",

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HelpCircle, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, HelpCircle, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { buildAccountSet, ACCOUNT_FLAGS } from '@/lib/xrpl/transactions/accountset'
@@ -62,14 +61,20 @@ interface AccountSetFormProps {
   account: string
   onSubmit: (transaction: AccountSet) => void | Promise<void>
   isSubmitting?: boolean
+  isConnected?: boolean
+  onConnectWallet?: () => void
 }
 
 export function AccountSetForm({
   account,
   onSubmit,
   isSubmitting = false,
+  isConnected = true,
+  onConnectWallet,
 }: AccountSetFormProps) {
   const { t } = useTranslation()
+  const [showPreview, setShowPreview] = useState(false)
+  const [transactionJson, setTransactionJson] = useState<AccountSet | null>(null)
   const [formData, setFormData] = useState<AccountSetFormData>({
     flags: {
       defaultRipple: false,
@@ -97,8 +102,34 @@ export function AccountSetForm({
     }))
   }
 
+  const handlePreviewToggle = () => {
+    if (showPreview) {
+      setShowPreview(false)
+      setTransactionJson(null)
+      return
+    }
+
+    const enabledFlags = FLAGS_CONFIG.filter(
+      (config) => formData.flags[config.key as keyof typeof formData.flags]
+    )
+    const setFlag = enabledFlags.length > 0 ? enabledFlags[0].flagValue : undefined
+
+    const tx = buildAccountSet({
+      Account: account,
+      SetFlag: setFlag,
+      Domain: formData.domain || undefined,
+    })
+    setTransactionJson(tx)
+    setShowPreview(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isConnected && onConnectWallet) {
+      onConnectWallet()
+      return
+    }
 
     const enabledFlags = FLAGS_CONFIG.filter(
       (config) => formData.flags[config.key as keyof typeof formData.flags]
@@ -116,10 +147,10 @@ export function AccountSetForm({
   }
 
   return (
-    <TooltipProvider>
+    
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">{t('accountset.flags')}</h3>
+          <h3 className="text-lg font-semibold">{t('accountset.flagsTitle')}</h3>
 
           <div className="space-y-4">
             {FLAGS_CONFIG.map((config) => (
@@ -171,17 +202,65 @@ export function AccountSetForm({
           </p>
         </div>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('common.loading')}
-            </>
-          ) : (
-            t('common.submit')
-          )}
-        </Button>
+      {/* JSON Preview */}
+      {transactionJson && showPreview && (
+        <div className="code-block scanlines">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">
+              Transaction JSON
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
+              className="h-6 text-xs"
+            >
+              Copy
+            </Button>
+          </div>
+          <pre className="text-xs overflow-x-auto">
+            {JSON.stringify(transactionJson, null, 2)}
+          </pre>
+        </div>
+      )}
+
+
+      {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePreviewToggle}
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+          </Button>
+          <Button
+            disabled={isSubmitting}
+            className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {t('common.loading')}
+              </>
+            ) : isConnected ? (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                Sign & Send
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 mr-2" />
+                {t('wallet.connect')}
+              </>
+            )}
+          </Button>
+        </div>
       </form>
-    </TooltipProvider>
+    
   )
 }

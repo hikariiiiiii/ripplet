@@ -1,41 +1,40 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  buildTrustSet,
-  isValidCurrency,
-  isValidXRPLAddress,
-} from '@/lib/xrpl/transactions/trustset'
-import type { TrustSet } from 'xrpl'
+import { buildMPTTransfer, isValidMPTIssuanceID } from '@/lib/xrpl/transactions/mpt'
+import { isValidXRPLAddress } from '@/lib/xrpl/transactions/payment'
+import type { Payment } from 'xrpl'
 
-interface TrustSetFormData {
-  currency: string
-  issuer: string
-  limit: string
+interface MPTTransferFormData {
+  destination: string
+  destinationTag: string
+  mptIssuanceId: string
+  amount: string
+  memo: string
 }
 
-interface TrustSetFormProps {
+interface MPTTransferFormProps {
   account: string
-  onSubmit: (transaction: TrustSet) => void | Promise<void>
+  onSubmit: (transaction: Payment) => void | Promise<void>
   isSubmitting?: boolean
   isConnected?: boolean
   onConnectWallet?: () => void
 }
 
-export function TrustSetForm({
+export function MPTTransferForm({
   account,
   onSubmit,
   isSubmitting = false,
   isConnected = true,
   onConnectWallet,
-}: TrustSetFormProps) {
+}: MPTTransferFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
-  const [transactionJson, setTransactionJson] = useState<TrustSet | null>(null)
+  const [transactionJson, setTransactionJson] = useState<Payment | null>(null)
   const [buildError, setBuildError] = useState<string | null>(null)
 
   const {
@@ -44,11 +43,13 @@ export function TrustSetForm({
     watch,
     trigger,
     formState: { errors },
-  } = useForm<TrustSetFormData>({
+  } = useForm<MPTTransferFormData>({
     defaultValues: {
-      currency: '',
-      issuer: '',
-      limit: '',
+      destination: '',
+      destinationTag: '',
+      mptIssuanceId: '',
+      amount: '',
+      memo: '',
     },
   })
 
@@ -61,163 +62,175 @@ export function TrustSetForm({
       return
     }
 
-    // Validate required fields
-    const isValid = await trigger(['currency', 'issuer', 'limit'])
+    const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
     if (!isValid) return
 
-    // Double check fields have values
-    if (!watchedFields.currency || !watchedFields.issuer || !watchedFields.limit) {
-      return
-    }
-
-    // Check if issuer is same as account
-    if (watchedFields.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
     try {
-      const tx = buildTrustSet({
+      const tx = buildMPTTransfer({
         Account: account,
-        LimitAmount: {
-          currency: watchedFields.currency.toUpperCase(),
-          issuer: watchedFields.issuer,
-          value: watchedFields.limit,
+        Destination: watchedFields.destination,
+        Amount: {
+          mpt_issuance_id: watchedFields.mptIssuanceId,
+          value: watchedFields.amount,
         },
+        DestinationTag: watchedFields.destinationTag ? parseInt(watchedFields.destinationTag, 10) : undefined,
+        Memos: watchedFields.memo
+          ? [{ Memo: { MemoData: watchedFields.memo } }]
+          : undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
       setBuildError(errorMsg)
-      setTransactionJson(null)
     }
   }
 
-  const onFormSubmit = async (data: TrustSetFormData) => {
+  const onFormSubmit = async (data: MPTTransferFormData) => {
     if (!isConnected && onConnectWallet) {
       onConnectWallet()
       return
     }
 
-    // Check if issuer is same as account
-    if (data.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
-    const transaction = buildTrustSet({
-      Account: account,
-      LimitAmount: {
-        currency: data.currency.toUpperCase(),
-        issuer: data.issuer,
-        value: data.limit,
-      },
-    })
-
-    await onSubmit(transaction)
+    try {
+      const transaction = buildMPTTransfer({
+        Account: account,
+        Destination: data.destination,
+        Amount: {
+          mpt_issuance_id: data.mptIssuanceId,
+          value: data.amount,
+        },
+        DestinationTag: data.destinationTag ? parseInt(data.destinationTag, 10) : undefined,
+        Memos: data.memo
+          ? [{ Memo: { MemoData: data.memo } }]
+          : undefined,
+      })
+      await onSubmit(transaction)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
+      setBuildError(errorMsg)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="currency">{t('trustset.currency')}</Label>
+        <Label htmlFor="destination">{t('mptTransfer.destination')}</Label>
         <Input
-          id="currency"
-          type="text"
-          placeholder="USD"
-          maxLength={40}
-          {...register('currency', {
-            required: t('trustset.currencyRequired'),
-            validate: (value: string) => {
-              const upperValue = value.toUpperCase()
-              if (!isValidCurrency(upperValue)) {
-                return t('trustset.currencyInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.currency ? 'border-destructive' : ''}
-        />
-        {errors.currency && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.currency.message}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.currencyHint')}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="issuer">{t('trustset.issuer')}</Label>
-        <Input
-          id="issuer"
+          id="destination"
           type="text"
           placeholder="r..."
-          {...register('issuer', {
-            required: t('trustset.issuerRequired'),
+          className={`font-mono-address text-sm ${errors.destination ? 'border-destructive' : ''}`}
+          {...register('destination', {
+            required: t('mptTransfer.destinationRequired'),
             validate: (value: string) => {
               if (!isValidXRPLAddress(value)) {
-                return t('trustset.issuerInvalid')
+                return t('mptTransfer.destinationInvalid')
               }
               return true
             },
           })}
-          className={errors.issuer ? 'border-destructive' : ''}
         />
-        {errors.issuer && (
+        {errors.destination && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.issuer.message}
+            {errors.destination.message}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.issuerHint')}
-        </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="limit">{t('trustset.limit')}</Label>
+        <Label htmlFor="mptIssuanceId">{t('mptTransfer.mptIssuanceId')}</Label>
         <Input
-          id="limit"
-          type="number"
-          step="any"
-          min="0"
-          placeholder="0.00"
-          {...register('limit', {
-            required: t('trustset.limitRequired'),
+          id="mptIssuanceId"
+          type="text"
+          placeholder="0000..."
+          className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
+          {...register('mptIssuanceId', {
+            required: t('mptTransfer.mptIssuanceIdRequired'),
             validate: (value: string) => {
-              const num = parseFloat(value)
-              if (isNaN(num) || num < 0) {
-                return t('trustset.limitInvalid')
+              if (!isValidMPTIssuanceID(value)) {
+                return t('mptTransfer.mptIssuanceIdInvalid')
               }
               return true
             },
           })}
-          className={errors.limit ? 'border-destructive' : ''}
         />
-        {errors.limit && (
+        {errors.mptIssuanceId && (
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.limit.message}
+            {errors.mptIssuanceId.message}
           </p>
         )}
       </div>
 
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            {t('trustset.limitZeroInfo')}
+      <div className="space-y-2">
+        <Label htmlFor="amount">{t('mptTransfer.amount')}</Label>
+        <Input
+          id="amount"
+          type="text"
+          placeholder="0.00"
+          className={`${errors.amount ? 'border-destructive' : ''}`}
+          {...register('amount', {
+            required: t('mptTransfer.amountRequired'),
+            validate: (value: string) => {
+              const num = parseFloat(value)
+              if (isNaN(num) || num <= 0) {
+                return t('mptTransfer.amountInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.amount && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.amount.message}
           </p>
-        </div>
+        )}
       </div>
 
-      {/* Build Error */}
+      <div className="space-y-2">
+        <Label htmlFor="destinationTag">{t('mptTransfer.destinationTag')}</Label>
+        <Input
+          id="destinationTag"
+          type="number"
+          placeholder={t('mptTransfer.destinationTagPlaceholder')}
+          className={errors.destinationTag ? 'border-destructive' : ''}
+          {...register('destinationTag', {
+            validate: (value: string) => {
+              if (!value) return true
+              const num = parseInt(value, 10)
+              if (isNaN(num) || num < 0 || num > 4294967295) {
+                return t('mptTransfer.destinationTagInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.destinationTag && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.destinationTag.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="memo">{t('mptTransfer.memo')}</Label>
+        <Input
+          id="memo"
+          type="text"
+          placeholder={t('mptTransfer.memoPlaceholder')}
+          className={errors.memo ? 'border-destructive' : ''}
+          {...register('memo')}
+        />
+      </div>
+
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
           <div className="flex items-start gap-3">
@@ -229,7 +242,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* JSON Preview */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
@@ -252,7 +264,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <Button
           type="button"

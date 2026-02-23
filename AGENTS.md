@@ -58,13 +58,13 @@ npm run lint         # Run ESLint
 - Payment ✅ | CheckCreate | CheckCash | CheckCancel | PaymentChannelCreate | PaymentChannelFund | PaymentChannelClaim | DepositPreauth
 
 #### 3. Token/IOU (4 types)
-- TrustSet ✅ | Clawback | OfferCreate | OfferCancel
+- TrustSet ✅ | Clawback | OfferCreate ✅ | OfferCancel ✅ | IOU Payment | IOU EscrowCreate | IOU EscrowFinish
 
 #### 4. NFT (6 types)
 - NFTokenMint | NFTokenBurn | NFTokenCreateOffer | NFTokenAcceptOffer | NFTokenCancelOffer | NFTokenModify
 
 #### 5. MPT (4 types)
-- MPTokenIssuanceCreate | MPTokenIssuanceSet | MPTokenIssuanceDestroy | MPTokenAuthorize
+- MPTokenIssuanceCreate ✅ | MPTokenIssuanceSet ✅ | MPTokenIssuanceDestroy ✅ | MPTokenAuthorize ✅ | MPT Transfer | MPT Lock/Freeze | MPT Clawback | MPT Escrow
 
 #### 6. Credential (3 types)
 - CredentialCreate | CredentialAccept | CredentialDelete
@@ -202,3 +202,128 @@ npm run test:coverage  # Coverage report
 | Crossmark | Browser Extension | window.crossmark |
 | Gemwallet | Browser Extension | window.gemwallet |
 | Xaman | Mobile App | Xaman SDK (requires setup) |
+## Transaction Form UI Guidelines
+
+### Button Layout
+
+All transaction forms MUST follow this button layout pattern:
+
+```
+[Preview Button (optional)] [Submit Button (flex-1)]
+```
+
+- **Preview Button** (optional, left side): Use `variant="outline"`, Eye/EyeOff icon, for complex forms
+- **Submit Button** (right side, takes remaining space): Changes based on connection state
+
+### Submit Button States
+
+The submit button MUST have three states:
+
+1. **Loading State** (`isSubmitting === true`):
+   ```tsx
+   <>
+     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+     {t('common.loading')}
+   </>
+   ```
+
+2. **Connected State** (`isConnected === true`):
+   ```tsx
+   <>
+     <Wallet className="w-4 h-4 mr-2" />
+     Sign & Send
+   </>
+   ```
+
+3. **Disconnected State** (`isConnected === false`):
+   ```tsx
+   <>
+     <Wallet className="w-4 h-4 mr-2" />
+     {t('wallet.connect')}
+   </>
+   ```
+
+**IMPORTANT**: The "Connect Wallet" button MUST NOT validate the form. Only the "Sign & Send" button validates.
+
+### Validation Order
+
+Submit handlers MUST follow this exact order:
+
+```typescript
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+
+  // 1. Connection check FIRST (no validation)
+  if (!isConnected && onConnectWallet) {
+    onConnectWallet()
+    return
+  }
+
+  // 2. Form validation SECOND
+  if (!validateForm()) return
+
+  // 3. Build and submit transaction LAST
+  const transaction = buildTransaction(...)
+  await onSubmit(transaction)
+}
+```
+
+### Destructive Actions
+
+For destructive actions (delete, destroy, cancel, burn), do NOT use `variant="destructive"` on the button.
+
+Instead, use a **warning box** inside the form:
+
+```tsx
+<div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+  <div className="flex items-start gap-3">
+    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+    <div className="space-y-1">
+      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+        {t('xxx.warningTitle')}
+      </p>
+      <ul className="text-sm text-amber-600/80 dark:text-amber-400/80 space-y-1 list-disc list-inside">
+        <li>{t('xxx.warning1')}</li>
+        <li>{t('xxx.warning2')}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+```
+
+The submit button should use the standard green gradient style.
+
+### Form Component Props
+
+All form components MUST accept these props:
+
+```typescript
+interface XxxFormProps {
+  account: string
+  onSubmit: (transaction: TransactionType) => void | Promise<void>
+  isSubmitting?: boolean
+  isConnected?: boolean      // Required for wallet state
+  onConnectWallet?: () => void  // Required for wallet connection
+}
+```
+
+### Input Focus Style
+
+All input fields use white focus highlight (defined in base Input component):
+- `hover:border-white/20` (hover state)
+- `focus-visible:ring-white/20`
+- `focus-visible:border-white/40`
+
+Do NOT override with other colors unless absolutely necessary.
+
+### Standard Submit Button Style
+
+```tsx
+<Button
+  type="submit"
+  disabled={isSubmitting}
+  className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+>
+  {/* button content */}
+</Button>
+```

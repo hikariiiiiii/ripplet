@@ -1,41 +1,38 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  buildTrustSet,
-  isValidCurrency,
-  isValidXRPLAddress,
-} from '@/lib/xrpl/transactions/trustset'
-import type { TrustSet } from 'xrpl'
+import { buildMPTClawback, isValidMPTIssuanceID, type MPTAmount } from '@/lib/xrpl/transactions/mpt'
+import { isValidXRPLAddress } from '@/lib/xrpl/transactions/payment'
+import type { Clawback } from 'xrpl'
 
-interface TrustSetFormData {
-  currency: string
-  issuer: string
-  limit: string
+interface MPTClawbackFormData {
+  holder: string
+  mptIssuanceId: string
+  amount: string
 }
 
-interface TrustSetFormProps {
+interface MPTClawbackFormProps {
   account: string
-  onSubmit: (transaction: TrustSet) => void | Promise<void>
+  onSubmit: (transaction: Clawback) => void | Promise<void>
   isSubmitting?: boolean
   isConnected?: boolean
   onConnectWallet?: () => void
 }
 
-export function TrustSetForm({
+export function MPTClawbackForm({
   account,
   onSubmit,
   isSubmitting = false,
   isConnected = true,
   onConnectWallet,
-}: TrustSetFormProps) {
+}: MPTClawbackFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
-  const [transactionJson, setTransactionJson] = useState<TrustSet | null>(null)
+  const [transactionJson, setTransactionJson] = useState<Clawback | null>(null)
   const [buildError, setBuildError] = useState<string | null>(null)
 
   const {
@@ -44,11 +41,11 @@ export function TrustSetForm({
     watch,
     trigger,
     formState: { errors },
-  } = useForm<TrustSetFormData>({
+  } = useForm<MPTClawbackFormData>({
     defaultValues: {
-      currency: '',
-      issuer: '',
-      limit: '',
+      holder: '',
+      mptIssuanceId: '',
+      amount: '',
     },
   })
 
@@ -61,163 +58,149 @@ export function TrustSetForm({
       return
     }
 
-    // Validate required fields
-    const isValid = await trigger(['currency', 'issuer', 'limit'])
+    const isValid = await trigger(['holder', 'mptIssuanceId', 'amount'])
     if (!isValid) return
 
-    // Double check fields have values
-    if (!watchedFields.currency || !watchedFields.issuer || !watchedFields.limit) {
-      return
-    }
-
-    // Check if issuer is same as account
-    if (watchedFields.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
     try {
-      const tx = buildTrustSet({
+      const amount: MPTAmount = {
+        mpt_issuance_id: watchedFields.mptIssuanceId,
+        value: watchedFields.amount,
+      }
+      
+      const tx = buildMPTClawback({
         Account: account,
-        LimitAmount: {
-          currency: watchedFields.currency.toUpperCase(),
-          issuer: watchedFields.issuer,
-          value: watchedFields.limit,
-        },
+        Holder: watchedFields.holder,
+        Amount: amount,
       })
       setTransactionJson(tx)
       setShowPreview(true)
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
       setBuildError(errorMsg)
-      setTransactionJson(null)
     }
   }
 
-  const onFormSubmit = async (data: TrustSetFormData) => {
+  const onFormSubmit = async (data: MPTClawbackFormData) => {
     if (!isConnected && onConnectWallet) {
       onConnectWallet()
       return
     }
 
-    // Check if issuer is same as account
-    if (data.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
-    }
     setBuildError(null)
 
-    const transaction = buildTrustSet({
-      Account: account,
-      LimitAmount: {
-        currency: data.currency.toUpperCase(),
-        issuer: data.issuer,
-        value: data.limit,
-      },
-    })
-
-    await onSubmit(transaction)
+    try {
+      const amount: MPTAmount = {
+        mpt_issuance_id: data.mptIssuanceId,
+        value: data.amount,
+      }
+      
+      const transaction = buildMPTClawback({
+        Account: account,
+        Holder: data.holder,
+        Amount: amount,
+      })
+      await onSubmit(transaction)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
+      setBuildError(errorMsg)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="currency">{t('trustset.currency')}</Label>
-        <Input
-          id="currency"
-          type="text"
-          placeholder="USD"
-          maxLength={40}
-          {...register('currency', {
-            required: t('trustset.currencyRequired'),
-            validate: (value: string) => {
-              const upperValue = value.toUpperCase()
-              if (!isValidCurrency(upperValue)) {
-                return t('trustset.currencyInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.currency ? 'border-destructive' : ''}
-        />
-        {errors.currency && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.currency.message}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.currencyHint')}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="issuer">{t('trustset.issuer')}</Label>
-        <Input
-          id="issuer"
-          type="text"
-          placeholder="r..."
-          {...register('issuer', {
-            required: t('trustset.issuerRequired'),
-            validate: (value: string) => {
-              if (!isValidXRPLAddress(value)) {
-                return t('trustset.issuerInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.issuer ? 'border-destructive' : ''}
-        />
-        {errors.issuer && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.issuer.message}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {t('trustset.issuerHint')}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="limit">{t('trustset.limit')}</Label>
-        <Input
-          id="limit"
-          type="number"
-          step="any"
-          min="0"
-          placeholder="0.00"
-          {...register('limit', {
-            required: t('trustset.limitRequired'),
-            validate: (value: string) => {
-              const num = parseFloat(value)
-              if (isNaN(num) || num < 0) {
-                return t('trustset.limitInvalid')
-              }
-              return true
-            },
-          })}
-          className={errors.limit ? 'border-destructive' : ''}
-        />
-        {errors.limit && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.limit.message}
-          </p>
-        )}
-      </div>
-
       <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            {t('trustset.limitZeroInfo')}
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+              {t('mptClawback.warningTitle')}
+            </p>
+            <ul className="text-sm text-amber-600/80 dark:text-amber-400/80 space-y-1 list-disc list-inside">
+              <li>Clawback requires the MPT issuance to have clawback enabled</li>
+              <li>Tokens will be returned to the issuer</li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      {/* Build Error */}
+      <div className="space-y-2">
+        <Label htmlFor="holder">{t('mptClawback.holder')}</Label>
+        <Input
+          id="holder"
+          type="text"
+          placeholder="r..."
+          className={`font-mono-address text-sm ${errors.holder ? 'border-destructive' : ''}`}
+          {...register('holder', {
+            required: t('mptClawback.holderRequired'),
+            validate: (value: string) => {
+              if (!isValidXRPLAddress(value)) {
+                return t('mptClawback.holderInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.holder && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.holder.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="mptIssuanceId">{t('mptClawback.mptIssuanceId')}</Label>
+        <Input
+          id="mptIssuanceId"
+          type="text"
+          placeholder="0000..."
+          className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
+          {...register('mptIssuanceId', {
+            required: t('mptClawback.mptIssuanceIdRequired'),
+            validate: (value: string) => {
+              if (!isValidMPTIssuanceID(value)) {
+                return t('mptClawback.mptIssuanceIdInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.mptIssuanceId && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.mptIssuanceId.message}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="amount">{t('mptClawback.amount')}</Label>
+        <Input
+          id="amount"
+          type="text"
+          placeholder="0.00"
+          className={`${errors.amount ? 'border-destructive' : ''}`}
+          {...register('amount', {
+            required: t('mptClawback.amountRequired'),
+            validate: (value: string) => {
+              const num = parseFloat(value)
+              if (isNaN(num) || num <= 0) {
+                return t('mptClawback.amountInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.amount && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.amount.message}
+          </p>
+        )}
+      </div>
+
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
           <div className="flex items-start gap-3">
@@ -229,7 +212,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* JSON Preview */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
@@ -252,7 +234,6 @@ export function TrustSetForm({
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex gap-3">
         <Button
           type="button"
