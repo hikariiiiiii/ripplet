@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
@@ -57,6 +57,32 @@ export function IOUEscrowFinishForm({
   })
 
   const watchedFields = watch()
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['owner', 'offerSequence'])
+      if (!isValid) return
+
+      try {
+        const tx = buildIOUEscrowFinish({
+          Account: account,
+          Owner: watchedFields.owner,
+          OfferSequence: parseInt(watchedFields.offerSequence, 10),
+          Condition: watchedFields.condition || undefined,
+          Fulfillment: watchedFields.fulfillment || undefined,
+        })
+        setTransactionJson(tx)
+        setBuildError(null)
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    }
+
+    validateAndBuild()
+  }, [watchedFields.owner, watchedFields.offerSequence, watchedFields.condition, watchedFields.fulfillment, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

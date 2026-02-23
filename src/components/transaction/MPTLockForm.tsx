@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
@@ -54,6 +54,35 @@ export function MPTLockForm({
   })
 
   const watchedFields = watch()
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['holder', 'mptIssuanceId']);
+      if (!isValid) return;
+
+      try {
+        const flags = watchedFields.action === 'lock' 
+          ? MPT_LOCK_FLAGS.tfMPTLock 
+          : MPT_LOCK_FLAGS.tfMPTUnlock;
+        
+        const tx = buildMPTLock({
+          Account: account,
+          Holder: watchedFields.holder,
+          MPTokenIssuanceID: watchedFields.mptIssuanceId,
+          LockedAmount: watchedFields.lockedAmount || undefined,
+          Flags: flags,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

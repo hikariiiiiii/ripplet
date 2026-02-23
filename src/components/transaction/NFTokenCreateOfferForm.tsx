@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, Loader2, HelpCircle, Wallet, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -101,6 +101,36 @@ export function NFTokenCreateOfferForm({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    if (!validateForm()) return
+
+    try {
+      const amount = formData.amountCurrency === 'XRP'
+        ? formData.amount
+        : {
+            currency: formData.amountCurrency,
+            issuer: formData.amountIssuer,
+            value: formData.amount,
+          }
+
+      const tx = buildNFTokenCreateOffer({
+        Account: account,
+        NFTokenID: formData.nftokenId,
+        Amount: amount,
+        Destination: formData.destination || undefined,
+        Expiration: formData.expiration ? parseInt(formData.expiration, 10) : undefined,
+        Owner: formData.owner || undefined,
+        Flags: formData.isSellOffer ? 1 : 0,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -255,7 +285,7 @@ export function NFTokenCreateOfferForm({
           <Input
             id="amountCurrency"
             type="text"
-            placeholder="XRP or currency code"
+            placeholder="XRP or Currency code"
             className="text-sm"
             value={formData.amountCurrency}
             onChange={(e) =>

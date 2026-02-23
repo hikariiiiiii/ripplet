@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { AlertCircle, Loader2, Eye, EyeOff, HelpCircle, Wallet } from 'lucide-react';
@@ -80,6 +80,36 @@ export function MPTokenIssuanceSetForm({
   });
 
   const watchedFields = watch();
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['mptIssuanceId']);
+      if (!isValid) return;
+
+      try {
+        let flags = 0;
+        for (const config of FLAGS_CONFIG) {
+          if (watchedFields[config.key]) {
+            flags |= config.flagValue;
+          }
+        }
+
+        const tx = buildMPTokenIssuanceSet({
+          Account: account,
+          MPTokenIssuanceID: watchedFields.mptIssuanceId,
+          Flags: flags > 0 ? flags : undefined,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

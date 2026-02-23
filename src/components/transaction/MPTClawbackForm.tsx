@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
@@ -50,6 +50,34 @@ export function MPTClawbackForm({
   })
 
   const watchedFields = watch()
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['holder', 'mptIssuanceId', 'amount']);
+      if (!isValid) return;
+
+      try {
+        const amount: MPTAmount = {
+          mpt_issuance_id: watchedFields.mptIssuanceId,
+          value: watchedFields.amount,
+        };
+        
+        const tx = buildMPTClawback({
+          Account: account,
+          Holder: watchedFields.holder,
+          Amount: amount,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

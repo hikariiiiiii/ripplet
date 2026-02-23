@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -66,6 +66,26 @@ export function EscrowFinishForm({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    if (!validateForm()) return
+
+    try {
+      const tx = buildEscrowFinish({
+        Account: account,
+        Owner: formData.owner,
+        OfferSequence: parseInt(formData.offerSequence, 10),
+        Condition: formData.condition || undefined,
+        Fulfillment: formData.fulfillment || undefined,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
 
   const handlePreviewToggle = () => {
     if (showPreview) {

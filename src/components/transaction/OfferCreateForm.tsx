@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, Loader2, HelpCircle, Wallet, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -108,6 +108,43 @@ export function OfferCreateForm({
     return Object.keys(newErrors).length === 0
   }
 
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    // Validate and build - use the same logic as handlePreviewToggle
+    if (!validateForm()) return
+
+    try {
+      const takerGets = formData.takerGetsCurrency === 'XRP'
+        ? formData.takerGetsAmount
+        : {
+            currency: formData.takerGetsCurrency,
+            issuer: formData.takerGetsIssuer,
+            value: formData.takerGetsAmount,
+          }
+
+      const takerPays = formData.takerPaysCurrency === 'XRP'
+        ? formData.takerPaysAmount
+        : {
+            currency: formData.takerPaysCurrency,
+            issuer: formData.takerPaysIssuer,
+            value: formData.takerPaysAmount,
+          }
+
+      const tx = buildOfferCreate({
+        Account: account,
+        TakerGets: takerGets,
+        TakerPays: takerPays,
+        Expiration: formData.expiration ? parseInt(formData.expiration, 10) : undefined,
+        OfferSequence: formData.offerSequence ? parseInt(formData.offerSequence, 10) : undefined,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
+
   const handlePreviewToggle = () => {
     if (showPreview) {
       setShowPreview(false)
@@ -191,7 +228,7 @@ export function OfferCreateForm({
     
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/20">
-          <h3 className="text-base font-semibold text-xrpl-green">You Offer (Taker Gets)</h3>
+          <h3 className="text-base font-semibold text-white">You Offer (Taker Gets)</h3>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -221,7 +258,7 @@ export function OfferCreateForm({
             <Input
               id="takerGetsCurrency"
               type="text"
-              placeholder="XRP or currency code"
+              placeholder="XRP or Currency code"
               className="text-sm"
               value={formData.takerGetsCurrency}
               onChange={(e) =>
@@ -289,7 +326,7 @@ export function OfferCreateForm({
             <Input
               id="takerPaysCurrency"
               type="text"
-              placeholder="XRP or currency code"
+              placeholder="XRP or Currency code"
               className="text-sm"
               value={formData.takerPaysCurrency}
               onChange={(e) =>

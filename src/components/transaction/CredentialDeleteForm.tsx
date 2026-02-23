@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, Loader2, HelpCircle, Wallet, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -70,6 +70,25 @@ export function CredentialDeleteForm({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    if (!validateForm()) return
+
+    try {
+      const tx = buildCredentialDelete({
+        Account: account,
+        CredentialType: formData.credentialType,
+        Subject: formData.deleteMode === 'issuer' ? formData.targetAddress : undefined,
+        Issuer: formData.deleteMode === 'subject' ? formData.targetAddress : undefined,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
 
   const handlePreviewToggle = () => {
     if (showPreview) {

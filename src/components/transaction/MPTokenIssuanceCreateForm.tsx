@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, EyeOff, HelpCircle, Wallet } from 'lucide-react';
@@ -124,6 +124,39 @@ export function MPTokenIssuanceCreateForm({
   });
 
   const watchedFields = watch();
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger();
+      if (!isValid) return;
+
+      try {
+        let flags = 0;
+        for (const config of FLAGS_CONFIG) {
+          if (watchedFields[config.key]) {
+            flags |= config.flagValue;
+          }
+        }
+
+        const tx = buildMPTokenIssuanceCreate({
+          Account: account,
+          AssetScale: watchedFields.assetScale ? parseInt(watchedFields.assetScale, 10) : undefined,
+          MaximumAmount: watchedFields.maximumAmount || undefined,
+          TransferFee: watchedFields.transferFee ? parseInt(watchedFields.transferFee, 10) : undefined,
+          MPTokenMetadata: watchedFields.metadata || undefined,
+          Flags: flags > 0 ? flags : undefined,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

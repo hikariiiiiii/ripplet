@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import {
@@ -64,6 +64,37 @@ export function PaymentForm({
   });
 
   const watchedFields = watch();
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      // Validate required fields only
+      const isValid = await trigger(['destination', 'amount']);
+      if (!isValid) return;
+
+      try {
+        const drops = xrpToDrops(watchedFields.amount);
+        const tx = buildPayment({
+          Account: account,
+          Destination: watchedFields.destination,
+          Amount: drops,
+          DestinationTag: watchedFields.destinationTag
+            ? parseInt(watchedFields.destinationTag, 10)
+            : undefined,
+          Memos: watchedFields.memo
+            ? [{ data: watchedFields.memo }]
+            : undefined,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -167,7 +198,7 @@ export function PaymentForm({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="amount" className="text-sm font-medium">
-            {t('payment.amount')} (XRP)
+            {t('payment.amount')}
           </Label>
           {errors.amount && (
             <span className="text-xs text-destructive flex items-center gap-1">

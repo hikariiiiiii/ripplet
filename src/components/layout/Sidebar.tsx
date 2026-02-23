@@ -77,10 +77,10 @@ const navSections: NavSection[] = [
       { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
       { to: '/iou/payment', icon: Coins, labelKey: 'nav.iouPayment' },
       { to: '/iou/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
-      { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
-      { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },
       { to: '/iou/escrow/create', icon: Lock, labelKey: 'nav.iouEscrowCreate' },
       { to: '/iou/escrow/finish', icon: Lock, labelKey: 'nav.iouEscrowFinish' },
+      { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
+      { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },
     ],
   },
   {

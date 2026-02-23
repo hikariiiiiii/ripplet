@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, Eye, EyeOff, HelpCircle, AlertTriangle, Wallet } from 'lucide-react';
@@ -51,6 +51,28 @@ export function MPTokenIssuanceDestroyForm({
   });
 
   const watchedFields = watch();
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return;
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['mptIssuanceId']);
+      if (!isValid) return;
+
+      try {
+        const tx = buildMPTokenIssuanceDestroy({
+          Account: account,
+          MPTokenIssuanceID: watchedFields.mptIssuanceId,
+        });
+        setTransactionJson(tx);
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    };
+
+    validateAndBuild();
+  }, [watchedFields, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff, HelpCircle, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -101,6 +101,28 @@ export function AccountSetForm({
       domain: value,
     }))
   }
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  // Note: AccountSet has no required fields, so we always build when preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    try {
+      const enabledFlags = FLAGS_CONFIG.filter(
+        (config) => formData.flags[config.key as keyof typeof formData.flags]
+      )
+      const setFlag = enabledFlags.length > 0 ? enabledFlags[0].flagValue : undefined
+
+      const tx = buildAccountSet({
+        Account: account,
+        SetFlag: setFlag,
+        Domain: formData.domain || undefined,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
 
   const handlePreviewToggle = () => {
     if (showPreview) {

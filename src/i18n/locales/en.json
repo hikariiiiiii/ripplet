@@ -179,7 +179,8 @@
     "cancelAfterHint": "The ledger index after which the escrow can be cancelled",
     "condition": "Condition",
     "conditionPlaceholder": "Hex-encoded crypto-condition",
-    "conditionHint": "Optional: A hex-encoded crypto-condition that must be met to finish"
+    "conditionHint": "Optional: A hex-encoded crypto-condition that must be met to finish",
+    "ledgerIndexInvalid": "Ledger index must be a valid positive integer"
   },
   "ioudEscrowFinish": {
     "title": "Finish IOU Escrow",
@@ -245,7 +246,8 @@
     "mptIssuanceIdInvalid": "MPT Issuance ID must be a 48-character hexadecimal string",
     "amount": "Amount",
     "amountRequired": "Amount is required",
-    "amountInvalid": "Amount must be greater than 0"
+    "amountInvalid": "Amount must be greater than 0",
+    "warningTitle": "Warning: Irreversible Action"
   },
   "offerCreate": {
     "title": "Create Offer",
@@ -364,6 +366,36 @@
     "createEscrow": "Create Escrow",
     "finishEscrow": "Finish Escrow",
     "cancelEscrow": "Cancel Escrow"
+  },
+  "mpt": {
+    "create": {
+      "title": "Create MPT",
+      "subtitle": "Issue a new MPToken issuance"
+    },
+    "set": {
+      "title": "Modify MPT",
+      "subtitle": "Update MPT issuance flags"
+    },
+    "destroy": {
+      "title": "Destroy MPT",
+      "subtitle": "Permanently remove an MPT issuance"
+    },
+    "authorize": {
+      "title": "Authorize MPT",
+      "subtitle": "Authorize holders or opt-in to hold an MPT"
+    }
+  },
+  "nftMint": {
+    "title": "Mint NFT"
+  },
+  "nftBurn": {
+    "title": "Burn NFT"
+  },
+  "nftCreateOffer": {
+    "title": "Create NFT Offer"
+  },
+  "nftAcceptOffer": {
+    "title": "Accept NFT Offer"
   },
   "toast": {
     "networkChanged": "Network Changed",

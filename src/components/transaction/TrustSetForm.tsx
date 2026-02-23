@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
@@ -53,6 +53,38 @@ export function TrustSetForm({
   })
 
   const watchedFields = watch()
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['currency', 'issuer', 'limit'])
+      if (!isValid) return
+
+      // Check if issuer is same as account
+      if (watchedFields.issuer === account) {
+        return
+      }
+
+      try {
+        const tx = buildTrustSet({
+          Account: account,
+          LimitAmount: {
+            currency: watchedFields.currency.toUpperCase(),
+            issuer: watchedFields.issuer,
+            value: watchedFields.limit,
+          },
+        })
+        setTransactionJson(tx)
+        setBuildError(null)
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    }
+
+    validateAndBuild()
+  }, [watchedFields.currency, watchedFields.issuer, watchedFields.limit, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -127,7 +159,7 @@ export function TrustSetForm({
         <Input
           id="currency"
           type="text"
-          placeholder="USD"
+          placeholder="Currency code (e.g., USD)"
           maxLength={40}
           {...register('currency', {
             required: t('trustset.currencyRequired'),

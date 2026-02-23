@@ -194,7 +194,7 @@ export function IOUPaymentForm({
           <Input
             id="currency"
             type="text"
-            placeholder="USD"
+            placeholder="Currency code (e.g., USD)"
             className={`uppercase ${errors.currency ? 'border-destructive' : ''}`}
             {...register('currency', {
               required: t('ioudPayment.currencyRequired'),

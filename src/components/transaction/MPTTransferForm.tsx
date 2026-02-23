@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
-import { AlertCircle, Loader2, Eye, EyeOff, Wallet } from 'lucide-react'
+import { AlertCircle, Loader2, Eye, EyeOff, Wallet, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +34,7 @@ export function MPTTransferForm({
 }: MPTTransferFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [transactionJson, setTransactionJson] = useState<Payment | null>(null)
   const [buildError, setBuildError] = useState<string | null>(null)
 
@@ -54,6 +55,36 @@ export function MPTTransferForm({
   })
 
   const watchedFields = watch()
+
+  // Auto-refresh Transaction JSON when form changes and preview is open
+  useEffect(() => {
+    if (!showPreview) return
+
+    const validateAndBuild = async () => {
+      const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
+      if (!isValid) return
+
+      try {
+        const tx = buildMPTTransfer({
+          Account: account,
+          Destination: watchedFields.destination,
+          Amount: {
+            mpt_issuance_id: watchedFields.mptIssuanceId,
+            value: watchedFields.amount,
+          },
+          DestinationTag: watchedFields.destinationTag ? parseInt(watchedFields.destinationTag, 10) : undefined,
+          Memos: watchedFields.memo
+            ? [{ Memo: { MemoData: watchedFields.memo } }]
+            : undefined,
+        })
+        setTransactionJson(tx)
+      } catch {
+        // Silent fail on auto-refresh
+      }
+    }
+
+    validateAndBuild()
+  }, [watchedFields, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -194,42 +225,57 @@ export function MPTTransferForm({
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="destinationTag">{t('mptTransfer.destinationTag')}</Label>
-        <Input
-          id="destinationTag"
-          type="number"
-          placeholder={t('mptTransfer.destinationTagPlaceholder')}
-          className={errors.destinationTag ? 'border-destructive' : ''}
-          {...register('destinationTag', {
-            validate: (value: string) => {
-              if (!value) return true
-              const num = parseInt(value, 10)
-              if (isNaN(num) || num < 0 || num > 4294967295) {
-                return t('mptTransfer.destinationTagInvalid')
-              }
-              return true
-            },
-          })}
-        />
-        {errors.destinationTag && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.destinationTag.message}
-          </p>
-        )}
-      </div>
+      {/* Advanced Options Toggle */}
+      <button
+        type="button"
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        <span>Advanced Options</span>
+      </button>
 
-      <div className="space-y-2">
-        <Label htmlFor="memo">{t('mptTransfer.memo')}</Label>
-        <Input
-          id="memo"
-          type="text"
-          placeholder={t('mptTransfer.memoPlaceholder')}
-          className={errors.memo ? 'border-destructive' : ''}
-          {...register('memo')}
-        />
-      </div>
+      {/* Advanced Options */}
+      {showAdvanced && (
+        <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
+          <div className="space-y-2">
+            <Label htmlFor="destinationTag">{t('mptTransfer.destinationTag')}</Label>
+            <Input
+              id="destinationTag"
+              type="number"
+              placeholder={t('mptTransfer.destinationTagPlaceholder')}
+              className={errors.destinationTag ? 'border-destructive' : ''}
+              {...register('destinationTag', {
+                validate: (value: string) => {
+                  if (!value) return true
+                  const num = parseInt(value, 10)
+                  if (isNaN(num) || num < 0 || num > 4294967295) {
+                    return t('mptTransfer.destinationTagInvalid')
+                  }
+                  return true
+                },
+              })}
+            />
+            {errors.destinationTag && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.destinationTag.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="memo">{t('mptTransfer.memo')}</Label>
+            <Input
+              id="memo"
+              type="text"
+              placeholder={t('mptTransfer.memoPlaceholder')}
+              className={errors.memo ? 'border-destructive' : ''}
+              {...register('memo')}
+            />
+          </div>
+        </div>
+      )}
 
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">

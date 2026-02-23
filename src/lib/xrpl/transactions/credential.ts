@@ -85,7 +85,13 @@ export function toHex(str: string): string {
   if (isHexString(str)) {
     return str.toUpperCase()
   }
-  return Buffer.from(str).toString('hex').toUpperCase()
+  // Browser-compatible hex encoding using TextEncoder
+  const encoder = new TextEncoder()
+  const bytes = encoder.encode(str)
+  return Array.from(bytes)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()
 }
 
 /**

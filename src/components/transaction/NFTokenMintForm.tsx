@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertCircle, Loader2, HelpCircle, Wallet, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -84,6 +84,33 @@ export function NFTokenMintForm({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Auto-refresh transaction JSON when form content changes and Preview is enabled
+  useEffect(() => {
+    if (!showPreview) return
+
+    if (!validateForm()) return
+
+    try {
+      let flags = 0
+      if (formData.burnable) flags |= NFT_FLAGS.tfBurnable
+      if (formData.onlyXrp) flags |= NFT_FLAGS.tfOnlyXRP
+      if (formData.trustLine) flags |= NFT_FLAGS.tfTrustLine
+      if (formData.transferable) flags |= NFT_FLAGS.tfTransferable
+
+      const tx = buildNFTokenMint({
+        Account: account,
+        NFTokenTaxon: parseInt(formData.nftokenTaxon, 10),
+        URI: formData.uri || undefined,
+        Flags: flags,
+        TransferFee: formData.transferFee ? parseInt(formData.transferFee, 10) : undefined,
+        Issuer: formData.issuer || undefined,
+      })
+      setTransactionJson(tx)
+    } catch {
+      // Silent fail on auto-refresh
+    }
+  }, [formData, showPreview, account])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

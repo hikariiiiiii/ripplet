@@ -115,8 +115,13 @@ export function buildAccountSet(params: AccountSetParams): AccountSet {
   }
 
   if (Domain !== undefined) {
-    // Hex encode the domain
-    transaction.Domain = Buffer.from(Domain).toString('hex').toUpperCase()
+    // Hex encode the domain (browser-compatible)
+    const encoder = new TextEncoder()
+    const bytes = encoder.encode(Domain)
+    transaction.Domain = Array.from(bytes)
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
   }
 
   if (TransferRate !== undefined) {

@@ -152,18 +152,25 @@ export function createMemo(
   type?: string,
   format?: string,
 ): { Memo: { MemoData?: string; MemoType?: string; MemoFormat?: string } } {
+  // Browser-compatible hex encoding
+  const encoder = new TextEncoder()
+  const toHex = (str: string) =>
+    Array.from(encoder.encode(str))
+      .map(byte => byte.toString(16).padStart(2, '0'))
+      .join('')
+
   const memo: { Memo: { MemoData?: string; MemoType?: string; MemoFormat?: string } } = {
     Memo: {
-      MemoData: Buffer.from(data).toString('hex'),
+      MemoData: toHex(data),
     },
   }
 
   if (type) {
-    memo.Memo.MemoType = Buffer.from(type).toString('hex')
+    memo.Memo.MemoType = toHex(type)
   }
 
   if (format) {
-    memo.Memo.MemoFormat = Buffer.from(format).toString('hex')
+    memo.Memo.MemoFormat = toHex(format)
   }
 
   return memo
