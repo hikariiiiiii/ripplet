@@ -1,4 +1,4 @@
-import type { NFTokenMint, NFTokenBurn, NFTokenCreateOffer, NFTokenAcceptOffer } from 'xrpl'
+import type { NFTokenMint, NFTokenBurn, NFTokenCreateOffer, NFTokenAcceptOffer, NFTokenCancelOffer } from 'xrpl'
 import type { BaseTransactionParams } from './types'
 
 function isValidAddress(address: string): boolean {
@@ -215,6 +215,46 @@ export function buildNFTokenAcceptOffer(params: NFTokenAcceptOfferParams): NFTok
   if (NFTokenSellOffer !== undefined) transaction.NFTokenSellOffer = NFTokenSellOffer
   if (NFTokenBuyOffer !== undefined) transaction.NFTokenBuyOffer = NFTokenBuyOffer
   if (NFTokenBrokerFee !== undefined) transaction.NFTokenBrokerFee = NFTokenBrokerFee
+  if (Fee !== undefined) transaction.Fee = Fee
+  if (Sequence !== undefined) transaction.Sequence = Sequence
+  if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence
+  if (Memos !== undefined) transaction.Memos = Memos
+  if (Signers !== undefined) transaction.Signers = Signers
+  if (SigningPubKey !== undefined) transaction.SigningPubKey = SigningPubKey
+  if (SourceTag !== undefined) transaction.SourceTag = SourceTag
+  if (TxnSignature !== undefined) transaction.TxnSignature = TxnSignature
+
+  return transaction
+}
+
+export interface NFTokenCancelOfferParams extends BaseTransactionParams {
+  NFTokenOffers: string[]
+}
+
+export function buildNFTokenCancelOffer(params: NFTokenCancelOfferParams): NFTokenCancelOffer {
+  const {
+    Account,
+    NFTokenOffers,
+    Fee,
+    Sequence,
+    LastLedgerSequence,
+    Memos,
+    Signers,
+    SigningPubKey,
+    SourceTag,
+    TxnSignature,
+  } = params
+
+  if (!NFTokenOffers || NFTokenOffers.length === 0) {
+    throw new Error('At least one NFTokenOffer is required')
+  }
+
+  const transaction: NFTokenCancelOffer = {
+    TransactionType: 'NFTokenCancelOffer',
+    Account,
+    NFTokenOffers,
+  }
+
   if (Fee !== undefined) transaction.Fee = Fee
   if (Sequence !== undefined) transaction.Sequence = Sequence
   if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence

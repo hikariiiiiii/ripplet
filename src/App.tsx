@@ -22,11 +22,15 @@ import NFTokenMint from '@/pages/NFTokenMint';
 import NFTokenBurn from '@/pages/NFTokenBurn';
 import NFTokenCreateOffer from '@/pages/NFTokenCreateOffer';
 import NFTokenAcceptOffer from '@/pages/NFTokenAcceptOffer';
+import NFTokenCancelOffer from '@/pages/NFTokenCancelOffer';
 import IOUPayment from '@/pages/IOUPayment';
 import IOUEscrowCreate from '@/pages/IOUEscrowCreate';
 import IOUEscrowFinish from '@/pages/IOUEscrowFinish';
+import IOUEscrowCancel from '@/pages/IOUEscrowCancel';
 import MPTTransfer from '@/pages/MPTTransfer';
 import MPTEscrowCreate from '@/pages/MPTEscrowCreate';
+import MPTEscrowFinish from '@/pages/MPTEscrowFinish';
+import MPTEscrowCancel from '@/pages/MPTEscrowCancel';
 import MPTLock from '@/pages/MPTLock';
 import MPTClawback from '@/pages/MPTClawback';
 import { useWalletEvents } from '@/hooks/useWalletEvents';
@@ -55,6 +59,7 @@ export default function App() {
           <Route path="iou/payment" element={<IOUPayment />} />
           <Route path="iou/escrow/create" element={<IOUEscrowCreate />} />
           <Route path="iou/escrow/finish" element={<IOUEscrowFinish />} />
+          <Route path="iou/escrow/cancel" element={<IOUEscrowCancel />} />
           <Route path="iou/offercancel" element={<OfferCancel />} />
           <Route path="mpt/create" element={<MPTokenIssuanceCreate />} />
           <Route path="mpt/set" element={<MPTokenIssuanceSet />} />
@@ -62,6 +67,8 @@ export default function App() {
           <Route path="mpt/authorize" element={<MPTokenAuthorize />} />
           <Route path="mpt/transfer" element={<MPTTransfer />} />
           <Route path="mpt/escrow/create" element={<MPTEscrowCreate />} />
+          <Route path="mpt/escrow/finish" element={<MPTEscrowFinish />} />
+          <Route path="mpt/escrow/cancel" element={<MPTEscrowCancel />} />
           <Route path="mpt/lock" element={<MPTLock />} />
           <Route path="mpt/clawback" element={<MPTClawback />} />
           <Route path="credential/create" element={<CredentialCreate />} />
@@ -71,6 +78,7 @@ export default function App() {
           <Route path="nft/burn" element={<NFTokenBurn />} />
           <Route path="nft/createoffer" element={<NFTokenCreateOffer />} />
           <Route path="nft/acceptoffer" element={<NFTokenAcceptOffer />} />
+          <Route path="nft/offercancel" element={<NFTokenCancelOffer />} />
         </Route>
       </Routes>
       <Toaster />
