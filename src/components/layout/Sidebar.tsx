@@ -5,6 +5,7 @@ import {
   Coins, 
   Link2, 
   User,
+  Trash2,
   Layers,
   Box,
   Shield,
@@ -16,8 +17,17 @@ import {
   ExternalLink,
   Globe,
   Droplets,
-  BookOpen
+  BookOpen,
+  Lock,
+  CheckCircle,
+  Settings,
+  UserCheck,
+  PlusCircle,
+  XCircle,
+  Flame,
+  Tags
 } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { useState, useMemo } from 'react';
 
@@ -46,6 +56,7 @@ const navSections: NavSection[] = [
     titleKey: 'nav.account',
     items: [
       { to: '/account/accountset', icon: User, labelKey: 'nav.accountSet' },
+      { to: '/account/accountdelete', icon: Trash2, labelKey: 'nav.accountDelete' },
       { to: undefined, icon: Shield, labelKey: 'nav.security', comingSoon: true },
     ],
   },
@@ -53,6 +64,9 @@ const navSections: NavSection[] = [
     titleKey: 'nav.xrp',
     items: [
       { to: '/xrp/payment', icon: Coins, labelKey: 'nav.payment' },
+      { to: '/xrp/escrow/create', icon: Lock, labelKey: 'nav.escrowCreate' },
+      { to: '/xrp/escrow/finish', icon: Lock, labelKey: 'nav.escrowFinish' },
+      { to: '/xrp/escrow/cancel', icon: Lock, labelKey: 'nav.escrowCancel' },
     ],
   },
   {
@@ -60,25 +74,34 @@ const navSections: NavSection[] = [
     items: [
       { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
       { to: '/iou/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
-      { to: undefined, icon: TrendingUp, labelKey: 'nav.offers', comingSoon: true },
+      { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
+      { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },
     ],
   },
   {
     titleKey: 'nav.mpt',
     items: [
-      { to: undefined, icon: Box, labelKey: 'nav.mpt', comingSoon: true },
+      { to: '/mpt/create', icon: Box, labelKey: 'nav.mptCreate' },
+      { to: '/mpt/set', icon: Settings, labelKey: 'nav.mptSet' },
+      { to: '/mpt/destroy', icon: Trash2, labelKey: 'nav.mptDestroy' },
+      { to: '/mpt/authorize', icon: UserCheck, labelKey: 'nav.mptAuthorize' },
     ],
   },
   {
     titleKey: 'nav.nft',
     items: [
-      { to: undefined, icon: Layers, labelKey: 'nav.nft', comingSoon: true },
+      { to: '/nft/mint', icon: Layers, labelKey: 'nav.nftMint' },
+      { to: '/nft/burn', icon: Flame, labelKey: 'nav.nftBurn' },
+      { to: '/nft/createoffer', icon: Tags, labelKey: 'nav.nftCreateOffer' },
+      { to: '/nft/acceptoffer', icon: CheckCircle, labelKey: 'nav.nftAcceptOffer' },
     ],
   },
   {
     titleKey: 'nav.credential',
     items: [
-      { to: undefined, icon: BadgeCheck, labelKey: 'nav.credential', comingSoon: true },
+      { to: '/credential/create', icon: BadgeCheck, labelKey: 'nav.credentialCreate' },
+      { to: '/credential/accept', icon: CheckCircle, labelKey: 'nav.credentialAccept' },
+      { to: '/credential/delete', icon: Trash2, labelKey: 'nav.credentialDelete' },
     ],
   },
   {
