@@ -159,7 +159,7 @@ export function TrustSetForm({
         <Input
           id="currency"
           type="text"
-          placeholder="Currency code (e.g., USD)"
+          placeholder="Currency code"
           maxLength={40}
           {...register('currency', {
             required: t('trustset.currencyRequired'),

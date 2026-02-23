@@ -10,22 +10,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { buildIOUEscrowCreate } from '@/lib/xrpl/transactions/escrow'
+import { buildMPTEscrowCreate } from '@/lib/xrpl/transactions/escrow'
 import { isValidXRPLAddress } from '@/lib/xrpl/transactions/payment'
 import type { EscrowCreate } from 'xrpl'
 
-interface IOUEscrowCreateFormData {
+interface MPTEscrowCreateFormData {
   destination: string
   destinationTag: string
-  currency: string
-  issuer: string
+  mptIssuanceId: string
   amount: string
   finishAfter: string
   cancelAfter: string
   condition: string
 }
 
-interface IOUEscrowCreateFormProps {
+interface MPTEscrowCreateFormProps {
   account: string
   onSubmit: (transaction: EscrowCreate) => void | Promise<void>
   isSubmitting?: boolean
@@ -33,13 +32,13 @@ interface IOUEscrowCreateFormProps {
   onConnectWallet?: () => void
 }
 
-export function IOUEscrowCreateForm({
+export function MPTEscrowCreateForm({
   account,
   onSubmit,
   isSubmitting = false,
   isConnected = true,
   onConnectWallet,
-}: IOUEscrowCreateFormProps) {
+}: MPTEscrowCreateFormProps) {
   const { t } = useTranslation()
   const [showPreview, setShowPreview] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -52,12 +51,11 @@ export function IOUEscrowCreateForm({
     watch,
     trigger,
     formState: { errors },
-  } = useForm<IOUEscrowCreateFormData>({
+  } = useForm<MPTEscrowCreateFormData>({
     defaultValues: {
       destination: '',
       destinationTag: '',
-      currency: '',
-      issuer: '',
+      mptIssuanceId: '',
       amount: '',
       finishAfter: '',
       cancelAfter: '',
@@ -72,7 +70,7 @@ export function IOUEscrowCreateForm({
     if (!showPreview) return
 
     const validateAndBuild = async () => {
-      const isValid = await trigger(['destination', 'currency', 'issuer', 'amount'])
+      const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
       if (!isValid) return
 
       try {
@@ -87,12 +85,11 @@ export function IOUEscrowCreateForm({
           if (finishAfterValue >= cancelAfterValue) return
         }
 
-        const tx = buildIOUEscrowCreate({
+        const tx = buildMPTEscrowCreate({
           Account: account,
           Destination: watchedFields.destination,
           Amount: {
-            currency: watchedFields.currency,
-            issuer: watchedFields.issuer,
+            mpt_issuance_id: watchedFields.mptIssuanceId,
             value: watchedFields.amount,
           },
           DestinationTag: watchedFields.destinationTag
@@ -118,7 +115,7 @@ export function IOUEscrowCreateForm({
       return
     }
 
-    const isValid = await trigger(['destination', 'currency', 'issuer', 'amount'])
+    const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
     if (!isValid) return
 
     setBuildError(null)
@@ -134,17 +131,16 @@ export function IOUEscrowCreateForm({
       // Validate finishAfter < cancelAfter if both provided
       if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
         if (finishAfterValue >= cancelAfterValue) {
-          setBuildError(t('ioudEscrowCreate.finishAfterInvalid'))
+          setBuildError(t('mptEscrowCreate.finishAfterInvalid'))
           return
         }
       }
 
-      const tx = buildIOUEscrowCreate({
+      const tx = buildMPTEscrowCreate({
         Account: account,
         Destination: watchedFields.destination,
         Amount: {
-          currency: watchedFields.currency,
-          issuer: watchedFields.issuer,
+          mpt_issuance_id: watchedFields.mptIssuanceId,
           value: watchedFields.amount,
         },
         DestinationTag: watchedFields.destinationTag
@@ -162,7 +158,7 @@ export function IOUEscrowCreateForm({
     }
   }
 
-  const onFormSubmit = async (data: IOUEscrowCreateFormData) => {
+  const onFormSubmit = async (data: MPTEscrowCreateFormData) => {
     if (!isConnected && onConnectWallet) {
       onConnectWallet()
       return
@@ -181,17 +177,16 @@ export function IOUEscrowCreateForm({
       // Validate finishAfter < cancelAfter if both provided
       if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
         if (finishAfterValue >= cancelAfterValue) {
-          setBuildError(t('ioudEscrowCreate.finishAfterInvalid'))
+          setBuildError(t('mptEscrowCreate.finishAfterInvalid'))
           return
         }
       }
 
-      const transaction = buildIOUEscrowCreate({
+      const transaction = buildMPTEscrowCreate({
         Account: account,
         Destination: data.destination,
         Amount: {
-          currency: data.currency,
-          issuer: data.issuer,
+          mpt_issuance_id: data.mptIssuanceId,
           value: data.amount,
         },
         DestinationTag: data.destinationTag
@@ -211,17 +206,17 @@ export function IOUEscrowCreateForm({
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="destination">{t('ioudEscrowCreate.destination')}</Label>
+        <Label htmlFor="destination">{t('mptEscrowCreate.destination')}</Label>
         <Input
           id="destination"
           type="text"
           placeholder="r..."
           className={`font-mono-address text-sm ${errors.destination ? 'border-destructive' : ''}`}
           {...register('destination', {
-            required: t('ioudEscrowCreate.destinationRequired'),
+            required: t('mptEscrowCreate.destinationRequired'),
             validate: (value: string) => {
               if (!isValidXRPLAddress(value)) {
-                return t('ioudEscrowCreate.destinationInvalid')
+                return t('mptEscrowCreate.destinationInvalid')
               }
               return true
             },
@@ -235,91 +230,54 @@ export function IOUEscrowCreateForm({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="currency">{t('ioudEscrowCreate.currency')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>3-40 character token symbol (e.g., USD, BTC, XRP)</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="currency"
-            type="text"
-            placeholder="Currency code"
-            className={`${errors.currency ? 'border-destructive' : ''}`}
-            {...register('currency', {
-              required: t('ioudEscrowCreate.currencyRequired'),
-              validate: (value: string) => {
-                if (value.length < 3 || value.length > 40) {
-                  return t('ioudEscrowCreate.currencyInvalid')
-                }
-                return true
-              },
-            })}
-          />
-          {errors.currency && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.currency.message}
-            </p>
-          )}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="mptIssuanceId">{t('mptEscrowCreate.mptIssuanceId')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>48-character hex string identifying the MPT issuance</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="issuer">{t('ioudEscrowCreate.issuer')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{t('ioudEscrowCreate.issuerHint')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="issuer"
-            type="text"
-            placeholder="r..."
-            className={`font-mono-address text-sm ${errors.issuer ? 'border-destructive' : ''}`}
-            {...register('issuer', {
-              required: t('ioudEscrowCreate.issuerRequired'),
-              validate: (value: string) => {
-                if (!isValidXRPLAddress(value)) {
-                  return t('ioudEscrowCreate.issuerInvalid')
-                }
-                return true
-              },
-            })}
-          />
-          {errors.issuer && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.issuer.message}
-            </p>
-          )}
-        </div>
+        <Input
+          id="mptIssuanceId"
+          type="text"
+          placeholder="00070C4495F14B0E44F78A264E41713C64B5F89242540EE255534400000000000000"
+          className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
+          {...register('mptIssuanceId', {
+            required: t('mptEscrowCreate.mptIssuanceIdRequired'),
+            validate: (value: string) => {
+              if (value.length !== 48 || !/^[0-9A-Fa-f]+$/.test(value)) {
+                return t('mptEscrowCreate.mptIssuanceIdInvalid')
+              }
+              return true
+            },
+          })}
+        />
+        {errors.mptIssuanceId && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.mptIssuanceId.message}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">{t('ioudEscrowCreate.amount')}</Label>
+        <Label htmlFor="amount">{t('mptEscrowCreate.amount')}</Label>
         <Input
           id="amount"
           type="text"
           placeholder="0.00"
           className={`${errors.amount ? 'border-destructive' : ''}`}
           {...register('amount', {
-            required: t('ioudEscrowCreate.amountRequired'),
+            required: t('mptEscrowCreate.amountRequired'),
             validate: (value: string) => {
               const num = parseFloat(value)
               if (isNaN(num) || num <= 0) {
-                return t('ioudEscrowCreate.amountInvalid')
+                return t('mptEscrowCreate.amountInvalid')
               }
               return true
             },
@@ -329,6 +287,107 @@ export function IOUEscrowCreateForm({
           <p className="text-sm text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             {errors.amount.message}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="finishAfter">{t('mptEscrowCreate.finishAfter')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('mptEscrowCreate.finishAfterHint')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Input
+            id="finishAfter"
+            type="number"
+            placeholder={t('mptEscrowCreate.finishAfterPlaceholder')}
+            className={errors.finishAfter ? 'border-destructive' : ''}
+            {...register('finishAfter', {
+              validate: (value: string) => {
+                if (!value) return true
+                const num = parseInt(value, 10)
+                if (isNaN(num) || num < 0) {
+                  return t('mptEscrowCreate.ledgerIndexInvalid')
+                }
+                return true
+              },
+            })}
+          />
+          {errors.finishAfter && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.finishAfter.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="cancelAfter">{t('mptEscrowCreate.cancelAfter')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('mptEscrowCreate.cancelAfterHint')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Input
+            id="cancelAfter"
+            type="number"
+            placeholder={t('mptEscrowCreate.cancelAfterPlaceholder')}
+            className={errors.cancelAfter ? 'border-destructive' : ''}
+            {...register('cancelAfter', {
+              validate: (value: string) => {
+                if (!value) return true
+                const num = parseInt(value, 10)
+                if (isNaN(num) || num < 0) {
+                  return t('mptEscrowCreate.ledgerIndexInvalid')
+                }
+                return true
+              },
+            })}
+          />
+          {errors.cancelAfter && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.cancelAfter.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="condition">{t('mptEscrowCreate.condition')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mptEscrowCreate.conditionHint')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <Input
+          id="condition"
+          type="text"
+          placeholder={t('mptEscrowCreate.conditionPlaceholder')}
+          className={`font-mono text-sm ${errors.condition ? 'border-destructive' : ''}`}
+          {...register('condition')}
+        />
+        {errors.condition && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.condition.message}
           </p>
         )}
       </div>
@@ -347,18 +406,18 @@ export function IOUEscrowCreateForm({
       {showAdvanced && (
         <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
           <div className="space-y-2">
-            <Label htmlFor="destinationTag">{t('ioudEscrowCreate.destinationTag')}</Label>
+            <Label htmlFor="destinationTag">{t('mptEscrowCreate.destinationTag')}</Label>
             <Input
               id="destinationTag"
               type="number"
-              placeholder={t('ioudEscrowCreate.destinationTagPlaceholder')}
+              placeholder={t('mptEscrowCreate.destinationTagPlaceholder')}
               className={errors.destinationTag ? 'border-destructive' : ''}
               {...register('destinationTag', {
                 validate: (value: string) => {
                   if (!value) return true
                   const num = parseInt(value, 10)
                   if (isNaN(num) || num < 0 || num > 4294967295) {
-                    return t('ioudEscrowCreate.destinationTagInvalid')
+                    return t('mptEscrowCreate.destinationTagInvalid')
                   }
                   return true
                 },
@@ -371,112 +430,11 @@ export function IOUEscrowCreateForm({
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {t('ioudEscrowCreate.destinationTagHint')}
+              {t('mptEscrowCreate.destinationTagHint')}
             </p>
           </div>
         </div>
       )}
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="finishAfter">{t('ioudEscrowCreate.finishAfter')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{t('ioudEscrowCreate.finishAfterHint')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="finishAfter"
-            type="number"
-            placeholder={t('ioudEscrowCreate.finishAfterPlaceholder')}
-            className={errors.finishAfter ? 'border-destructive' : ''}
-            {...register('finishAfter', {
-              validate: (value: string) => {
-                if (!value) return true
-                const num = parseInt(value, 10)
-                if (isNaN(num) || num < 0) {
-                  return t('ioudEscrowCreate.ledgerIndexInvalid')
-                }
-                return true
-              },
-            })}
-          />
-          {errors.finishAfter && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.finishAfter.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="cancelAfter">{t('ioudEscrowCreate.cancelAfter')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{t('ioudEscrowCreate.cancelAfterHint')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="cancelAfter"
-            type="number"
-            placeholder={t('ioudEscrowCreate.cancelAfterPlaceholder')}
-            className={errors.cancelAfter ? 'border-destructive' : ''}
-            {...register('cancelAfter', {
-              validate: (value: string) => {
-                if (!value) return true
-                const num = parseInt(value, 10)
-                if (isNaN(num) || num < 0) {
-                  return t('ioudEscrowCreate.ledgerIndexInvalid')
-                }
-                return true
-              },
-            })}
-          />
-          {errors.cancelAfter && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.cancelAfter.message}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="condition">{t('ioudEscrowCreate.condition')}</Label>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <p>{t('ioudEscrowCreate.conditionHint')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <Input
-          id="condition"
-          type="text"
-          placeholder={t('ioudEscrowCreate.conditionPlaceholder')}
-          className={`font-mono text-sm ${errors.condition ? 'border-destructive' : ''}`}
-          {...register('condition')}
-        />
-        {errors.condition && (
-          <p className="text-sm text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.condition.message}
-          </p>
-        )}
-      </div>
 
       {buildError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">

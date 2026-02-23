@@ -26,6 +26,7 @@ import IOUPayment from '@/pages/IOUPayment';
 import IOUEscrowCreate from '@/pages/IOUEscrowCreate';
 import IOUEscrowFinish from '@/pages/IOUEscrowFinish';
 import MPTTransfer from '@/pages/MPTTransfer';
+import MPTEscrowCreate from '@/pages/MPTEscrowCreate';
 import MPTLock from '@/pages/MPTLock';
 import MPTClawback from '@/pages/MPTClawback';
 import { useWalletEvents } from '@/hooks/useWalletEvents';
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="mpt/destroy" element={<MPTokenIssuanceDestroy />} />
           <Route path="mpt/authorize" element={<MPTokenAuthorize />} />
           <Route path="mpt/transfer" element={<MPTTransfer />} />
+          <Route path="mpt/escrow/create" element={<MPTEscrowCreate />} />
           <Route path="mpt/lock" element={<MPTLock />} />
           <Route path="mpt/clawback" element={<MPTClawback />} />
           <Route path="credential/create" element={<CredentialCreate />} />

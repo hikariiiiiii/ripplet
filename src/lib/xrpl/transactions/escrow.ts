@@ -299,3 +299,104 @@ export function buildIOUEscrowCreate(params: IOUEscrowCreateParams): EscrowCreat
 
 
 export { buildEscrowFinish as buildIOUEscrowFinish }
+
+
+// MPT Escrow
+export interface MPTAmount {
+  mpt_issuance_id: string
+  value: string
+}
+
+export interface MPTEscrowCreateParams {
+  Account: string
+  Destination: string
+  Amount: MPTAmount
+  FinishAfter?: number
+  CancelAfter?: number
+  Condition?: string
+  DestinationTag?: number
+  Memos?: { data: string }[]
+  Fee?: string
+  Sequence?: number
+  LastLedgerSequence?: number
+  Signers?: BaseTransactionParams['Signers']
+  SigningPubKey?: string
+  SourceTag?: number
+  TxnSignature?: string
+}
+
+export function buildMPTEscrowCreate(params: MPTEscrowCreateParams): EscrowCreate {
+  const {
+    Account,
+    Destination,
+    Amount,
+    FinishAfter,
+    CancelAfter,
+    Condition,
+    DestinationTag,
+    Fee,
+    Sequence,
+    LastLedgerSequence,
+    Memos,
+    Signers,
+    SigningPubKey,
+    SourceTag,
+    TxnSignature,
+  } = params
+
+  if (!isValidAddress(Destination)) {
+    throw new Error('Invalid destination address format')
+  }
+  if (!Amount.mpt_issuance_id || Amount.mpt_issuance_id.length !== 48) {
+    throw new Error('Invalid MPT Issuance ID (must be 48 characters)')
+  }
+  if (!Amount.value || parseFloat(Amount.value) <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
+
+  if (FinishAfter !== undefined && CancelAfter !== undefined) {
+    if (FinishAfter >= CancelAfter) {
+      throw new Error('FinishAfter must be less than CancelAfter')
+    }
+  }
+
+  const transaction: EscrowCreate = {
+    TransactionType: 'EscrowCreate',
+    Account,
+    Destination,
+    Amount: {
+      mpt_issuance_id: Amount.mpt_issuance_id,
+      value: Amount.value,
+    },
+  }
+
+  if (FinishAfter !== undefined) {
+    transaction.FinishAfter = FinishAfter
+  }
+
+  if (CancelAfter !== undefined) {
+    transaction.CancelAfter = CancelAfter
+  }
+
+  if (Condition !== undefined) {
+    transaction.Condition = Condition
+  }
+
+  if (DestinationTag !== undefined) {
+    if (!Number.isInteger(DestinationTag) || DestinationTag < 0 || DestinationTag > 4294967295) {
+      throw new Error('DestinationTag must be an integer between 0 and 4294967295')
+    }
+    transaction.DestinationTag = DestinationTag
+  }
+
+  if (Fee !== undefined) transaction.Fee = Fee
+  if (Sequence !== undefined) transaction.Sequence = Sequence
+  if (LastLedgerSequence !== undefined) transaction.LastLedgerSequence = LastLedgerSequence
+  if (Memos !== undefined) transaction.Memos = Memos.map(memo => createMemo(memo.data))
+  if (Signers !== undefined) transaction.Signers = Signers
+  if (SigningPubKey !== undefined) transaction.SigningPubKey = SigningPubKey
+  if (SourceTag !== undefined) transaction.SourceTag = SourceTag
+  if (TxnSignature !== undefined) transaction.TxnSignature = TxnSignature
+
+  return transaction
+}

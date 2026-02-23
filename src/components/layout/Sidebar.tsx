@@ -91,6 +91,7 @@ const navSections: NavSection[] = [
       { to: '/mpt/destroy', icon: Trash2, labelKey: 'nav.mptDestroy' },
       { to: '/mpt/authorize', icon: UserCheck, labelKey: 'nav.mptAuthorize' },
       { to: '/mpt/transfer', icon: Send, labelKey: 'nav.mptTransfer' },
+      { to: '/mpt/escrow/create', icon: Lock, labelKey: 'nav.mptEscrowCreate' },
       { to: '/mpt/lock', icon: Lock, labelKey: 'nav.mptLock' },
       { to: '/mpt/clawback', icon: Undo2, labelKey: 'nav.mptClawback' },
     ],

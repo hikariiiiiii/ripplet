@@ -258,7 +258,7 @@ export function OfferCreateForm({
             <Input
               id="takerGetsCurrency"
               type="text"
-              placeholder="XRP or Currency code"
+              placeholder="Currency code"
               className="text-sm"
               value={formData.takerGetsCurrency}
               onChange={(e) =>
@@ -326,7 +326,7 @@ export function OfferCreateForm({
             <Input
               id="takerPaysCurrency"
               type="text"
-              placeholder="XRP or Currency code"
+              placeholder="Currency code"
               className="text-sm"
               value={formData.takerPaysCurrency}
               onChange={(e) =>

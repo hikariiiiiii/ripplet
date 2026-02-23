@@ -31,6 +31,7 @@
     "mptDestroy": "Destroy MPT",
     "mptAuthorize": "Authorize MPT",
     "mptTransfer": "Transfer MPT",
+    "mptEscrowCreate": "MPT Escrow",
     "mptLock": "Lock/Freeze MPT",
     "mptClawback": "Clawback MPT",
     "credential": "Credential",
@@ -383,6 +384,34 @@
     "authorize": {
       "title": "Authorize MPT",
       "subtitle": "Authorize holders or opt-in to hold an MPT"
+    },
+    "escrowCreate": {
+      "title": "MPT Escrow Create",
+      "subtitle": "Lock MPT tokens in an escrow",
+      "destination": "Destination",
+      "destinationRequired": "Destination address is required",
+      "destinationInvalid": "Invalid XRPL address format",
+      "destinationTag": "Destination Tag",
+      "destinationTagPlaceholder": "Optional",
+      "destinationTagHint": "A 32-bit unsigned integer to identify the recipient",
+      "destinationTagInvalid": "Destination tag must be between 0 and 4294967295",
+      "mptIssuanceId": "MPT Issuance ID",
+      "mptIssuanceIdRequired": "MPT Issuance ID is required",
+      "mptIssuanceIdInvalid": "MPT Issuance ID must be a 48-character hexadecimal string",
+      "amount": "Amount",
+      "amountRequired": "Amount is required",
+      "amountInvalid": "Amount must be greater than 0",
+      "finishAfter": "Finish After",
+      "finishAfterPlaceholder": "Ledger index",
+      "finishAfterHint": "The ledger index after which the escrow can be finished",
+      "finishAfterInvalid": "FinishAfter must be less than CancelAfter",
+      "cancelAfter": "Cancel After",
+      "cancelAfterPlaceholder": "Ledger index",
+      "cancelAfterHint": "The ledger index after which the escrow can be cancelled",
+      "condition": "Condition",
+      "conditionPlaceholder": "Hex-encoded crypto-condition",
+      "conditionHint": "Optional: A hex-encoded crypto-condition that must be met to finish",
+      "ledgerIndexInvalid": "Ledger index must be a valid positive integer"
     }
   },
   "nftMint": {

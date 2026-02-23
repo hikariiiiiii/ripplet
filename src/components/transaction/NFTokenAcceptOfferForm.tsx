@@ -272,7 +272,7 @@ export function NFTokenAcceptOfferForm({
                 <Input
                   id="nftokenBrokerFeeCurrency"
                   type="text"
-                  placeholder="XRP or Currency code"
+                  placeholder="Currency code"
                   className="text-sm"
                   value={formData.nftokenBrokerFeeCurrency}
                   onChange={(e) =>

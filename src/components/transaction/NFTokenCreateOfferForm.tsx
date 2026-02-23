@@ -285,7 +285,7 @@ export function NFTokenCreateOfferForm({
           <Input
             id="amountCurrency"
             type="text"
-            placeholder="XRP or Currency code"
+            placeholder="Currency code"
             className="text-sm"
             value={formData.amountCurrency}
             onChange={(e) =>
