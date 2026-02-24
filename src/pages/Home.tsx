@@ -24,6 +24,12 @@ import {
   Undo2,
   ArrowRight,
   LogOut,
+  Sparkles,
+  TrendingUp,
+  ArrowRightLeft,
+  FileCheck,
+  Database,
+  Clock,
 } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
@@ -49,6 +55,15 @@ interface CategoryCard {
   color: string;
   bgColor: string;
   features: FeatureItem[];
+}
+
+interface ComingSoonFeature {
+  titleKey: string;
+  descKey: string;
+  icon: React.ElementType;
+  color: string;
+  bgColor: string;
+  count: number;
 }
 
 export default function Home() {
@@ -197,6 +212,65 @@ export default function Home() {
     { to: '/account/accountdelete', icon: Trash2, labelKey: 'nav.accountDelete' },
   ];
 
+  const comingSoonFeatures: ComingSoonFeature[] = [
+    {
+      titleKey: 'home.comingSoonDID',
+      descKey: 'home.comingSoonDIDDesc',
+      icon: FileCheck,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+      count: 2,
+    },
+    {
+      titleKey: 'home.comingSoonOracle',
+      descKey: 'home.comingSoonOracleDesc',
+      icon: TrendingUp,
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+      count: 2,
+    },
+    {
+      titleKey: 'home.comingSoonPermission',
+      descKey: 'home.comingSoonPermissionDesc',
+      icon: UserCheck,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-400/10',
+      count: 3,
+    },
+    {
+      titleKey: 'home.comingSoonVault',
+      descKey: 'home.comingSoonVaultDesc',
+      icon: Database,
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-400/10',
+      count: 6,
+    },
+    {
+      titleKey: 'home.comingSoonAMM',
+      descKey: 'home.comingSoonAMMDesc',
+      icon: TrendingUp,
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-400/10',
+      count: 7,
+    },
+    {
+      titleKey: 'home.comingSoonLending',
+      descKey: 'home.comingSoonLendingDesc',
+      icon: Coins,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-400/10',
+      count: 10,
+    },
+    {
+      titleKey: 'home.comingSoonCrossChain',
+      descKey: 'home.comingSoonCrossChainDesc',
+      icon: ArrowRightLeft,
+      color: 'text-pink-400',
+      bgColor: 'bg-pink-400/10',
+      count: 6,
+    },
+  ];
+
   if (!connected) {
     return (
       <div className="flex-1 flex items-center justify-center p-6 relative">
@@ -274,7 +348,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={disconnect}
-              className="text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              className="text-muted-foreground hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-4 h-4 mr-2" />
               {t('wallet.disconnect')}
@@ -387,6 +461,47 @@ export default function Home() {
                 </span>
                 <ArrowRight className="w-3 h-3 text-muted-foreground/50 group-hover:text-xrpl-green group-hover:translate-x-0.5 transition-all ml-1" />
               </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-amber-500" />
+          <h2 className="text-lg font-semibold text-foreground">{t('home.comingSoon')}</h2>
+          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-amber-500/10 text-amber-500">
+            {t('home.comingSoonBadge')}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {comingSoonFeatures.map((feature, index) => {
+            const FeatureIcon = feature.icon;
+            return (
+              <div
+                key={feature.titleKey}
+                className="glass-card rounded-xl p-4 opacity-75 hover:opacity-100 transition-opacity cursor-not-allowed"
+                style={{ animationDelay: `${(index + 1) * 50}ms` } as React.CSSProperties}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-lg ${feature.bgColor} flex items-center justify-center`}>
+                    <FeatureIcon className={`w-5 h-5 ${feature.color}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm truncate">{t(feature.titleKey)}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{t(feature.descKey)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {feature.count} {t('home.transactionTypes')}
+                  </span>
+                  <div className="flex items-center gap-1 text-xs text-amber-500/70">
+                    <Clock className="w-3 h-3" />
+                    <span>{t('nav.soon')}</span>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
