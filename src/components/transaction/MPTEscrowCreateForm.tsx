@@ -131,7 +131,7 @@ export function MPTEscrowCreateForm({
       // Validate finishAfter < cancelAfter if both provided
       if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
         if (finishAfterValue >= cancelAfterValue) {
-          setBuildError(t('mptEscrowCreate.finishAfterInvalid'))
+          setBuildError(t('mpt.escrowCreate.finishAfterInvalid'))
           return
         }
       }
@@ -177,7 +177,7 @@ export function MPTEscrowCreateForm({
       // Validate finishAfter < cancelAfter if both provided
       if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
         if (finishAfterValue >= cancelAfterValue) {
-          setBuildError(t('mptEscrowCreate.finishAfterInvalid'))
+          setBuildError(t('mpt.escrowCreate.finishAfterInvalid'))
           return
         }
       }
@@ -206,17 +206,17 @@ export function MPTEscrowCreateForm({
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="destination">{t('mptEscrowCreate.destination')}</Label>
+        <Label htmlFor="destination">{t('mpt.escrowCreate.destination')}</Label>
         <Input
           id="destination"
           type="text"
           placeholder="r..."
           className={`font-mono-address text-sm ${errors.destination ? 'border-destructive' : ''}`}
           {...register('destination', {
-            required: t('mptEscrowCreate.destinationRequired'),
+            required: t('mpt.escrowCreate.destinationRequired'),
             validate: (value: string) => {
               if (!isValidXRPLAddress(value)) {
-                return t('mptEscrowCreate.destinationInvalid')
+                return t('mpt.escrowCreate.destinationInvalid')
               }
               return true
             },
@@ -232,7 +232,7 @@ export function MPTEscrowCreateForm({
 
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="mptIssuanceId">{t('mptEscrowCreate.mptIssuanceId')}</Label>
+          <Label htmlFor="mptIssuanceId">{t('mpt.escrowCreate.mptIssuanceId')}</Label>
           <Tooltip>
             <TooltipTrigger asChild>
               <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
@@ -248,10 +248,10 @@ export function MPTEscrowCreateForm({
           placeholder="00070C4495F14B0E44F78A264E41713C64B5F89242540EE255534400000000000000"
           className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
           {...register('mptIssuanceId', {
-            required: t('mptEscrowCreate.mptIssuanceIdRequired'),
+            required: t('mpt.escrowCreate.mptIssuanceIdRequired'),
             validate: (value: string) => {
               if (value.length !== 48 || !/^[0-9A-Fa-f]+$/.test(value)) {
-                return t('mptEscrowCreate.mptIssuanceIdInvalid')
+                return t('mpt.escrowCreate.mptIssuanceIdInvalid')
               }
               return true
             },
@@ -266,18 +266,18 @@ export function MPTEscrowCreateForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">{t('mptEscrowCreate.amount')}</Label>
+        <Label htmlFor="amount">{t('mpt.escrowCreate.amount')}</Label>
         <Input
           id="amount"
           type="text"
           placeholder="0.00"
           className={`${errors.amount ? 'border-destructive' : ''}`}
           {...register('amount', {
-            required: t('mptEscrowCreate.amountRequired'),
+            required: t('mpt.escrowCreate.amountRequired'),
             validate: (value: string) => {
               const num = parseFloat(value)
               if (isNaN(num) || num <= 0) {
-                return t('mptEscrowCreate.amountInvalid')
+                return t('mpt.escrowCreate.amountInvalid')
               }
               return true
             },
@@ -294,27 +294,27 @@ export function MPTEscrowCreateForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="finishAfter">{t('mptEscrowCreate.finishAfter')}</Label>
+            <Label htmlFor="finishAfter">{t('mpt.escrowCreate.finishAfter')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>{t('mptEscrowCreate.finishAfterHint')}</p>
+                <p>{t('mpt.escrowCreate.finishAfterHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Input
             id="finishAfter"
             type="number"
-            placeholder={t('mptEscrowCreate.finishAfterPlaceholder')}
+            placeholder={t('mpt.escrowCreate.finishAfterPlaceholder')}
             className={errors.finishAfter ? 'border-destructive' : ''}
             {...register('finishAfter', {
               validate: (value: string) => {
                 if (!value) return true
                 const num = parseInt(value, 10)
                 if (isNaN(num) || num < 0) {
-                  return t('mptEscrowCreate.ledgerIndexInvalid')
+                  return t('mpt.escrowCreate.ledgerIndexInvalid')
                 }
                 return true
               },
@@ -330,27 +330,27 @@ export function MPTEscrowCreateForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="cancelAfter">{t('mptEscrowCreate.cancelAfter')}</Label>
+            <Label htmlFor="cancelAfter">{t('mpt.escrowCreate.cancelAfter')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>{t('mptEscrowCreate.cancelAfterHint')}</p>
+                <p>{t('mpt.escrowCreate.cancelAfterHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Input
             id="cancelAfter"
             type="number"
-            placeholder={t('mptEscrowCreate.cancelAfterPlaceholder')}
+            placeholder={t('mpt.escrowCreate.cancelAfterPlaceholder')}
             className={errors.cancelAfter ? 'border-destructive' : ''}
             {...register('cancelAfter', {
               validate: (value: string) => {
                 if (!value) return true
                 const num = parseInt(value, 10)
                 if (isNaN(num) || num < 0) {
-                  return t('mptEscrowCreate.ledgerIndexInvalid')
+                  return t('mpt.escrowCreate.ledgerIndexInvalid')
                 }
                 return true
               },
@@ -367,20 +367,20 @@ export function MPTEscrowCreateForm({
 
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="condition">{t('mptEscrowCreate.condition')}</Label>
+          <Label htmlFor="condition">{t('mpt.escrowCreate.condition')}</Label>
           <Tooltip>
             <TooltipTrigger asChild>
               <AlertCircle className="h-3 w-3 text-muted-foreground cursor-help" />
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <p>{t('mptEscrowCreate.conditionHint')}</p>
+              <p>{t('mpt.escrowCreate.conditionHint')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
         <Input
           id="condition"
           type="text"
-          placeholder={t('mptEscrowCreate.conditionPlaceholder')}
+          placeholder={t('mpt.escrowCreate.conditionPlaceholder')}
           className={`font-mono text-sm ${errors.condition ? 'border-destructive' : ''}`}
           {...register('condition')}
         />
@@ -406,18 +406,18 @@ export function MPTEscrowCreateForm({
       {showAdvanced && (
         <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
           <div className="space-y-2">
-            <Label htmlFor="destinationTag">{t('mptEscrowCreate.destinationTag')}</Label>
+            <Label htmlFor="destinationTag">{t('mpt.escrowCreate.destinationTag')}</Label>
             <Input
               id="destinationTag"
               type="number"
-              placeholder={t('mptEscrowCreate.destinationTagPlaceholder')}
+              placeholder={t('mpt.escrowCreate.destinationTagPlaceholder')}
               className={errors.destinationTag ? 'border-destructive' : ''}
               {...register('destinationTag', {
                 validate: (value: string) => {
                   if (!value) return true
                   const num = parseInt(value, 10)
                   if (isNaN(num) || num < 0 || num > 4294967295) {
-                    return t('mptEscrowCreate.destinationTagInvalid')
+                    return t('mpt.escrowCreate.destinationTagInvalid')
                   }
                   return true
                 },
@@ -430,7 +430,7 @@ export function MPTEscrowCreateForm({
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {t('mptEscrowCreate.destinationTagHint')}
+              {t('mpt.escrowCreate.destinationTagHint')}
             </p>
           </div>
         </div>
