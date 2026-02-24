@@ -53,6 +53,7 @@ export function PaymentForm({
     handleSubmit,
     watch,
     trigger,
+    setFocus,
     formState: { errors },
   } = useForm<PaymentFormData>({
     defaultValues: {
@@ -63,7 +64,10 @@ export function PaymentForm({
     },
   });
 
-  const watchedFields = watch();
+  const destination = watch('destination')
+  const amount = watch('amount')
+  const destinationTag = watch('destinationTag')
+  const memo = watch('memo')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -75,16 +79,16 @@ export function PaymentForm({
       if (!isValid) return;
 
       try {
-        const drops = xrpToDrops(watchedFields.amount);
+        const drops = xrpToDrops(amount);
         const tx = buildPayment({
           Account: account,
-          Destination: watchedFields.destination,
+          Destination: destination,
           Amount: drops,
-          DestinationTag: watchedFields.destinationTag
-            ? parseInt(watchedFields.destinationTag, 10)
+          DestinationTag: destinationTag
+            ? parseInt(destinationTag, 10)
             : undefined,
-          Memos: watchedFields.memo
-            ? [{ data: watchedFields.memo }]
+          Memos: memo
+            ? [{ data: memo }]
             : undefined,
         });
         setTransactionJson(tx);
@@ -94,7 +98,7 @@ export function PaymentForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [destination, amount, destinationTag, memo, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -105,21 +109,31 @@ export function PaymentForm({
     }
 
     // Validate form first
-    const isValid = await trigger(['destination', 'amount']);
-    if (!isValid) return;
+    const fieldsToValidate = ['destination', 'amount'] as const;
+    const isValid = await trigger(fieldsToValidate);
+    if (!isValid) {
+      // Focus on the first field with an error
+      for (const field of fieldsToValidate) {
+        if (errors[field]) {
+          setFocus(field);
+          break;
+        }
+      }
+      return;
+    }
 
     // If validation passes, build and show preview
     try {
-      const drops = xrpToDrops(watchedFields.amount);
+      const drops = xrpToDrops(amount);
       const tx = buildPayment({
         Account: account,
-        Destination: watchedFields.destination,
+        Destination: destination,
         Amount: drops,
-        DestinationTag: watchedFields.destinationTag
-          ? parseInt(watchedFields.destinationTag, 10)
+        DestinationTag: destinationTag
+          ? parseInt(destinationTag, 10)
           : undefined,
-        Memos: watchedFields.memo
-          ? [{ data: watchedFields.memo }]
+        Memos: memo
+          ? [{ data: memo }]
           : undefined,
       });
       setTransactionJson(tx);
@@ -183,7 +197,7 @@ export function PaymentForm({
               },
             })}
           />
-          {watchedFields.destination && isValidXRPLAddress(watchedFields.destination) && (
+          {destination && isValidXRPLAddress(destination) && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <div className="w-2 h-2 rounded-full bg-xrpl-green status-pulse" />
             </div>

@@ -50,6 +50,7 @@ export function MPTEscrowCreateForm({
     handleSubmit,
     watch,
     trigger,
+    setFocus,
     formState: { errors },
   } = useForm<MPTEscrowCreateFormData>({
     defaultValues: {
@@ -63,7 +64,13 @@ export function MPTEscrowCreateForm({
     },
   })
 
-  const watchedFields = watch()
+  const destination = watch('destination')
+  const mptIssuanceId = watch('mptIssuanceId')
+  const amount = watch('amount')
+  const finishAfter = watch('finishAfter')
+  const cancelAfter = watch('cancelAfter')
+  const condition = watch('condition')
+  const destinationTag = watch('destinationTag')
 
   // Auto-refresh Transaction JSON when form changes and preview is open
   useEffect(() => {
@@ -74,11 +81,11 @@ export function MPTEscrowCreateForm({
       if (!isValid) return
 
       try {
-        const finishAfterValue = watchedFields.finishAfter
-          ? parseInt(watchedFields.finishAfter, 10)
+        const finishAfterValue = finishAfter
+          ? parseInt(finishAfter, 10)
           : undefined
-        const cancelAfterValue = watchedFields.cancelAfter
-          ? parseInt(watchedFields.cancelAfter, 10)
+        const cancelAfterValue = cancelAfter
+          ? parseInt(cancelAfter, 10)
           : undefined
 
         if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
@@ -87,17 +94,17 @@ export function MPTEscrowCreateForm({
 
         const tx = buildMPTEscrowCreate({
           Account: account,
-          Destination: watchedFields.destination,
+          Destination: destination,
           Amount: {
-            mpt_issuance_id: watchedFields.mptIssuanceId,
-            value: watchedFields.amount,
+            mpt_issuance_id: mptIssuanceId,
+            value: amount,
           },
-          DestinationTag: watchedFields.destinationTag
-            ? parseInt(watchedFields.destinationTag, 10)
+          DestinationTag: destinationTag
+            ? parseInt(destinationTag, 10)
             : undefined,
           FinishAfter: finishAfterValue,
           CancelAfter: cancelAfterValue,
-          Condition: watchedFields.condition || undefined,
+          Condition: condition || undefined,
         })
         setTransactionJson(tx)
       } catch {
@@ -106,7 +113,7 @@ export function MPTEscrowCreateForm({
     }
 
     validateAndBuild()
-  }, [watchedFields, showPreview, account, trigger])
+  }, [destination, mptIssuanceId, amount, finishAfter, cancelAfter, condition, destinationTag, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -115,17 +122,27 @@ export function MPTEscrowCreateForm({
       return
     }
 
-    const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
-    if (!isValid) return
+    const fieldsToValidate = ['destination', 'mptIssuanceId', 'amount'] as const
+    const isValid = await trigger(fieldsToValidate)
+    if (!isValid) {
+      // Focus on the first field with an error
+      for (const field of fieldsToValidate) {
+        if (errors[field]) {
+          setFocus(field)
+          break
+        }
+      }
+      return
+    }
 
     setBuildError(null)
 
     try {
-      const finishAfterValue = watchedFields.finishAfter
-        ? parseInt(watchedFields.finishAfter, 10)
+      const finishAfterValue = finishAfter
+        ? parseInt(finishAfter, 10)
         : undefined
-      const cancelAfterValue = watchedFields.cancelAfter
-        ? parseInt(watchedFields.cancelAfter, 10)
+      const cancelAfterValue = cancelAfter
+        ? parseInt(cancelAfter, 10)
         : undefined
 
       // Validate finishAfter < cancelAfter if both provided
@@ -138,17 +155,17 @@ export function MPTEscrowCreateForm({
 
       const tx = buildMPTEscrowCreate({
         Account: account,
-        Destination: watchedFields.destination,
+        Destination: destination,
         Amount: {
-          mpt_issuance_id: watchedFields.mptIssuanceId,
-          value: watchedFields.amount,
+          mpt_issuance_id: mptIssuanceId,
+          value: amount,
         },
-        DestinationTag: watchedFields.destinationTag
-          ? parseInt(watchedFields.destinationTag, 10)
+        DestinationTag: destinationTag
+          ? parseInt(destinationTag, 10)
           : undefined,
         FinishAfter: finishAfterValue,
         CancelAfter: cancelAfterValue,
-        Condition: watchedFields.condition || undefined,
+        Condition: condition || undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)
