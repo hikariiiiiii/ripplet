@@ -187,12 +187,20 @@ export function MPTokenIssuanceCreateForm({
     setShowPreview(true);
   };
 
-  const onFormSubmit = async (data: MPTokenIssuanceCreateFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
       onConnectWallet();
       return;
     }
 
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTokenIssuanceCreateFormData) => {
     let flags = 0;
     for (const config of FLAGS_CONFIG) {
       if (data[config.key]) {
@@ -213,7 +221,7 @@ export function MPTokenIssuanceCreateForm({
   };
 
   return (
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="assetScale">Asset Scale (Decimal Places)</Label>

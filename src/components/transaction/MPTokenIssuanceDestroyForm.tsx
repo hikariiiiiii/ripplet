@@ -92,12 +92,20 @@ export function MPTokenIssuanceDestroyForm({
     setShowPreview(true);
   };
 
-  const onFormSubmit = async (data: MPTokenIssuanceDestroyFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
       onConnectWallet();
       return;
     }
 
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTokenIssuanceDestroyFormData) => {
     const transaction = buildMPTokenIssuanceDestroy({
       Account: account,
       MPTokenIssuanceID: data.mptIssuanceId,
@@ -108,7 +116,7 @@ export function MPTokenIssuanceDestroyForm({
 
   return (
     
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />

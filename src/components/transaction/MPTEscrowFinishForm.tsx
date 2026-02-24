@@ -112,13 +112,21 @@ export function MPTEscrowFinishForm({
     }
   }
 
-  const onFormSubmit = async (data: MPTEscrowFinishFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
-    setBuildError(null)
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTEscrowFinishFormData) => {
+    setBuildError(null);
 
     try {
       const transaction = buildEscrowFinish({
@@ -127,16 +135,16 @@ export function MPTEscrowFinishForm({
         OfferSequence: parseInt(data.offerSequence, 10),
         Condition: data.condition || undefined,
         Fulfillment: data.fulfillment || undefined,
-      })
-      await onSubmit(transaction)
+      });
+      await onSubmit(transaction);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
-      setBuildError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction';
+      setBuildError(errorMsg);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="owner">{t('escrow.owner')}</Label>
         <Input

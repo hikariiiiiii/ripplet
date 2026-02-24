@@ -134,13 +134,21 @@ export function MPTTransferForm({
     }
   }
 
-  const onFormSubmit = async (data: MPTTransferFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
-    setBuildError(null)
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTTransferFormData) => {
+    setBuildError(null);
 
     try {
       const transaction = buildMPTTransfer({
@@ -154,16 +162,16 @@ export function MPTTransferForm({
         Memos: data.memo
           ? [{ Memo: { MemoData: data.memo } }]
           : undefined,
-      })
-      await onSubmit(transaction)
+      });
+      await onSubmit(transaction);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
-      setBuildError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction';
+      setBuildError(errorMsg);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="destination">{t('mptTransfer.destination')}</Label>
         <Input

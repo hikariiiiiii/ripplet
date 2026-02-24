@@ -106,12 +106,20 @@ export function MPTokenAuthorizeForm({
     setShowPreview(true);
   };
 
-  const onFormSubmit = async (data: MPTokenAuthorizeFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
       onConnectWallet();
       return;
     }
 
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTokenAuthorizeFormData) => {
     const transaction = buildMPTokenAuthorize({
       Account: account,
       MPTokenIssuanceID: data.mptIssuanceId,
@@ -124,7 +132,7 @@ export function MPTokenAuthorizeForm({
 
   return (
     
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="mptIssuanceId">MPT Issuance ID</Label>

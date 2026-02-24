@@ -143,12 +143,20 @@ export function PaymentForm({
     }
   };
 
-  const onFormSubmit = async (data: PaymentFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
       onConnectWallet();
       return;
     }
 
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: PaymentFormData) => {
     const drops = xrpToDrops(data.amount);
     const transaction = buildPayment({
       Account: account,
@@ -167,7 +175,7 @@ export function PaymentForm({
   const estimatedFee = '0.000012'; // XRPL standard fee
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       {/* Destination Field */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">

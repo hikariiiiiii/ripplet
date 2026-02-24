@@ -175,27 +175,35 @@ export function MPTEscrowCreateForm({
     }
   }
 
-  const onFormSubmit = async (data: MPTEscrowCreateFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
-    setBuildError(null)
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTEscrowCreateFormData) => {
+    setBuildError(null);
 
     try {
       const finishAfterValue = data.finishAfter
         ? parseInt(data.finishAfter, 10)
-        : undefined
+        : undefined;
       const cancelAfterValue = data.cancelAfter
         ? parseInt(data.cancelAfter, 10)
-        : undefined
+        : undefined;
 
       // Validate finishAfter < cancelAfter if both provided
       if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
         if (finishAfterValue >= cancelAfterValue) {
-          setBuildError(t('mpt.escrowCreate.finishAfterInvalid'))
-          return
+          setBuildError(t('mpt.escrowCreate.finishAfterInvalid'));
+          return;
         }
       }
 
@@ -212,16 +220,16 @@ export function MPTEscrowCreateForm({
         FinishAfter: finishAfterValue,
         CancelAfter: cancelAfterValue,
         Condition: data.condition || undefined,
-      })
-      await onSubmit(transaction)
+      });
+      await onSubmit(transaction);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
-      setBuildError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction';
+      setBuildError(errorMsg);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="destination">{t('mpt.escrowCreate.destination')}</Label>
         <Input

@@ -116,35 +116,43 @@ export function MPTLockForm({
     }
   }
 
-  const onFormSubmit = async (data: MPTLockFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
-    setBuildError(null)
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTLockFormData) => {
+    setBuildError(null);
 
     try {
-      const flags = data.action === 'lock' 
-        ? MPT_LOCK_FLAGS.tfMPTLock 
-        : MPT_LOCK_FLAGS.tfMPTUnlock
-      
+      const flags = data.action === 'lock'
+        ? MPT_LOCK_FLAGS.tfMPTLock
+        : MPT_LOCK_FLAGS.tfMPTUnlock;
+
       const transaction = buildMPTLock({
         Account: account,
         Holder: data.holder,
         MPTokenIssuanceID: data.mptIssuanceId,
         LockedAmount: data.lockedAmount || undefined,
         Flags: flags,
-      })
-      await onSubmit(transaction)
+      });
+      await onSubmit(transaction);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
-      setBuildError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction';
+      setBuildError(errorMsg);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="holder">{t('mptLock.holder')}</Label>
         <Input

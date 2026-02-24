@@ -110,34 +110,42 @@ export function MPTClawbackForm({
     }
   }
 
-  const onFormSubmit = async (data: MPTClawbackFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
-    setBuildError(null)
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: MPTClawbackFormData) => {
+    setBuildError(null);
 
     try {
       const amount: MPTAmount = {
         mpt_issuance_id: data.mptIssuanceId,
         value: data.amount,
-      }
-      
+      };
+
       const transaction = buildMPTClawback({
         Account: account,
         Holder: data.holder,
         Amount: amount,
-      })
-      await onSubmit(transaction)
+      });
+      await onSubmit(transaction);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction'
-      setBuildError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to build transaction';
+      setBuildError(errorMsg);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />

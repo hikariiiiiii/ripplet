@@ -127,18 +127,26 @@ export function TrustSetForm({
     }
   }
 
-  const onFormSubmit = async (data: TrustSetFormData) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
-      onConnectWallet()
-      return
+      onConnectWallet();
+      return;
     }
 
+    // 2. Form validation SECOND - use react-hook-form's handleSubmit
+    handleSubmit(onFormSubmit)();
+  };
+
+  const onFormSubmit = async (data: TrustSetFormData) => {
     // Check if issuer is same as account
     if (data.issuer === account) {
-      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
-      return
+      setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)');
+      return;
     }
-    setBuildError(null)
+    setBuildError(null);
 
     const transaction = buildTrustSet({
       Account: account,
@@ -147,13 +155,13 @@ export function TrustSetForm({
         issuer: data.issuer,
         value: data.limit,
       },
-    })
+    });
 
-    await onSubmit(transaction)
-  }
+    await onSubmit(transaction);
+  };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="currency">{t('trustset.currency')}</Label>
         <Input

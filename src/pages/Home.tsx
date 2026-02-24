@@ -3,10 +3,6 @@ import { Link } from 'react-router-dom';
 import { 
   Send, 
   Wallet, 
-  Copy,
-  Check,
-  Globe,
-  Coins,
   Link2,
   Box,
   Layers,
@@ -23,24 +19,19 @@ import {
   PlusCircle,
   Undo2,
   ArrowRight,
-  LogOut,
   Sparkles,
   TrendingUp,
   ArrowRightLeft,
   FileCheck,
   Database,
   Clock,
+  ChevronDown,
 } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
 import { RippletLogo } from '@/components/common/RippletLogo';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
-
-function truncateAddress(address: string): string {
-  if (address.length <= 12) return address;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
 
 interface FeatureItem {
   to: string;
@@ -66,34 +57,9 @@ interface ComingSoonFeature {
   count: number;
 }
 
-export default function Home() {
+// Dashboard content component - shared between connected state and second screen
+function DashboardContent() {
   const { t } = useTranslation();
-  const { connected, address, networkInfo, disconnect } = useWalletStore();
-  const [copied, setCopied] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        setMousePosition({ x, y });
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const copyAddress = async () => {
-    if (address) {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const quickActions = [
     {
@@ -134,7 +100,7 @@ export default function Home() {
     {
       titleKey: 'home.categoryXRP',
       descKey: 'home.categoryXRPDesc',
-      icon: Coins,
+      icon: Send,
       color: 'text-xrpl-green',
       bgColor: 'bg-xrpl-green/10',
       features: [
@@ -152,7 +118,7 @@ export default function Home() {
       bgColor: 'bg-neon-cyan/10',
       features: [
         { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
-        { to: '/iou/payment', icon: Coins, labelKey: 'nav.iouPayment' },
+        { to: '/iou/payment', icon: Send, labelKey: 'nav.iouPayment' },
         { to: '/iou/escrow/create', icon: Lock, labelKey: 'nav.iouEscrowCreate' },
         { to: '/iou/escrow/finish', icon: CheckCircle, labelKey: 'nav.iouEscrowFinish' },
         { to: '/iou/escrow/cancel', icon: XCircle, labelKey: 'nav.iouEscrowCancel' },
@@ -256,7 +222,7 @@ export default function Home() {
     {
       titleKey: 'home.comingSoonLending',
       descKey: 'home.comingSoonLendingDesc',
-      icon: Coins,
+      icon: Send,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-400/10',
       count: 10,
@@ -271,92 +237,8 @@ export default function Home() {
     },
   ];
 
-  if (!connected) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-6 relative">
-        <div className="max-w-md w-full text-center space-y-8">
-          <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-400/20 flex items-center justify-center shadow-lg border border-primary/30">
-              <RippletLogo size={48} />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-foreground">
-              {t('home.welcome')}
-            </h1>
-            <p className="text-muted-foreground">
-              {t('home.welcomeDescription')}
-            </p>
-          </div>
-
-          <Button
-            size="lg"
-            className="btn-primary text-background font-semibold px-8 py-6"
-            onClick={() => setShowWalletModal(true)}
-          >
-            <Wallet className="w-5 h-5 mr-2" />
-            {t('wallet.connect')}
-          </Button>
-
-          <WalletSelectModal open={showWalletModal} onOpenChange={setShowWalletModal} />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-      <div 
-        ref={cardRef}
-        className="glass-card rounded-xl p-5 relative z-10"
-        style={{ '--mouse-x': `${mousePosition.x}%`, '--mouse-y': `${mousePosition.y}%` } as React.CSSProperties}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-xrpl-green to-neon-blue flex items-center justify-center">
-              <Wallet className="w-7 h-7 text-background" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                {t('home.connectedAs')}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="font-mono-address text-lg text-foreground">
-                  {address && truncateAddress(address)}
-                </span>
-                <button
-                  onClick={copyAddress}
-                  className="p-1.5 rounded-md hover:bg-secondary transition-colors"
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-xrpl-green" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm">{networkInfo.name}</span>
-              <div className="w-2 h-2 rounded-full bg-xrpl-green animate-pulse" />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={disconnect}
-              className="text-muted-foreground hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/10 transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('wallet.disconnect')}
-            </Button>
-          </div>
-        </div>
-      </div>
-
+    <>
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">{t('home.quickActions')}</h2>
@@ -368,7 +250,7 @@ export default function Home() {
               <Link
                 key={action.href}
                 to={action.href}
-                className="feature-card p-4 group"
+                className="feature-card p-4 group cursor-pointer"
                 style={{ animationDelay: `${(index + 1) * 50}ms` } as React.CSSProperties}
               >
                 <div className="relative z-10">
@@ -420,7 +302,7 @@ export default function Home() {
                       <Link
                         key={feature.to}
                         to={feature.to}
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors group"
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors group cursor-pointer"
                       >
                         <FeatureIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                         <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors truncate">
@@ -453,7 +335,7 @@ export default function Home() {
               <Link
                 key={feature.to}
                 to={feature.to}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group cursor-pointer"
               >
                 <FeatureIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
@@ -506,6 +388,82 @@ export default function Home() {
           })}
         </div>
       </div>
+    </>
+  );
+}
+
+export default function Home() {
+  const { t } = useTranslation();
+  const { connected } = useWalletStore();
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const featuresRef = useRef<HTMLDivElement>(null);
+
+  const scrollToFeatures = () => {
+    if (featuresRef.current) {
+      const scrollContainer = featuresRef.current.closest('.overflow-y-auto');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: featuresRef.current.offsetTop,
+          behavior: 'smooth'
+        });
+      } else {
+        featuresRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  if (!connected) {
+    return (
+      <>
+        {/* First Screen - Hero Section */}
+        <div className="h-full flex items-center justify-center p-6 relative shrink-0">
+          <div className="max-w-md w-full text-center space-y-8">
+            <div className="flex justify-center">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-400/20 flex items-center justify-center shadow-lg border border-primary/30">
+                <RippletLogo size={48} />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <h1 className="text-3xl font-bold text-foreground">
+                {t('home.welcome')}
+              </h1>
+              <p className="text-muted-foreground">
+                {t('home.welcomeDescription')}
+              </p>
+            </div>
+            <Button
+              size="lg"
+              className="btn-primary text-background font-semibold px-8 py-6"
+              onClick={() => setShowWalletModal(true)}
+            >
+              <Wallet className="w-5 h-5 mr-2" />
+              {t('wallet.connect')}
+            </Button>
+            <WalletSelectModal open={showWalletModal} onOpenChange={setShowWalletModal} />
+            {/* Scroll indicator */}
+            <button
+              data-testid="scroll-indicator"
+              onClick={scrollToFeatures}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 p-2 rounded-full hover:bg-secondary/50 transition-colors cursor-pointer"
+              aria-label="Scroll to features"
+            >
+              <ChevronDown className="w-8 h-8 text-muted-foreground animate-bounce-down" />
+            </button>
+          </div>
+        </div>
+        {/* Second Screen - Features Section */}
+        <div id="features-section" ref={featuresRef} className="min-h-[100dvh] p-6 space-y-6">
+          <DashboardContent />
+        </div>
+      </>
+    );
+  }
+
+
+  // Connected state - skip hero, show dashboard directly
+  return (
+    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+      <DashboardContent />
     </div>
   );
 }

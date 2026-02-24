@@ -1,0 +1,47 @@
+Task 3: Playwright E2E Test Results
+Date: 2026-02-24
+Status: PASS
+
+=== Test Scenarios ===
+
+Scenario 1: Unconnected State - Hero Section Visible
+- Tool: Playwright
+- URL: http://localhost:5174/
+- Steps:
+  1. Navigate to homepage
+  2. Verify "Welcome to Ripplet" heading visible ✓
+  3. Verify "Connect Wallet" button visible ✓
+  4. Verify scroll indicator button visible ✓
+- Result: PASS
+- Evidence: .sisyphus/evidence/task-2-hero-visible.png
+
+Scenario 2: Click Arrow Scrolls to Second Screen
+- Tool: Playwright
+- Steps:
+  1. Click [data-testid="scroll-indicator"] ✓
+  2. Wait for "Quick Actions" text ✓
+- Result: PASS
+- Evidence: .sisyphus/evidence/task-2-scroll-to-features.png
+
+Scenario 3: Mobile Viewport (375x667)
+- Tool: Playwright
+- Steps:
+  1. Resize viewport to 375x667 ✓
+  2. Navigate to homepage ✓
+  3. Verify Hero section fills viewport ✓
+  4. Verify scroll indicator visible ✓
+- Result: PASS
+- Evidence: .sisyphus/evidence/task-2-mobile-viewport.png
+
+=== Acceptance Criteria ===
+- [✓] Unconnected state displays dual-screen layout
+- [✓] First screen fills viewport (min-h-[100dvh])
+- [✓] Down arrow has bounce animation (animate-bounce-down)
+- [✓] Click arrow scrolls smoothly to second screen
+- [✓] Second screen contains Quick Actions, Features, Account, Coming Soon
+- [✓] Mobile viewport handled correctly with 100dvh
+
+=== Summary ===
+All QA scenarios: PASS
+Screenshots saved: 3
+Build status: SUCCESS
