@@ -101,9 +101,15 @@ export function SchemeWizard({
                 key={step.key} 
                 className="flex items-center justify-center relative"
               >
-                {/* Connecting line (except last step) - positioned to the right half */}
+                {/* Connecting line (except last step) - starts from edge of circle, not center */}
                 {index < steps.length - 1 && (
-                  <div className="absolute left-1/2 right-0 h-0.5 bg-border/50 -translate-y-1/2">
+                  <div 
+                    className="absolute top-1/2 -translate-y-1/2 h-0.5 bg-border/50"
+                    style={{ 
+                      left: 'calc(50% + 1.25rem)',
+                      width: 'calc(100% - 2.5rem)'
+                    }}
+                  >
                     <div
                       className={`
                         absolute inset-y-0 left-0 transition-all duration-500 ease-out
