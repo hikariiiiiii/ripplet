@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { useState, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface NavItem {
   to?: string;
@@ -158,56 +158,62 @@ export function Sidebar() {
   const { t } = useTranslation();
   const location = useLocation();
   
-  const defaultCollapsed = useMemo(() => {
-    const expanded: string[] = [t('nav.overview'), t('scplus.title')]; // SC+ Labs default expanded
-    
-    for (const section of navSections) {
-      for (const item of section.items) {
-        if (item.to && location.pathname === item.to) {
-          const sectionTitle = t(section.titleKey);
-          if (!expanded.includes(sectionTitle)) {
-            expanded.push(sectionTitle);
-          }
+  // Use titleKey (stable) instead of translated title (changes on language switch)
+  const defaultExpandedKeys: string[] = ['nav.overview', 'scplus.title']; // SC+ Labs default expanded
+  
+  // Find current section based on pathname
+  for (const section of navSections) {
+    for (const item of section.items) {
+      if (item.to && location.pathname === item.to) {
+        if (!defaultExpandedKeys.includes(section.titleKey)) {
+          defaultExpandedKeys.push(section.titleKey);
         }
       }
     }
-    
-    return navSections
-      .map(s => t(s.titleKey))
-      .filter(title => !expanded.includes(title));
-  }, [location.pathname, t]);
+  }
   
-  const [collapsed, setCollapsed] = useState<string[]>(defaultCollapsed);
+  const allKeys = navSections.map(s => s.titleKey);
+  const defaultCollapsed = allKeys.filter(key => !defaultExpandedKeys.includes(key));
+  
+  const [collapsedKeys, setCollapsedKeys] = useState<string[]>(defaultCollapsed);
 
-  const toggleSection = (title: string) => {
-    setCollapsed(prev => 
-      prev.includes(title) 
-        ? prev.filter(t => t !== title)
-        : [...prev, title]
+  // Sync collapsed state when pathname changes (but preserve user's manual toggles)
+  const prevPathname = useRef(location.pathname);
+  useEffect(() => {
+    if (location.pathname !== prevPathname.current) {
+      prevPathname.current = location.pathname;
+      // Recalculate default collapsed, but keep user's toggles
+    }
+  }, [location.pathname]);
+
+  const toggleSection = (titleKey: string) => {
+    setCollapsedKeys(prev => 
+      prev.includes(titleKey) 
+        ? prev.filter(k => k !== titleKey)
+        : [...prev, titleKey]
     );
   };
 
-  const isSectionCollapsed = (title: string) => collapsed.includes(title);
+  const isSectionCollapsed = (titleKey: string) => collapsedKeys.includes(titleKey);
 
   return (
     <aside className="w-64 glass-card border-r border-border/50 flex flex-col shrink-0">
       <nav className="flex-1 p-3 space-y-4 overflow-y-auto overflow-x-hidden min-h-0">
         {navSections.map((section) => {
-          const sectionTitle = t(section.titleKey);
           return (
             <div key={section.titleKey} className="space-y-1">
               <button
-                onClick={() => toggleSection(sectionTitle)}
+                onClick={() => toggleSection(section.titleKey)}
                 className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
               >
-                <span>{sectionTitle}</span>
-                {isSectionCollapsed(sectionTitle) ? (
+                <span>{t(section.titleKey)}</span>
+                {isSectionCollapsed(section.titleKey) ? (
                   <ChevronRight className="w-3 h-3 transition-transform duration-200" />
                 ) : (
                   <ChevronDown className="w-3 h-3 transition-transform duration-200" />
                 )}
               </button>
-              {!isSectionCollapsed(sectionTitle) && (
+              {!isSectionCollapsed(section.titleKey) && (
                 <div className="space-y-0.5 mt-1 pl-3">
                   {section.items.map((item, index) => (
                     item.to ? (
@@ -251,17 +257,17 @@ export function Sidebar() {
         {/* SC+ Labs Section */}
         <div className="space-y-1 pt-4 border-t border-border/30">
           <button
-            onClick={() => toggleSection(t(scplusResources.titleKey))}
+            onClick={() => toggleSection(scplusResources.titleKey)}
             className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
           >
             <span>{t(scplusResources.titleKey)}</span>
-            {isSectionCollapsed(t(scplusResources.titleKey)) ? (
+            {isSectionCollapsed(scplusResources.titleKey) ? (
               <ChevronRight className="w-3 h-3 transition-transform duration-200" />
             ) : (
               <ChevronDown className="w-3 h-3 transition-transform duration-200" />
             )}
           </button>
-          {!isSectionCollapsed(t(scplusResources.titleKey)) && (
+          {!isSectionCollapsed(scplusResources.titleKey) && (
             <div className="space-y-0.5 mt-1 pl-3">
               {scplusResources.items.map((item, index) => (
                 item.to ? (
@@ -289,17 +295,17 @@ export function Sidebar() {
         {/* XRPL Resources Section */}
         <div className="space-y-1 pt-4 border-t border-border/30">
           <button
-            onClick={() => toggleSection(t(xrplResources.titleKey))}
+            onClick={() => toggleSection(xrplResources.titleKey)}
             className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
           >
             <span>{t(xrplResources.titleKey)}</span>
-            {isSectionCollapsed(t(xrplResources.titleKey)) ? (
+            {isSectionCollapsed(xrplResources.titleKey) ? (
               <ChevronRight className="w-3 h-3 transition-transform duration-200" />
             ) : (
               <ChevronDown className="w-3 h-3 transition-transform duration-200" />
             )}
           </button>
-          {!isSectionCollapsed(t(xrplResources.titleKey)) && (
+          {!isSectionCollapsed(xrplResources.titleKey) && (
             <div className="space-y-0.5 mt-1 pl-3">
               {xrplResources.items.map((item, index) => (
                 <a
