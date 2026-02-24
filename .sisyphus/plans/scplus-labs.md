@@ -572,19 +572,19 @@ Max Concurrent: 5 (Wave 1)
 
 ## Final Verification Wave (MANDATORY)
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Read the plan end-to-end. Verify all "Must Have" implemented, all "Must NOT Have" absent. Check evidence files exist.
   Output: `Must Have [N/N] | Must NOT Have [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run `tsc --noEmit` + `npm run lint`. Check for TypeScript errors, unused imports, console.log in prod.
   Output: `Build [PASS/FAIL] | Lint [PASS/FAIL] | VERDICT`
 
-- [ ] F3. **Real Manual QA** — `unspecified-high` (+ `playwright` skill)
+- [x] F3. **Real Manual QA** — `unspecified-high` (+ `playwright` skill)
   Execute EVERY QA scenario from EVERY task. Test cross-page navigation. Test wallet connection flow.
   Output: `Scenarios [N/N pass] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   Verify no scope creep: no localStorage, no backend API, no ErrorBoundary, no unit tests.
   Output: `Scope [CLEAN/ISSUES] | VERDICT`
 

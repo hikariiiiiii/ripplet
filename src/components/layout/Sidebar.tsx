@@ -132,20 +132,21 @@ const navSections: NavSection[] = [
       { to: undefined, icon: ArrowRightLeft, labelKey: 'nav.bridge', comingSoon: true },
     ],
   },
-  {
-    titleKey: 'scplus.title',
-    items: [
-      { to: '/scplus/overview', icon: Table, labelKey: 'scplus.overview' },
-      { to: '/scplus/mpt', icon: Box, labelKey: 'scplus.mpt' },
-      { to: '/scplus/iou', icon: Link2, labelKey: 'scplus.iou' },
-      { to: '/scplus/nft', icon: Layers, labelKey: 'scplus.nft' },
-      { to: '/scplus/credentials', icon: BadgeCheck, labelKey: 'scplus.credentials' },
-    ],
-  },
 ];
 
-const officialResources: NavSection = {
-  titleKey: 'nav.officialResources',
+const scplusResources: NavSection = {
+  titleKey: 'scplus.title',
+  items: [
+    { to: '/scplus/overview', icon: Table, labelKey: 'scplus.overview' },
+    { to: '/scplus/mpt', icon: Box, labelKey: 'scplus.mpt' },
+    { to: '/scplus/iou', icon: Link2, labelKey: 'scplus.iou' },
+    { to: '/scplus/nft', icon: Layers, labelKey: 'scplus.nft' },
+    { to: '/scplus/credentials', icon: BadgeCheck, labelKey: 'scplus.credentials' },
+  ],
+};
+
+const xrplResources: NavSection = {
+  titleKey: 'nav.xrplResources',
   items: [
     { icon: Globe, labelKey: 'nav.explorer', external: true, href: 'https://livenet.xrpl.org' },
     { icon: Droplets, labelKey: 'nav.faucet', external: true, href: 'https://xrpl.org/xrp-testnet-faucet.html' },
@@ -158,7 +159,7 @@ export function Sidebar() {
   const location = useLocation();
   
   const defaultCollapsed = useMemo(() => {
-    const expanded: string[] = [t('nav.overview')];
+    const expanded: string[] = [t('nav.overview'), t('scplus.title')]; // SC+ Labs default expanded
     
     for (const section of navSections) {
       for (const item of section.items) {
@@ -247,21 +248,60 @@ export function Sidebar() {
           );
         })}
         
+        {/* SC+ Labs Section */}
         <div className="space-y-1 pt-4 border-t border-border/30">
           <button
-            onClick={() => toggleSection(t(officialResources.titleKey))}
+            onClick={() => toggleSection(t(scplusResources.titleKey))}
             className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
           >
-            <span>{t(officialResources.titleKey)}</span>
-            {isSectionCollapsed(t(officialResources.titleKey)) ? (
+            <span>{t(scplusResources.titleKey)}</span>
+            {isSectionCollapsed(t(scplusResources.titleKey)) ? (
               <ChevronRight className="w-3 h-3 transition-transform duration-200" />
             ) : (
               <ChevronDown className="w-3 h-3 transition-transform duration-200" />
             )}
           </button>
-          {!isSectionCollapsed(t(officialResources.titleKey)) && (
+          {!isSectionCollapsed(t(scplusResources.titleKey)) && (
             <div className="space-y-0.5 mt-1 pl-3">
-              {officialResources.items.map((item, index) => (
+              {scplusResources.items.map((item, index) => (
+                item.to ? (
+                  <NavLink
+                    key={`${item.to}-${index}`}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'stagger-in group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                        isActive
+                          ? 'bg-white/10 text-white border border-white/20 shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
+                      )
+                    }
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{t(item.labelKey)}</span>
+                  </NavLink>
+                ) : null
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* XRPL Resources Section */}
+        <div className="space-y-1 pt-4 border-t border-border/30">
+          <button
+            onClick={() => toggleSection(t(xrplResources.titleKey))}
+            className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+          >
+            <span>{t(xrplResources.titleKey)}</span>
+            {isSectionCollapsed(t(xrplResources.titleKey)) ? (
+              <ChevronRight className="w-3 h-3 transition-transform duration-200" />
+            ) : (
+              <ChevronDown className="w-3 h-3 transition-transform duration-200" />
+            )}
+          </button>
+          {!isSectionCollapsed(t(xrplResources.titleKey)) && (
+            <div className="space-y-0.5 mt-1 pl-3">
+              {xrplResources.items.map((item, index) => (
                 <a
                   key={`${item.labelKey}-${index}`}
                   href={item.href}

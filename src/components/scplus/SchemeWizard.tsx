@@ -87,14 +87,14 @@ export function SchemeWizard({
           </span>
         </div>
 
-        {/* Horizontal step indicator */}
-        <div className="flex items-center gap-2">
+        {/* Horizontal step indicator - centered */}
+        <div className="flex items-center justify-center gap-2">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
 
             return (
-              <div key={step.key} className="flex items-center flex-1">
+              <div key={step.key} className="flex items-center">
                 {/* Step circle */}
                 <button
                   onClick={() => onStepChange(index)}
@@ -126,7 +126,7 @@ export function SchemeWizard({
 
                 {/* Connecting line */}
                 {index < steps.length - 1 && (
-                  <div className="flex-1 h-0.5 mx-2 relative overflow-hidden rounded-full">
+                  <div className="w-8 h-0.5 mx-1 relative overflow-hidden rounded-full">
                     <div
                       className={`
                         absolute inset-y-0 left-0 transition-all duration-500 ease-out
@@ -141,8 +141,8 @@ export function SchemeWizard({
           })}
         </div>
 
-        {/* Step titles row */}
-        <div className="flex mt-3 gap-2">
+        {/* Step titles row - centered with fixed width */}
+        <div className="flex justify-center gap-2 mt-4">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
@@ -150,18 +150,18 @@ export function SchemeWizard({
             return (
               <div
                 key={`title-${step.key}`}
-                className="flex-1 min-w-0"
+                className="w-[60px] flex flex-col items-center"
               >
                 <p
                   className={`
-                    text-xs text-center truncate transition-colors duration-200
+                    text-xs text-center leading-tight transition-colors duration-200
                     ${isCurrent ? colors.text + ' font-medium' : isCompleted ? 'text-foreground' : 'text-muted-foreground'}
                   `}
                 >
                   {step.title}
                 </p>
                 {step.description && isCurrent && (
-                  <p className="text-xs text-center text-muted-foreground/70 mt-0.5 truncate">
+                  <p className="text-xs text-center text-muted-foreground/70 mt-0.5 leading-tight">
                     {step.description}
                   </p>
                 )}
