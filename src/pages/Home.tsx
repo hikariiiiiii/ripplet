@@ -23,8 +23,7 @@ import {
   PlusCircle,
   Undo2,
   ArrowRight,
-  Zap,
-  Grid3X3,
+  LogOut,
 } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
@@ -54,7 +53,7 @@ interface CategoryCard {
 
 export default function Home() {
   const { t } = useTranslation();
-  const { connected, address, networkInfo } = useWalletStore();
+  const { connected, address, networkInfo, disconnect } = useWalletStore();
   const [copied, setCopied] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
@@ -193,8 +192,6 @@ export default function Home() {
     },
   ];
 
-  const totalTransactions = categories.reduce((sum, cat) => sum + cat.features.length, 0);
-
   const accountFeatures = [
     { to: '/account/accountset', icon: Settings, labelKey: 'nav.accountSet' },
     { to: '/account/accountdelete', icon: Trash2, labelKey: 'nav.accountDelete' },
@@ -235,8 +232,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-auto relative">
-      {/* Wallet Info Card */}
+    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
       <div 
         ref={cardRef}
         className="glass-card rounded-xl p-5 relative z-10"
@@ -274,66 +270,19 @@ export default function Home() {
               <span className="text-sm">{networkInfo.name}</span>
               <div className="w-2 h-2 rounded-full bg-xrpl-green animate-pulse" />
             </div>
-            <Link
-              to="/account/accountset"
-              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-              title={t('nav.accountSet')}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={disconnect}
+              className="text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
-              <Settings className="w-5 h-5 text-muted-foreground hover:text-foreground" />
-            </Link>
+              <LogOut className="w-4 h-4 mr-2" />
+              {t('wallet.disconnect')}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="glass-card rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-xrpl-green/10 flex items-center justify-center">
-              <Grid3X3 className="w-5 h-5 text-xrpl-green" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{totalTransactions}</p>
-              <p className="text-xs text-muted-foreground">{t('home.transactionTypes')}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neon-cyan/10 flex items-center justify-center">
-              <Link2 className="w-5 h-5 text-neon-cyan" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{categories.length}</p>
-              <p className="text-xs text-muted-foreground">{t('home.features')}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neon-purple/10 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-neon-purple" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{quickActions.length}</p>
-              <p className="text-xs text-muted-foreground">{t('home.quickActions')}</p>
-            </div>
-          </div>
-        </div>
-        <div className="glass-card rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center">
-              <User className="w-5 h-5 text-pink-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{accountFeatures.length}</p>
-              <p className="text-xs text-muted-foreground">{t('nav.account')}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">{t('home.quickActions')}</h2>
@@ -365,7 +314,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Feature Categories */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">{t('home.features')}</h2>
@@ -414,7 +362,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Account Management */}
       <div className="glass-card rounded-xl p-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center">
