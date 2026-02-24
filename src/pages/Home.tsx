@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { 
   Send, 
   Wallet, 
+  Copy,
+  Check,
+  Globe,
   Link2,
   Box,
   Layers,
@@ -19,6 +22,7 @@ import {
   PlusCircle,
   Undo2,
   ArrowRight,
+  LogOut,
   Sparkles,
   TrendingUp,
   ArrowRightLeft,
@@ -55,6 +59,11 @@ interface ComingSoonFeature {
   color: string;
   bgColor: string;
   count: number;
+}
+
+function truncateAddress(address: string): string {
+  if (address.length <= 12) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 // Dashboard content component - shared between connected state and second screen
@@ -394,9 +403,18 @@ function DashboardContent() {
 
 export default function Home() {
   const { t } = useTranslation();
-  const { connected } = useWalletStore();
+  const { connected, address, networkInfo, disconnect } = useWalletStore();
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [copied, setCopied] = useState(false);
   const featuresRef = useRef<HTMLDivElement>(null);
+
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const scrollToFeatures = () => {
     if (featuresRef.current) {
@@ -460,9 +478,56 @@ export default function Home() {
   }
 
 
-  // Connected state - skip hero, show dashboard directly
+  // Connected state - show wallet info and dashboard
   return (
     <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+      {/* Wallet Info Card */}
+      <div className="glass-card rounded-xl p-5 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-xrpl-green to-neon-blue flex items-center justify-center">
+              <Wallet className="w-7 h-7 text-background" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                {t('home.connectedAs')}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="font-mono-address text-lg text-foreground">
+                  {address && truncateAddress(address)}
+                </span>
+                <button
+                  onClick={copyAddress}
+                  className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-xrpl-green" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{networkInfo.name}</span>
+              <div className="w-2 h-2 rounded-full bg-xrpl-green animate-pulse" />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={disconnect}
+              className="hover:text-destructive hover:bg-destructive/10 hover:border-destructive/50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              {t('wallet.disconnect')}
+            </Button>
+          </div>
+        </div>
+      </div>
+      
       <DashboardContent />
     </div>
   );
