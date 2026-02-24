@@ -67,8 +67,8 @@ const navSections: NavSection[] = [
     items: [
       { to: '/xrp/payment', icon: Coins, labelKey: 'nav.payment' },
       { to: '/xrp/escrow/create', icon: Lock, labelKey: 'nav.escrowCreate' },
-      { to: '/xrp/escrow/finish', icon: Lock, labelKey: 'nav.escrowFinish' },
-      { to: '/xrp/escrow/cancel', icon: Lock, labelKey: 'nav.escrowCancel' },
+      { to: '/xrp/escrow/finish', icon: CheckCircle, labelKey: 'nav.escrowFinish' },
+      { to: '/xrp/escrow/cancel', icon: XCircle, labelKey: 'nav.escrowCancel' },
     ],
   },
   {
@@ -78,7 +78,7 @@ const navSections: NavSection[] = [
       { to: '/iou/payment', icon: Coins, labelKey: 'nav.iouPayment' },
       { to: '/iou/accountset', icon: User, labelKey: 'nav.accountSetIssuer' },
       { to: '/iou/escrow/create', icon: Lock, labelKey: 'nav.iouEscrowCreate' },
-      { to: '/iou/escrow/finish', icon: Lock, labelKey: 'nav.iouEscrowFinish' },
+      { to: '/iou/escrow/finish', icon: CheckCircle, labelKey: 'nav.iouEscrowFinish' },
       { to: '/iou/escrow/cancel', icon: XCircle, labelKey: 'nav.iouEscrowCancel' },
       { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
       { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },

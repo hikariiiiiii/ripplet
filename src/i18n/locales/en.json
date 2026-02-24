@@ -35,7 +35,7 @@
     "mptDestroy": "Destroy MPT",
     "mptAuthorize": "Authorize MPT",
     "mptTransfer": "Transfer MPT",
-    "mptEscrowCreate": "MPT Escrow",
+    "mptEscrowCreate": "Create Escrow",
     "mptLock": "Lock/Freeze MPT",
     "mptClawback": "Clawback MPT",
     "credential": "Credential",
@@ -448,6 +448,14 @@
       "conditionPlaceholder": "Hex-encoded crypto-condition",
       "conditionHint": "Optional: A hex-encoded crypto-condition that must be met to finish",
       "ledgerIndexInvalid": "Ledger index must be a valid positive integer"
+    },
+    "escrowFinish": {
+      "title": "Finish Escrow",
+      "subtitle": "Release MPT tokens from escrow"
+    },
+    "escrowCancel": {
+      "title": "Cancel Escrow",
+      "subtitle": "Cancel an MPT escrow and return funds"
     }
   },
   "nftMint": {
