@@ -8,8 +8,8 @@ export default function MPTEscrowCreatePage() {
 
   return (
     <TransactionPageWrapper
-      title={t('mptEscrowCreate.title')}
-      subtitle={t('mptEscrowCreate.subtitle')}
+      title={t('mpt.escrowCreate.title')}
+      subtitle={t('mpt.escrowCreate.subtitle')}
       icon={<Lock className="w-5 h-5 text-orange-500" />}
       iconBgColor="bg-orange-500/10"
       borderColor="border-orange-500/20"
