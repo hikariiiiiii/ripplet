@@ -432,9 +432,9 @@ export default function Home() {
 
   if (!connected) {
     return (
-      <>
+      <div className="flex-1 overflow-y-auto relative z-10">
         {/* First Screen - Hero Section */}
-        <div className="h-full flex items-center justify-center p-6 relative shrink-0">
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6 relative shrink-0">
           <div className="max-w-md w-full text-center space-y-8">
             <div className="flex justify-center">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-400/20 flex items-center justify-center shadow-lg border border-primary/30">
@@ -470,17 +470,17 @@ export default function Home() {
           </div>
         </div>
         {/* Second Screen - Features Section */}
-        <div id="features-section" ref={featuresRef} className="min-h-[100dvh] p-6 space-y-6">
+        <div id="features-section" ref={featuresRef} className="min-h-[calc(100vh-4rem)] p-6 space-y-6">
           <DashboardContent />
         </div>
-      </>
+      </div>
     );
   }
 
 
   // Connected state - show wallet info and dashboard
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+    <div className="flex-1 p-6 space-y-6 overflow-y-auto relative z-10">
       {/* Wallet Info Card */}
       <div className="glass-card rounded-xl p-5 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

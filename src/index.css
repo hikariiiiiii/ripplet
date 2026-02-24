@@ -155,6 +155,7 @@
       linear-gradient(90deg, hsl(var(--border) / 0.4) 1px, transparent 1px);
     background-size: 60px 60px;
     animation: gridSlide 20s ease infinite;
+    will-change: background-position;
   }
 
   @keyframes gridSlide {
