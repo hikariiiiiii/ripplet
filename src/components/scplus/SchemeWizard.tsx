@@ -87,46 +87,48 @@ export function SchemeWizard({
           </span>
         </div>
 
-        {/* Horizontal step indicator - centered */}
-        <div className="flex items-center justify-center gap-2">
+        {/* Horizontal step indicator - evenly distributed */}
+        <div className="flex items-center w-full">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
 
             return (
-              <div key={step.key} className="flex items-center">
-                {/* Step circle */}
-                <button
-                  onClick={() => onStepChange(index)}
-                  className={`
-                    relative flex items-center justify-center w-10 h-10 rounded-full
-                    transition-all duration-300 flex-shrink-0
-                    ${isCompleted
-                      ? `${colors.bg} ${colors.border} border-2`
-                      : isCurrent
-                        ? `${colors.bg} ${colors.border} border-2 ring-2 ring-offset-2 ring-offset-background ${colors.text.replace('text-', 'ring-')}`
-                        : 'bg-muted/30 border border-border/50'
-                    }
-                  `}
-                  aria-label={step.title}
-                >
-                  {isCompleted ? (
-                    <Check className={`w-5 h-5 ${colors.text}`} />
-                  ) : (
-                    <span
-                      className={`
-                        text-sm font-semibold
-                        ${isCurrent ? colors.text : 'text-muted-foreground'}
-                      `}
-                    >
-                      {index + 1}
-                    </span>
-                  )}
-                </button>
+              <div key={step.key} className="flex-1 flex items-center">
+                {/* Step circle - centered in its column */}
+                <div className="flex-1 flex items-center justify-center">
+                  <button
+                    onClick={() => onStepChange(index)}
+                    className={`
+                      relative flex items-center justify-center w-10 h-10 rounded-full
+                      transition-all duration-300 flex-shrink-0
+                      ${isCompleted
+                        ? `${colors.bg} ${colors.border} border-2`
+                        : isCurrent
+                          ? `${colors.bg} ${colors.border} border-2 ring-2 ring-offset-2 ring-offset-background ${colors.text.replace('text-', 'ring-')}`
+                          : 'bg-muted/30 border border-border/50'
+                      }
+                    `}
+                    aria-label={step.title}
+                  >
+                    {isCompleted ? (
+                      <Check className={`w-5 h-5 ${colors.text}`} />
+                    ) : (
+                      <span
+                        className={`
+                          text-sm font-semibold
+                          ${isCurrent ? colors.text : 'text-muted-foreground'}
+                        `}
+                      >
+                        {index + 1}
+                      </span>
+                    )}
+                  </button>
+                </div>
 
                 {/* Connecting line */}
                 {index < steps.length - 1 && (
-                  <div className="w-8 h-0.5 mx-1 relative overflow-hidden rounded-full">
+                  <div className="flex-1 h-0.5 mx-2 relative overflow-hidden rounded-full min-w-[16px]">
                     <div
                       className={`
                         absolute inset-y-0 left-0 transition-all duration-500 ease-out
@@ -141,8 +143,8 @@ export function SchemeWizard({
           })}
         </div>
 
-        {/* Step titles row - centered with fixed width */}
-        <div className="flex justify-center gap-2 mt-4">
+        {/* Step titles row - evenly distributed with auto wrap */}
+        <div className="flex w-full mt-4">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
@@ -150,7 +152,7 @@ export function SchemeWizard({
             return (
               <div
                 key={`title-${step.key}`}
-                className="w-[60px] flex flex-col items-center"
+                className="flex-1 flex flex-col items-center px-1"
               >
                 <p
                   className={`
