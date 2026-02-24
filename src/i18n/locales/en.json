@@ -510,5 +510,76 @@
     "accountChangedDesc": "Wallet account has been switched",
     "walletDisconnected": "Wallet Disconnected",
     "walletDisconnectedDesc": "Your wallet has been disconnected"
+  },
+  "scplus": {
+    "title": "SC+ Labs",
+    "overview": "Overview",
+    "mpt": "MPT Scheme",
+    "iou": "IOU Scheme",
+    "nft": "NFT Scheme",
+    "credentials": "Credentials Scheme",
+    "overviewPage": {
+      "title": "SC+ Credential Implementation Schemes",
+      "subtitle": "Four technical approaches for supply chain finance on XRPL",
+      "comparison": "Scheme Comparison",
+      "scheme": "Scheme",
+      "positioning": "Positioning",
+      "features": "Key Features",
+      "bestFor": "Best For",
+      "transactionSteps": "Transaction Steps"
+    },
+    "mptScheme": {
+      "title": "MPT (Multi-Purpose Token) Scheme",
+      "subtitle": "Ripple's RWA strategic direction with native metadata",
+      "positioning": "Ripple's RWA strategic direction",
+      "features": "Native metadata, fine-grained permissions, Clawback capability",
+      "bestFor": "Enterprise RWA tokenization",
+      "step1": "Define Credential",
+      "step2": "KYC (Optional)",
+      "step3": "Authorize Holders",
+      "step4": "Issue Credential",
+      "step5": "Transfer",
+      "step6": "Redemption"
+    },
+    "iouScheme": {
+      "title": "IOU (Trustline Token) Scheme",
+      "subtitle": "Fast and flexible, leveraging mature ecosystem",
+      "positioning": "Fast and flexible",
+      "features": "Mature ecosystem, Memo field support",
+      "bestFor": "Quick deployment",
+      "step1": "Setup Trustline",
+      "step2": "Issue Credential",
+      "step3": "Transfer",
+      "step4": "Redemption"
+    },
+    "nftScheme": {
+      "title": "NFT (Non-Fungible Token) Scheme",
+      "subtitle": "Perfect fit for one-invoice-one-credential model",
+      "positioning": "One-invoice-one-credential model",
+      "features": "Built-in marketplace, unique token per invoice",
+      "bestFor": "Unique asset representation",
+      "step1": "Mint NFT",
+      "step2": "Create Offer",
+      "step3": "Accept Offer",
+      "step4": "Burn (Redemption)"
+    },
+    "credentialsScheme": {
+      "title": "Credentials Scheme",
+      "subtitle": "Maximum compliance as non-token attestation",
+      "positioning": "Maximum compliance",
+      "features": "Non-token attestation, pure on-chain proof",
+      "bestFor": "Regulatory environments",
+      "step1": "Issue Credential",
+      "step2": "Transfer (Re-issue)",
+      "step3": "Delete (Redemption)"
+    },
+    "wizard": {
+      "step": "Step",
+      "of": "of",
+      "next": "Next",
+      "prev": "Previous",
+      "complete": "Complete",
+      "refreshWarning": "Refreshing the page will reset your progress"
+    }
   }
 }

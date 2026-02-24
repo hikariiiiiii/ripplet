@@ -33,6 +33,11 @@ import MPTEscrowFinish from '@/pages/MPTEscrowFinish';
 import MPTEscrowCancel from '@/pages/MPTEscrowCancel';
 import MPTLock from '@/pages/MPTLock';
 import MPTClawback from '@/pages/MPTClawback';
+import SCPlusOverview from '@/pages/scplus/SCPlusOverview';
+import MPTScheme from '@/pages/scplus/MPTScheme';
+import IOUScheme from '@/pages/scplus/IOUScheme';
+import NFTScheme from '@/pages/scplus/NFTScheme';
+import CredentialsScheme from '@/pages/scplus/CredentialsScheme';
 import { useWalletEvents } from '@/hooks/useWalletEvents';
 
 function WalletEventListener() {
@@ -79,6 +84,11 @@ export default function App() {
           <Route path="nft/createoffer" element={<NFTokenCreateOffer />} />
           <Route path="nft/acceptoffer" element={<NFTokenAcceptOffer />} />
           <Route path="nft/offercancel" element={<NFTokenCancelOffer />} />
+          <Route path="scplus/overview" element={<SCPlusOverview />} />
+          <Route path="scplus/mpt" element={<MPTScheme />} />
+          <Route path="scplus/iou" element={<IOUScheme />} />
+          <Route path="scplus/nft" element={<NFTScheme />} />
+          <Route path="scplus/credentials" element={<CredentialsScheme />} />
         </Route>
       </Routes>
       <Toaster />

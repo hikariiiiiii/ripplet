@@ -507,5 +507,76 @@
     "accountChangedDesc": "钱包账户已切换",
     "walletDisconnected": "钱包已断开",
     "walletDisconnectedDesc": "您的钱包已断开连接"
+  },
+  "scplus": {
+    "title": "SC+ Labs",
+    "overview": "概述",
+    "mpt": "MPT 方案",
+    "iou": "IOU 方案",
+    "nft": "NFT 方案",
+    "credentials": "Credentials 方案",
+    "overviewPage": {
+      "title": "SC+ 凭证实施方案",
+      "subtitle": "基于 XRPL 的供应链金融四种技术方案",
+      "comparison": "方案对比",
+      "scheme": "方案",
+      "positioning": "定位",
+      "features": "核心特性",
+      "bestFor": "适用场景",
+      "transactionSteps": "交易步骤"
+    },
+    "mptScheme": {
+      "title": "MPT (多用途代币) 方案",
+      "subtitle": "Ripple RWA 战略方向，原生元数据支持",
+      "positioning": "Ripple RWA 战略方向",
+      "features": "原生元数据、细粒度权限、Clawback 能力",
+      "bestFor": "企业级 RWA 代币化",
+      "step1": "定义凭证",
+      "step2": "KYC (可选)",
+      "step3": "授权持有者",
+      "step4": "发行凭证",
+      "step5": "转账",
+      "step6": "赎回"
+    },
+    "iouScheme": {
+      "title": "IOU (信任线代币) 方案",
+      "subtitle": "快速灵活，利用成熟生态",
+      "positioning": "快速灵活",
+      "features": "成熟生态、Memo 字段支持",
+      "bestFor": "快速部署",
+      "step1": "设置信任线",
+      "step2": "发行凭证",
+      "step3": "转账",
+      "step4": "赎回"
+    },
+    "nftScheme": {
+      "title": "NFT (非同质化代币) 方案",
+      "subtitle": "一票一凭证模式的完美适配",
+      "positioning": "一票一凭证模式",
+      "features": "内置市场、每张发票唯一代币",
+      "bestFor": "独特资产表示",
+      "step1": "铸造 NFT",
+      "step2": "创建挂单",
+      "step3": "接受挂单",
+      "step4": "销毁 (赎回)"
+    },
+    "credentialsScheme": {
+      "title": "Credentials 方案",
+      "subtitle": "最大合规性，非代币证明",
+      "positioning": "最大合规性",
+      "features": "非代币证明、纯链上凭证",
+      "bestFor": "监管环境",
+      "step1": "发行凭证",
+      "step2": "转账 (重新发行)",
+      "step3": "删除 (赎回)"
+    },
+    "wizard": {
+      "step": "步骤",
+      "of": "/",
+      "next": "下一步",
+      "prev": "上一步",
+      "complete": "完成",
+      "refreshWarning": "刷新页面将重置您的进度"
+    }
   }
 }

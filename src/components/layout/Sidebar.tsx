@@ -27,7 +27,8 @@ import {
   Flame,
   Tags,
   Send,
-  Undo2
+  Undo2,
+  Table
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -129,6 +130,16 @@ const navSections: NavSection[] = [
     titleKey: 'nav.crossChain',
     items: [
       { to: undefined, icon: ArrowRightLeft, labelKey: 'nav.bridge', comingSoon: true },
+    ],
+  },
+  {
+    titleKey: 'scplus.title',
+    items: [
+      { to: '/scplus/overview', icon: Table, labelKey: 'scplus.overview' },
+      { to: '/scplus/mpt', icon: Box, labelKey: 'scplus.mpt' },
+      { to: '/scplus/iou', icon: Link2, labelKey: 'scplus.iou' },
+      { to: '/scplus/nft', icon: Layers, labelKey: 'scplus.nft' },
+      { to: '/scplus/credentials', icon: BadgeCheck, labelKey: 'scplus.credentials' },
     ],
   },
 ];
