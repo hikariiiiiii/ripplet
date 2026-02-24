@@ -22,6 +22,7 @@
     "offerCreate": "Create Offer",
     "offerCancel": "Cancel Offer",
     "nft": "NFT",
+    "mpt": "MPT",
     "nftMint": "Mint NFT",
     "nftBurn": "Burn NFT",
     "nftCreateOffer": "Create NFT Offer",
@@ -428,6 +429,28 @@
   },
   "nftAcceptOffer": {
     "title": "Accept NFT Offer"
+  },
+  "nftCancelOffer": {
+    "title": "Cancel NFT Offer",
+    "subtitle": "Cancel an NFT offer you created",
+    "nftOffers": "NFT Offer IDs",
+    "nftOffersPlaceholder": "Enter NFT offer ID",
+    "nftOffersRequired": "At least one NFT offer ID is required",
+    "addOffer": "Add Offer"
+  },
+  "iouEscrowCancel": {
+    "title": "Cancel Escrow",
+    "subtitle": "Cancel an IOU escrow and return funds",
+    "owner": "Owner",
+    "ownerPlaceholder": "r...",
+    "ownerRequired": "Owner address is required",
+    "ownerInvalid": "Invalid XRPL address format",
+    "ownerHint": "The account that created the escrow",
+    "offerSequence": "Offer Sequence",
+    "offerSequencePlaceholder": "Sequence number",
+    "offerSequenceRequired": "Offer sequence is required",
+    "offerSequenceInvalid": "Offer sequence must be a non-negative integer",
+    "offerSequenceHint": "The sequence number of the escrow creation transaction"
   },
   "toast": {
     "networkChanged": "Network Changed",
