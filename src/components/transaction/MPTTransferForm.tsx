@@ -43,6 +43,7 @@ export function MPTTransferForm({
     handleSubmit,
     watch,
     trigger,
+    setFocus,
     formState: { errors },
   } = useForm<MPTTransferFormData>({
     defaultValues: {
@@ -54,7 +55,11 @@ export function MPTTransferForm({
     },
   })
 
-  const watchedFields = watch()
+  const destination = watch('destination')
+  const mptIssuanceId = watch('mptIssuanceId')
+  const amount = watch('amount')
+  const destinationTag = watch('destinationTag')
+  const memo = watch('memo')
 
   // Auto-refresh Transaction JSON when form changes and preview is open
   useEffect(() => {
@@ -67,14 +72,14 @@ export function MPTTransferForm({
       try {
         const tx = buildMPTTransfer({
           Account: account,
-          Destination: watchedFields.destination,
+          Destination: destination,
           Amount: {
-            mpt_issuance_id: watchedFields.mptIssuanceId,
-            value: watchedFields.amount,
+            mpt_issuance_id: mptIssuanceId,
+            value: amount,
           },
-          DestinationTag: watchedFields.destinationTag ? parseInt(watchedFields.destinationTag, 10) : undefined,
-          Memos: watchedFields.memo
-            ? [{ Memo: { MemoData: watchedFields.memo } }]
+          DestinationTag: destinationTag ? parseInt(destinationTag, 10) : undefined,
+          Memos: memo
+            ? [{ Memo: { MemoData: memo } }]
             : undefined,
         })
         setTransactionJson(tx)
@@ -84,7 +89,7 @@ export function MPTTransferForm({
     }
 
     validateAndBuild()
-  }, [watchedFields, showPreview, account, trigger])
+  }, [destination, mptIssuanceId, amount, destinationTag, memo, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -93,22 +98,32 @@ export function MPTTransferForm({
       return
     }
 
-    const isValid = await trigger(['destination', 'mptIssuanceId', 'amount'])
-    if (!isValid) return
+    const fieldsToValidate = ['destination', 'mptIssuanceId', 'amount'] as const
+    const isValid = await trigger(fieldsToValidate)
+    if (!isValid) {
+      // Focus on the first field with an error
+      for (const field of fieldsToValidate) {
+        if (errors[field]) {
+          setFocus(field)
+          break
+        }
+      }
+      return
+    }
 
     setBuildError(null)
 
     try {
       const tx = buildMPTTransfer({
         Account: account,
-        Destination: watchedFields.destination,
+        Destination: destination,
         Amount: {
-          mpt_issuance_id: watchedFields.mptIssuanceId,
-          value: watchedFields.amount,
+          mpt_issuance_id: mptIssuanceId,
+          value: amount,
         },
-        DestinationTag: watchedFields.destinationTag ? parseInt(watchedFields.destinationTag, 10) : undefined,
-        Memos: watchedFields.memo
-          ? [{ Memo: { MemoData: watchedFields.memo } }]
+        DestinationTag: destinationTag ? parseInt(destinationTag, 10) : undefined,
+        Memos: memo
+          ? [{ Memo: { MemoData: memo } }]
           : undefined,
       })
       setTransactionJson(tx)

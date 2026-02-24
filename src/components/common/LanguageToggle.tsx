@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 
 const LANGUAGES = [
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'zh', label: '中文', flag: '🇨🇳' },
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文' },
 ] as const;
 
 type LanguageCode = 'en' | 'zh';
@@ -32,11 +32,6 @@ export function LanguageToggle() {
     setIsOpen(false);
   };
 
-  const getCurrentFlag = () => {
-    const lang = LANGUAGES.find(l => l.code === currentLang);
-    return lang?.flag || '🇺🇸';
-  };
-
   const getCurrentLabel = () => {
     return currentLang.toUpperCase();
   };
@@ -48,8 +43,7 @@ export function LanguageToggle() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
       >
         <Globe className="w-4 h-4" />
-        <span className="hidden sm:inline text-sm">{getCurrentLabel()}</span>
-        <span className="sm:hidden text-base">{getCurrentFlag()}</span>
+        <span className="text-sm">{getCurrentLabel()}</span>
         <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -64,10 +58,7 @@ export function LanguageToggle() {
                   currentLang === lang.code ? 'text-white' : 'text-slate-400'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{lang.flag}</span>
-                  <span>{lang.label}</span>
-                </div>
+                <span>{lang.label}</span>
                 {currentLang === lang.code && (
                   <Check className="w-4 h-4 text-cyan-400" />
                 )}
