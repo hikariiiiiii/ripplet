@@ -64,7 +64,21 @@
     "trustSetTitle": "Manage Trust Lines",
     "trustSetDescription": "Set up trust lines for tokens",
     "accountSetTitle": "Account Settings",
-    "accountSetDescription": "Configure your account flags"
+    "accountSetDescription": "Configure your account flags",
+    "features": "Features",
+    "viewAll": "View All",
+    "transactionTypes": "Transaction Types",
+    "supported": "Supported",
+    "categoryXRP": "XRP",
+    "categoryXRPDesc": "Native XRP transactions",
+    "categoryIOU": "IOU Tokens",
+    "categoryIOUDesc": "Issued currencies & DEX",
+    "categoryMPT": "MPT",
+    "categoryMPTDesc": "Multi-Purpose Tokens",
+    "categoryNFT": "NFT",
+    "categoryNFTDesc": "Non-Fungible Tokens",
+    "categoryCredential": "Credential",
+    "categoryCredentialDesc": "Identity verification"
   },
   "wallet": {
     "connect": "Connect Wallet",

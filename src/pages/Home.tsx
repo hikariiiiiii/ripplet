@@ -2,21 +2,29 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { 
   Send, 
-  Shield, 
-  Settings, 
   Wallet, 
-  ArrowRight, 
-  Layers,
-  Coins,
-  FileCheck,
-  Database,
-  Activity,
   Copy,
   Check,
-  Terminal,
   Globe,
-  ChevronRight,
-
+  Coins,
+  Link2,
+  Box,
+  Layers,
+  BadgeCheck,
+  Lock,
+  Settings,
+  User,
+  Trash2,
+  UserCheck,
+  Flame,
+  Tags,
+  CheckCircle,
+  XCircle,
+  PlusCircle,
+  Undo2,
+  ArrowRight,
+  Zap,
+  Grid3X3,
 } from 'lucide-react';
 import { useWalletStore } from '@/stores/wallet';
 import { Button } from '@/components/ui/button';
@@ -27,6 +35,21 @@ import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+interface FeatureItem {
+  to: string;
+  icon: React.ElementType;
+  labelKey: string;
+}
+
+interface CategoryCard {
+  titleKey: string;
+  descKey: string;
+  icon: React.ElementType;
+  color: string;
+  bgColor: string;
+  features: FeatureItem[];
 }
 
 export default function Home() {
@@ -63,30 +86,118 @@ export default function Home() {
       title: t('home.paymentTitle'),
       description: t('home.paymentDescription'),
       icon: Send,
-      href: '/payment',
-      iconColor: 'text-accent',
+      href: '/xrp/payment',
+      iconColor: 'text-xrpl-green',
+      bgColor: 'bg-xrpl-green/10',
     },
     {
       title: t('home.trustSetTitle'),
       description: t('home.trustSetDescription'),
-      icon: Shield,
-      href: '/trustset',
+      icon: Link2,
+      href: '/iou/trustset',
       iconColor: 'text-neon-cyan',
+      bgColor: 'bg-neon-cyan/10',
     },
     {
-      title: t('home.accountSetTitle'),
-      description: t('home.accountSetDescription'),
-      icon: Settings,
-      href: '/accountset',
+      title: t('nav.mptTransfer'),
+      description: t('mptTransfer.subtitle'),
+      icon: Send,
+      href: '/mpt/transfer',
       iconColor: 'text-neon-purple',
+      bgColor: 'bg-neon-purple/10',
+    },
+    {
+      title: t('nav.nftMint'),
+      description: t('nftMint.title'),
+      icon: Layers,
+      href: '/nft/mint',
+      iconColor: 'text-pink-500',
+      bgColor: 'bg-pink-500/10',
     },
   ];
 
-  const comingSoonFeatures = [
-    { title: 'NFT', icon: Layers, description: 'Non-Fungible Tokens' },
-    { title: 'MPT', icon: Coins, description: 'Multi-Purpose Tokens' },
-    { title: 'Credential', icon: FileCheck, description: 'Identity Verification' },
-    { title: 'Vault', icon: Database, description: 'Secure Storage' },
+  const categories: CategoryCard[] = [
+    {
+      titleKey: 'home.categoryXRP',
+      descKey: 'home.categoryXRPDesc',
+      icon: Coins,
+      color: 'text-xrpl-green',
+      bgColor: 'bg-xrpl-green/10',
+      features: [
+        { to: '/xrp/payment', icon: Send, labelKey: 'nav.payment' },
+        { to: '/xrp/escrow/create', icon: Lock, labelKey: 'nav.escrowCreate' },
+        { to: '/xrp/escrow/finish', icon: CheckCircle, labelKey: 'nav.escrowFinish' },
+        { to: '/xrp/escrow/cancel', icon: XCircle, labelKey: 'nav.escrowCancel' },
+      ],
+    },
+    {
+      titleKey: 'home.categoryIOU',
+      descKey: 'home.categoryIOUDesc',
+      icon: Link2,
+      color: 'text-neon-cyan',
+      bgColor: 'bg-neon-cyan/10',
+      features: [
+        { to: '/iou/trustset', icon: Link2, labelKey: 'nav.trustSet' },
+        { to: '/iou/payment', icon: Coins, labelKey: 'nav.iouPayment' },
+        { to: '/iou/escrow/create', icon: Lock, labelKey: 'nav.iouEscrowCreate' },
+        { to: '/iou/escrow/finish', icon: CheckCircle, labelKey: 'nav.iouEscrowFinish' },
+        { to: '/iou/escrow/cancel', icon: XCircle, labelKey: 'nav.iouEscrowCancel' },
+        { to: '/iou/offercreate', icon: PlusCircle, labelKey: 'nav.offerCreate' },
+        { to: '/iou/offercancel', icon: XCircle, labelKey: 'nav.offerCancel' },
+      ],
+    },
+    {
+      titleKey: 'home.categoryMPT',
+      descKey: 'home.categoryMPTDesc',
+      icon: Box,
+      color: 'text-neon-purple',
+      bgColor: 'bg-neon-purple/10',
+      features: [
+        { to: '/mpt/create', icon: Box, labelKey: 'nav.mptCreate' },
+        { to: '/mpt/set', icon: Settings, labelKey: 'nav.mptSet' },
+        { to: '/mpt/destroy', icon: Trash2, labelKey: 'nav.mptDestroy' },
+        { to: '/mpt/authorize', icon: UserCheck, labelKey: 'nav.mptAuthorize' },
+        { to: '/mpt/transfer', icon: Send, labelKey: 'nav.mptTransfer' },
+        { to: '/mpt/escrow/create', icon: Lock, labelKey: 'nav.mptEscrowCreate' },
+        { to: '/mpt/escrow/finish', icon: CheckCircle, labelKey: 'nav.mptEscrowFinish' },
+        { to: '/mpt/escrow/cancel', icon: XCircle, labelKey: 'nav.mptEscrowCancel' },
+        { to: '/mpt/lock', icon: Lock, labelKey: 'nav.mptLock' },
+        { to: '/mpt/clawback', icon: Undo2, labelKey: 'nav.mptClawback' },
+      ],
+    },
+    {
+      titleKey: 'home.categoryNFT',
+      descKey: 'home.categoryNFTDesc',
+      icon: Layers,
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-500/10',
+      features: [
+        { to: '/nft/mint', icon: Layers, labelKey: 'nav.nftMint' },
+        { to: '/nft/burn', icon: Flame, labelKey: 'nav.nftBurn' },
+        { to: '/nft/createoffer', icon: Tags, labelKey: 'nav.nftCreateOffer' },
+        { to: '/nft/acceptoffer', icon: CheckCircle, labelKey: 'nav.nftAcceptOffer' },
+        { to: '/nft/offercancel', icon: XCircle, labelKey: 'nav.nftCancelOffer' },
+      ],
+    },
+    {
+      titleKey: 'home.categoryCredential',
+      descKey: 'home.categoryCredentialDesc',
+      icon: BadgeCheck,
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-500/10',
+      features: [
+        { to: '/credential/create', icon: BadgeCheck, labelKey: 'nav.credentialCreate' },
+        { to: '/credential/accept', icon: CheckCircle, labelKey: 'nav.credentialAccept' },
+        { to: '/credential/delete', icon: Trash2, labelKey: 'nav.credentialDelete' },
+      ],
+    },
+  ];
+
+  const totalTransactions = categories.reduce((sum, cat) => sum + cat.features.length, 0);
+
+  const accountFeatures = [
+    { to: '/account/accountset', icon: Settings, labelKey: 'nav.accountSet' },
+    { to: '/account/accountdelete', icon: Trash2, labelKey: 'nav.accountDelete' },
   ];
 
   if (!connected) {
@@ -117,16 +228,15 @@ export default function Home() {
             {t('wallet.connect')}
           </Button>
 
-
-
           <WalletSelectModal open={showWalletModal} onOpenChange={setShowWalletModal} />
         </div>
-        </div>
+      </div>
     );
   }
 
   return (
     <div className="flex-1 p-6 space-y-6 overflow-auto relative">
+      {/* Wallet Info Card */}
       <div 
         ref={cardRef}
         className="glass-card rounded-xl p-5 relative z-10"
@@ -134,7 +244,7 @@ export default function Home() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-neon-blue flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-xrpl-green to-neon-blue flex items-center justify-center">
               <Wallet className="w-7 h-7 text-background" />
             </div>
             <div>
@@ -150,7 +260,7 @@ export default function Home() {
                   className="p-1.5 rounded-md hover:bg-secondary transition-colors"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-accent" />
+                    <Check className="w-4 h-4 text-xrpl-green" />
                   ) : (
                     <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                   )}
@@ -158,111 +268,180 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
-            <Globe className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm">{networkInfo.name}</span>
-            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {quickActions.map((action, index) => {
-          const Icon = action.icon;
-          return (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50 border border-border/50">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{networkInfo.name}</span>
+              <div className="w-2 h-2 rounded-full bg-xrpl-green animate-pulse" />
+            </div>
             <Link
-              key={action.href}
-              to={action.href}
-              className="feature-card p-5 group"
-              style={{ animationDelay: `${(index + 1) * 100}ms` } as React.CSSProperties}
+              to="/account/accountset"
+              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+              title={t('nav.accountSet')}
             >
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center">
-                    <Icon className={`w-6 h-6 ${action.iconColor}`} />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-accent group-hover:translate-x-1 transition-all" />
-                </div>
-                
-                <h3 className="text-lg font-semibold mb-1 group-hover:text-accent transition-colors">
-                  {action.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {action.description}
-                </p>
-                
-                <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Terminal className="w-3 h-3 text-accent" />
-                  <span className="font-mono-address">Build & Sign</span>
-                  <ChevronRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
+              <Settings className="w-5 h-5 text-muted-foreground hover:text-foreground" />
             </Link>
-          );
-        })}
+          </div>
+        </div>
       </div>
 
-      <div className="glass-card rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-muted-foreground" />
-            <h3 className="font-semibold">Coming Soon</h3>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-xrpl-green/10 flex items-center justify-center">
+              <Grid3X3 className="w-5 h-5 text-xrpl-green" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{totalTransactions}</p>
+              <p className="text-xs text-muted-foreground">{t('home.transactionTypes')}</p>
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-secondary/50">
-            Q2 2026
-          </span>
         </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {comingSoonFeatures.map((feature) => {
-            const Icon = feature.icon;
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-neon-cyan/10 flex items-center justify-center">
+              <Link2 className="w-5 h-5 text-neon-cyan" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{categories.length}</p>
+              <p className="text-xs text-muted-foreground">{t('home.features')}</p>
+            </div>
+          </div>
+        </div>
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-neon-purple/10 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-neon-purple" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{quickActions.length}</p>
+              <p className="text-xs text-muted-foreground">{t('home.quickActions')}</p>
+            </div>
+          </div>
+        </div>
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-pink-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{accountFeatures.length}</p>
+              <p className="text-xs text-muted-foreground">{t('nav.account')}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">{t('home.quickActions')}</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.href}
+                to={action.href}
+                className="feature-card p-4 group"
+                style={{ animationDelay: `${(index + 1) * 50}ms` } as React.CSSProperties}
+              >
+                <div className="relative z-10">
+                  <div className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center mb-3`}>
+                    <Icon className={`w-5 h-5 ${action.iconColor}`} />
+                  </div>
+                  <h3 className="font-medium text-sm group-hover:text-xrpl-green transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {action.description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Feature Categories */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">{t('home.features')}</h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {categories.map((category, catIndex) => {
+            const CatIcon = category.icon;
             return (
               <div
-                key={feature.title}
-                className="p-4 rounded-xl bg-secondary/30 border border-border/30 hover:border-accent/30 transition-colors"
+                key={category.titleKey}
+                className="glass-card rounded-xl p-4"
+                style={{ animationDelay: `${(catIndex + 1) * 100}ms` } as React.CSSProperties}
               >
-                <Icon className="w-5 h-5 text-muted-foreground mb-2" />
-                <p className="font-medium text-sm">{feature.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{feature.description}</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 rounded-lg ${category.bgColor} flex items-center justify-center`}>
+                    <CatIcon className={`w-5 h-5 ${category.color}`} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{t(category.titleKey)}</h3>
+                    <p className="text-xs text-muted-foreground">{t(category.descKey)}</p>
+                  </div>
+                  <span className="ml-auto text-xs text-muted-foreground px-2 py-1 rounded-full bg-secondary/50">
+                    {category.features.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {category.features.map((feature) => {
+                    const FeatureIcon = feature.icon;
+                    return (
+                      <Link
+                        key={feature.to}
+                        to={feature.to}
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors group"
+                      >
+                        <FeatureIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                          {t(feature.labelKey)}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
+      {/* Account Management */}
       <div className="glass-card rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Terminal className="w-4 h-4 text-accent" />
-          <span className="text-xs font-mono-address text-muted-foreground uppercase tracking-wider">Terminal</span>
-          <div className="ml-auto flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-            <span className="text-xs text-muted-foreground">Live</span>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-secondary/50 flex items-center justify-center">
+            <User className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">{t('nav.account')}</h3>
+            <p className="text-xs text-muted-foreground">{t('accountset.subtitle')}</p>
           </div>
         </div>
-        
-        <div className="code-block">
-          <div className="space-y-1">
-            <div>
-              <span className="code-key">status</span>
-              <span className="text-muted-foreground">: </span>
-              <span className="code-string">"connected"</span>
-            </div>
-            <div>
-              <span className="code-key">network</span>
-              <span className="text-muted-foreground">: </span>
-              <span className="code-string">"{networkInfo.type}"</span>
-            </div>
-            <div>
-              <span className="code-key">address</span>
-              <span className="text-muted-foreground">: </span>
-              <span className="code-string">"{address?.slice(0, 20)}..."</span>
-            </div>
-            <div>
-              <span className="code-key">ready</span>
-              <span className="text-muted-foreground">: </span>
-              <span className="code-boolean">true</span>
-            </div>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          {accountFeatures.map((feature) => {
+            const FeatureIcon = feature.icon;
+            return (
+              <Link
+                key={feature.to}
+                to={feature.to}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+              >
+                <FeatureIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  {t(feature.labelKey)}
+                </span>
+                <ArrowRight className="w-3 h-3 text-muted-foreground/50 group-hover:text-xrpl-green group-hover:translate-x-0.5 transition-all ml-1" />
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
