@@ -87,64 +87,70 @@ export function SchemeWizard({
           </span>
         </div>
 
-        {/* Horizontal step indicator - evenly distributed */}
-        <div className="flex items-center w-full">
+        {/* Step indicator row - each step evenly distributed */}
+        <div 
+          className="grid w-full"
+          style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
+        >
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
 
             return (
-              <div key={step.key} className="flex-1 flex items-center">
-                {/* Step circle - centered in its column */}
-                <div className="flex-1 flex items-center justify-center">
-                  <button
-                    onClick={() => onStepChange(index)}
-                    className={`
-                      relative flex items-center justify-center w-10 h-10 rounded-full
-                      transition-all duration-300 flex-shrink-0
-                      ${isCompleted
-                        ? `${colors.bg} ${colors.border} border-2`
-                        : isCurrent
-                          ? `${colors.bg} ${colors.border} border-2 ring-2 ring-offset-2 ring-offset-background ${colors.text.replace('text-', 'ring-')}`
-                          : 'bg-muted/30 border border-border/50'
-                      }
-                    `}
-                    aria-label={step.title}
-                  >
-                    {isCompleted ? (
-                      <Check className={`w-5 h-5 ${colors.text}`} />
-                    ) : (
-                      <span
-                        className={`
-                          text-sm font-semibold
-                          ${isCurrent ? colors.text : 'text-muted-foreground'}
-                        `}
-                      >
-                        {index + 1}
-                      </span>
-                    )}
-                  </button>
-                </div>
-
-                {/* Connecting line */}
+              <div 
+                key={step.key} 
+                className="flex items-center justify-center relative"
+              >
+                {/* Connecting line (except last step) - positioned to the right half */}
                 {index < steps.length - 1 && (
-                  <div className="flex-1 h-0.5 mx-2 relative overflow-hidden rounded-full min-w-[16px]">
+                  <div className="absolute left-1/2 right-0 h-0.5 bg-border/50 -translate-y-1/2">
                     <div
                       className={`
                         absolute inset-y-0 left-0 transition-all duration-500 ease-out
-                        ${isCompleted ? `${colors.text.replace('text-', 'bg-')} w-full` : 'bg-border w-0'}
+                        ${isCompleted ? `${colors.text.replace('text-', 'bg-')} w-full` : 'w-0'}
                       `}
                     />
-                    <div className="absolute inset-0 bg-border/50" />
                   </div>
                 )}
+
+                {/* Step circle - centered */}
+                <button
+                  onClick={() => onStepChange(index)}
+                  className={`
+                    relative z-10 flex items-center justify-center w-10 h-10 rounded-full
+                    transition-all duration-300 flex-shrink-0
+                    ${isCompleted
+                      ? `${colors.bg} ${colors.border} border-2`
+                      : isCurrent
+                        ? `${colors.bg} ${colors.border} border-2 ring-2 ring-offset-2 ring-offset-background ${colors.text.replace('text-', 'ring-')}`
+                        : 'bg-muted/30 border border-border/50'
+                    }
+                  `}
+                  aria-label={step.title}
+                >
+                  {isCompleted ? (
+                    <Check className={`w-5 h-5 ${colors.text}`} />
+                  ) : (
+                    <span
+                      className={`
+                        text-sm font-semibold
+                        ${isCurrent ? colors.text : 'text-muted-foreground'}
+                      `}
+                    >
+                      {index + 1}
+                    </span>
+                  )}
+                </button>
               </div>
             );
           })}
         </div>
 
         {/* Step titles row - evenly distributed with auto wrap */}
-        <div className="flex w-full mt-4">
+        <div 
+          className="grid w-full mt-4"
+          style={{ gridTemplateColumns: `repeat(${steps.length}, 1fr)` }}
+        >
           {steps.map((step, index) => {
             const isCompleted = index < currentStep;
             const isCurrent = index === currentStep;
@@ -152,7 +158,7 @@ export function SchemeWizard({
             return (
               <div
                 key={`title-${step.key}`}
-                className="flex-1 flex flex-col items-center px-1"
+                className="flex flex-col items-center px-1"
               >
                 <p
                   className={`
