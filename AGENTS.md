@@ -4,6 +4,8 @@
 
 Ripplet is a React-based DApp for XRPL (XRP Ledger) transaction signing and management. It supports all XRPL transaction types including the latest features like MPT, Credentials, AMM, and Lending Protocol.
 
+**SC+ Labs**: Ripplet also includes experimental implementations for SC+ (Supply Chain Finance) credential schemes, demonstrating 4 different technical approaches to tokenizing supply chain invoices on XRPL.
+
 ## Tech Stack
 
 - **Framework**: React 18 + TypeScript + Vite
@@ -11,6 +13,7 @@ Ripplet is a React-based DApp for XRPL (XRP Ledger) transaction signing and mana
 - **State Management**: Zustand
 - **XRPL SDK**: xrpl.js 4.6.0
 - **Wallet Support**: Xaman, Crossmark, Gemwallet
+- **i18n**: react-i18next (中文/English support)
 
 ## Project Structure
 
@@ -21,12 +24,17 @@ Ripplet/
 │   │   ├── wallet/        # Wallet connection components
 │   │   ├── transaction/   # Transaction form components
 │   │   ├── common/        # Shared components
+│   │   ├── scplus/        # SC+ Labs wizard components
 │   │   └── ui/            # shadcn/ui components
 │   ├── hooks/             # Custom React hooks
+│   ├── i18n/              # Internationalization
+│   │   └── locales/       # Translation files (zh.json, en.json)
 │   ├── lib/               # Core libraries
-│   │   ├── xrpl/          # XRPL transaction builders
+│   │   ├── xrpl/          # XRPL utilities
+│   │   │   └── transactions/  # Transaction type builders
 │   │   └── wallets/       # Wallet adapters
 │   ├── pages/             # Page components
+│   │   └── scplus/        # SC+ Labs scheme pages
 │   ├── stores/            # Zustand stores
 │   ├── types/             # TypeScript definitions
 │   ├── utils/             # Utility functions
@@ -34,6 +42,7 @@ Ripplet/
 │   ├── main.tsx           # Entry point
 │   └── index.css          # Global styles
 ├── public/                # Static assets
+├── scplus/                # SC+ documentation
 └── package.json
 ```
 
@@ -47,63 +56,104 @@ npm run preview      # Preview production build
 npm run lint         # Run ESLint
 ```
 
-## XRPL Transaction Types (67+ Total)
+## XRPL Transaction Types (40 Total)
 
-### 🔴 High Priority (29 types)
+### Implementation Status
 
-#### 1. Account (5 types)
-- AccountSet ✅ | AccountDelete | SetRegularKey | SignerListSet | TicketCreate
-
-#### 2. Payment (8 types)
-- Payment ✅ | CheckCreate | CheckCash | CheckCancel | PaymentChannelCreate | PaymentChannelFund | PaymentChannelClaim | DepositPreauth
-
-#### 3. Token/IOU (4 types)
-- TrustSet ✅ | Clawback | OfferCreate ✅ | OfferCancel ✅ | IOU Payment | IOU EscrowCreate | IOU EscrowFinish
-
-#### 4. NFT (6 types)
-- NFTokenMint | NFTokenBurn | NFTokenCreateOffer | NFTokenAcceptOffer | NFTokenCancelOffer | NFTokenModify
-
-#### 5. MPT (4 types)
-- MPTokenIssuanceCreate ✅ | MPTokenIssuanceSet ✅ | MPTokenIssuanceDestroy ✅ | MPTokenAuthorize ✅ | MPT Transfer | MPT Lock/Freeze | MPT Clawback | MPT Escrow
-
-#### 6. Credential (3 types)
-- CredentialCreate | CredentialAccept | CredentialDelete
-
-### 🟡 Medium Priority (13 types)
-
-#### 7. DID (2 types)
-- DIDSet | DIDDelete
-
-#### 8. Oracle (2 types)
-- OracleSet | OracleDelete
-
-#### 9. Permission (3 types)
-- PermissionedDomainSet | PermissionedDomainDelete | DelegateSet
-
-#### 10. Vault (6 types)
-- VaultCreate | VaultSet | VaultDelete | VaultDeposit | VaultWithdraw | VaultClawback
-
-### 🟢 Low Priority (25+ types)
-
-#### 11. AMM (7 types)
-- AMMCreate | AMMDeposit | AMMWithdraw | AMMBid | AMMVote | AMMDelete | AMMClawback
-
-#### 12. Lending (~10 types)
-- LoanBrokerSet | LoanBrokerDelete | LoanSet | LoanManage | LoanPay | LoanDelete | LoanBrokerCoverDeposit | LoanBrokerCoverWithdraw | LoanBrokerClawback
-
-#### 13. Cross-chain (6 types)
-- XChainCreateBridge | XChainModifyBridge | XChainCreateClaimID | XChainCommit | XChainClaim | XChainAccountCreateCommit
-
-#### 14. Other
-- EnableAmendment | SetFee | UNLModify
-
-### Implementation Progress
-| Priority | Total | Done | Progress |
+| Category | Total | Done | Progress |
 |----------|-------|------|----------|
-| 🔴 High | 29 | 3 | 10.3% |
-| 🟡 Medium | 13 | 0 | 0% |
-| 🟢 Low | 25+ | 0 | 0% |
-| **Total** | **67+** | **3** | **4.5%** |
+| MPT | 10 | 10 | 100% |
+| NFT | 6 | 5 | 83.3% |
+| IOU/Token | 8 | 7 | 87.5% |
+| XRP Payment | 8 | 4 | 50% |
+| Account | 5 | 2 | 40% |
+| Credential | 3 | 3 | 100% |
+| **Total** | **40** | **31** | **77.5%** |
+
+### MPT (10 types) ✅
+All implemented:
+- MPTokenIssuanceCreate ✅
+- MPTokenIssuanceSet ✅
+- MPTokenIssuanceDestroy ✅
+- MPTokenAuthorize ✅
+- MPTTransfer ✅
+- MPTLock ✅
+- MPTClawback ✅
+- MPTEscrowCreate ✅
+- MPTEscrowFinish ✅
+- MPTEscrowCancel ✅
+
+### NFT (6 types)
+- NFTokenMint ✅
+- NFTokenBurn ✅
+- NFTokenCreateOffer ✅
+- NFTokenAcceptOffer ✅
+- NFTokenCancelOffer ✅
+- NFTokenModify *(planned)*
+
+### IOU/Token (8 types)
+- TrustSet ✅
+- IOUPayment ✅
+- OfferCreate ✅
+- OfferCancel ✅
+- IOUEscrowCreate ✅
+- IOUEscrowFinish ✅
+- IOUEscrowCancel ✅
+- Clawback *(planned)*
+
+### XRP Payment (8 types)
+- Payment ✅
+- EscrowCreate ✅
+- EscrowFinish ✅
+- EscrowCancel ✅
+- CheckCreate *(planned)*
+- CheckCash *(planned)*
+- CheckCancel *(planned)*
+- DepositPreauth *(planned)*
+
+### Account (5 types)
+- AccountSet ✅
+- AccountDelete ✅
+- SetRegularKey *(planned)*
+- SignerListSet *(planned)*
+- TicketCreate *(planned)*
+
+### Credential (3 types) ✅
+All implemented:
+- CredentialCreate ✅
+- CredentialAccept ✅
+- CredentialDelete ✅
+
+### Planned Features (Not Yet Implemented)
+
+| Category | Types |
+|----------|-------|
+| DID | DIDSet, DIDDelete |
+| Oracle | OracleSet, OracleDelete |
+| Permission | PermissionedDomainSet, PermissionedDomainDelete, DelegateSet |
+| Vault | VaultCreate, VaultSet, VaultDelete, VaultDeposit, VaultWithdraw, VaultClawback |
+| AMM | AMMCreate, AMMDeposit, AMMWithdraw, AMMBid, AMMVote, AMMDelete, AMMClawback |
+| Lending | LoanBrokerSet, LoanBrokerDelete, LoanSet, LoanManage, LoanPay, LoanDelete, LoanBrokerCoverDeposit, LoanBrokerCoverWithdraw, LoanBrokerClawback |
+| Cross-chain | XChainCreateBridge, XChainModifyBridge, XChainCreateClaimID, XChainCommit, XChainClaim, XChainAccountCreateCommit |
+
+## SC+ Labs
+
+SC+ Labs provides experimental implementations for SC+ (Supply Chain Finance) credential schemes on XRPL. It demonstrates 4 different technical approaches to tokenize supply chain invoices.
+
+### Credential Schemes
+
+| Scheme | Description | Steps |
+|--------|-------------|-------|
+| **MPT** | Multi-Purpose Token, Ripple RWA direction | 6 |
+| **IOU** | Trust Line Token, fast and flexible | 4 |
+| **NFT** | Non-Fungible Token, one-invoice-one-token | 4 |
+| **Credentials** | Non-token proof, maximum compliance | 3 |
+
+### Implementation
+
+- Pages: `src/pages/scplus/` (5 pages)
+- Components: `src/components/scplus/SchemeWizard.tsx`
+- Documentation: `scplus/` folder
 
 ## Code Style Guidelines
 
