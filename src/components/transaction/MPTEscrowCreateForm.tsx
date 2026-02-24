@@ -399,7 +399,7 @@ export function MPTEscrowCreateForm({
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        <span>Advanced Options</span>
+        <span>{t('common.advancedOptions')}</span>
       </button>
 
       {/* Advanced Options */}
@@ -451,7 +451,7 @@ export function MPTEscrowCreateForm({
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Transaction JSON
+              {t('common.transactionJson')}
             </span>
             <Button
               type="button"
@@ -460,7 +460,7 @@ export function MPTEscrowCreateForm({
               onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
               className="h-6 text-xs"
             >
-              Copy
+              {t('common.copy')}
             </Button>
           </div>
           <pre className="text-xs overflow-x-auto">
@@ -478,7 +478,7 @@ export function MPTEscrowCreateForm({
           className="flex items-center gap-2"
         >
           {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+          <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
         </Button>
 
         <Button
@@ -494,7 +494,7 @@ export function MPTEscrowCreateForm({
           ) : isConnected ? (
             <>
               <Wallet className="w-4 h-4 mr-2" />
-              Sign & Send
+              {t('common.signAndSend')}
             </>
           ) : (
             <>

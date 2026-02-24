@@ -126,7 +126,14 @@
     "success": "成功",
     "tryAgain": "重试",
     "download": "下载",
-    "back": "返回"
+    "back": "返回",
+    "preview": "预览",
+    "hide": "隐藏",
+    "copy": "复制",
+    "transactionJson": "交易 JSON",
+    "signAndSend": "签名并发送",
+    "advancedOptions": "高级选项",
+    "failedToBuild": "构建交易失败"
   },
   "transaction": {
     "pending": "交易处理中...",
@@ -169,6 +176,7 @@
     "currency": "货币",
     "currencyRequired": "货币为必填项",
     "currencyInvalid": "货币必须是 3-40 个字符",
+    "currencyPlaceholder": "货币代码",
     "issuer": "发行方",
     "issuerHint": "发行此代币的账户",
     "issuerRequired": "发行方地址为必填项",
@@ -280,7 +288,9 @@
     "amount": "金额",
     "amountRequired": "金额为必填项",
     "amountInvalid": "金额必须大于 0",
-    "warningTitle": "警告：不可逆操作"
+    "warningTitle": "警告：不可逆操作",
+    "warning1": "回收功能要求 MPT 发行已启用回收功能",
+    "warning2": "代币将返还给发行方"
   },
   "offerCreate": {
     "title": "创建挂单",
@@ -416,7 +426,8 @@
     },
     "authorize": {
       "title": "授权 MPT",
-      "subtitle": "授权持有者或选择持有 MPT"
+      "subtitle": "授权持有者或选择持有 MPT",
+      "mptIssuanceIdTooltip": "MPT 发行的 48 字符十六进制 ID"
     },
     "escrowCreate": {
       "title": "创建 MPT 托管",

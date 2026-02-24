@@ -126,7 +126,14 @@
     "success": "Success",
     "tryAgain": "Try Again",
     "download": "Download",
-    "back": "Back"
+    "back": "Back",
+    "preview": "Preview",
+    "hide": "Hide",
+    "copy": "Copy",
+    "transactionJson": "Transaction JSON",
+    "signAndSend": "Sign & Send",
+    "advancedOptions": "Advanced Options",
+    "failedToBuild": "Failed to build transaction"
   },
   "transaction": {
     "pending": "Transaction in progress...",
@@ -171,6 +178,7 @@
     "currency": "Currency",
     "currencyRequired": "Currency is required",
     "currencyInvalid": "Currency must be 3-40 characters",
+    "currencyPlaceholder": "Currency code",
     "issuer": "Issuer",
     "issuerHint": "The account that issues this token",
     "issuerRequired": "Issuer address is required",
@@ -283,7 +291,9 @@
     "amount": "Amount",
     "amountRequired": "Amount is required",
     "amountInvalid": "Amount must be greater than 0",
-    "warningTitle": "Warning: Irreversible Action"
+    "warningTitle": "Warning: Irreversible Action",
+    "warning1": "Clawback requires the MPT issuance to have clawback enabled",
+    "warning2": "Tokens will be returned to the issuer"
   },
   "offerCreate": {
     "title": "Create Offer",
@@ -419,7 +429,8 @@
     },
     "authorize": {
       "title": "Authorize MPT",
-      "subtitle": "Authorize holders or opt-in to hold an MPT"
+      "subtitle": "Authorize holders or opt-in to hold an MPT",
+      "mptIssuanceIdTooltip": "The 48-character hexadecimal ID of the MPT issuance"
     },
     "escrowCreate": {
       "title": "MPT Escrow Create",

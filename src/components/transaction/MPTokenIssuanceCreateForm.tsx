@@ -326,7 +326,7 @@ export function MPTokenIssuanceCreateForm({
           ) : (
             <ChevronDown className="w-4 h-4" />
           )}
-          <span>Advanced Options</span>
+          <span>{t('common.advancedOptions')}</span>
         </button>
 
         {showAdvanced && (
@@ -436,7 +436,7 @@ export function MPTokenIssuanceCreateForm({
             className="flex items-center gap-2"
           >
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+            <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
           </Button>
 
           <Button
