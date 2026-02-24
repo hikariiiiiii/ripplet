@@ -103,11 +103,9 @@ export function MPTokenIssuanceCreateForm({
     handleSubmit,
     watch,
     setValue,
+    getValues,
     trigger,
     formState: { errors },
-
-
-
   } = useForm<MPTokenIssuanceCreateFormData>({
     defaultValues: {
       assetScale: '0',
@@ -134,19 +132,20 @@ export function MPTokenIssuanceCreateForm({
       if (!isValid) return;
 
       try {
+        const formValues = getValues();
         let flags = 0;
         for (const config of FLAGS_CONFIG) {
-          if (watchedFields[config.key]) {
+          if (formValues[config.key]) {
             flags |= config.flagValue;
           }
         }
 
         const tx = buildMPTokenIssuanceCreate({
           Account: account,
-          AssetScale: watchedFields.assetScale ? parseInt(watchedFields.assetScale, 10) : undefined,
-          MaximumAmount: watchedFields.maximumAmount || undefined,
-          TransferFee: watchedFields.transferFee ? parseInt(watchedFields.transferFee, 10) : undefined,
-          MPTokenMetadata: watchedFields.metadata || undefined,
+          AssetScale: formValues.assetScale ? parseInt(formValues.assetScale, 10) : undefined,
+          MaximumAmount: formValues.maximumAmount || undefined,
+          TransferFee: formValues.transferFee ? parseInt(formValues.transferFee, 10) : undefined,
+          MPTokenMetadata: formValues.metadata || undefined,
           Flags: flags > 0 ? flags : undefined,
         });
         setTransactionJson(tx);
@@ -156,7 +155,8 @@ export function MPTokenIssuanceCreateForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPreview, account]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -213,7 +213,6 @@ export function MPTokenIssuanceCreateForm({
   };
 
   return (
-    
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -307,9 +306,6 @@ export function MPTokenIssuanceCreateForm({
                   onCheckedChange={(checked) => {
                     setValue(config.key, checked, { shouldValidate: true })
                   }}
-
- 
- 
                 />
               </div>
             ))}
@@ -463,6 +459,5 @@ export function MPTokenIssuanceCreateForm({
           </Button>
         </div>
       </form>
-    
   );
 }

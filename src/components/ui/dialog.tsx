@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import * as ReactDOM from 'react-dom'
 import { X } from 'lucide-react'
 
 interface DialogContextValue {
@@ -70,10 +71,9 @@ interface DialogPortalProps {
 
 export function DialogPortal({ children }: DialogPortalProps) {
   const { open } = useDialog()
-  
   if (!open) return null
   
-  return <>{children}</>
+  return ReactDOM.createPortal(<>{children}</>, document.body)
 }
 
 interface DialogOverlayProps extends React.HTMLAttributes<HTMLDivElement> {}

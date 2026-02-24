@@ -97,32 +97,39 @@ export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps
     }
   }, [open, connecting, setConnecting]);
 
+  const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), ms)
+      )
+    ]);
+  };
   const handleConnect = async (wallet: typeof WALLET_OPTIONS[0]) => {
     if (wallet.comingSoon) {
       return;
     }
-    
     setError(null);
     setErrorTitle('');
     setSelectedWallet(wallet);
-    
-    // Check if wallet is installed before attempting to connect
     let isInstalled = false;
     if (wallet.type === 'crossmark') {
       try {
-        isInstalled = await (sdk as any).async?.detect?.(3000) ?? false;
+        isInstalled = await withTimeout(
+          (sdk as any).async?.detect?.(3000) ?? Promise.resolve(false),
+          4000
+        );
       } catch {
         isInstalled = false;
       }
     } else if (wallet.type === 'gemwallet') {
       try {
-        const result = await gemIsInstalled();
+        const result = await withTimeout(gemIsInstalled(), 3000);
         isInstalled = result?.result?.isInstalled === true;
       } catch {
         isInstalled = false;
       }
     }
-    
     if (!isInstalled) {
       setShowInstallPrompt(true);
       return;
@@ -135,7 +142,6 @@ export function WalletSelectModal({ open, onOpenChange }: WalletSelectModalProps
       navigate('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to connect wallet';
-      
       if (message.includes('No address received') || message.includes('sign-in failed')) {
         setErrorTitle(t('wallet.noAddressReceived'));
         setError(t('wallet.noAddressReceivedDescription', { wallet: wallet.name }));
