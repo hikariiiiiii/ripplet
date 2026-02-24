@@ -134,7 +134,8 @@
     "transactionJson": "Transaction JSON",
     "signAndSend": "Sign & Send",
     "advancedOptions": "Advanced Options",
-    "failedToBuild": "Failed to build transaction"
+    "failedToBuild": "Failed to build transaction",
+    "then": "Then"
   },
   "transaction": {
     "pending": "Transaction in progress...",
@@ -572,7 +573,11 @@
       "bestFor": "Regulatory environments",
       "step1": "Issue Credential",
       "step2": "Transfer (Re-issue)",
-      "step3": "Delete (Redemption)"
+      "step3": "Delete (Redemption)",
+      "transferNoteTitle": "Transfer Requires Two Steps",
+      "transferNoteDesc": "Since credentials cannot be transferred directly, you must first delete the old credential and then re-issue a new one to the recipient.",
+      "step2a": "Step 1: Delete Old Credential",
+      "step2b": "Step 2: Issue New Credential"
     },
     "wizard": {
       "step": "Step",

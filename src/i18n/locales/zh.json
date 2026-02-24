@@ -134,7 +134,8 @@
     "transactionJson": "交易 JSON",
     "signAndSend": "签名并发送",
     "advancedOptions": "高级选项",
-    "failedToBuild": "构建交易失败"
+    "failedToBuild": "构建交易失败",
+    "then": "然后"
   },
   "transaction": {
     "pending": "交易处理中...",
@@ -569,7 +570,11 @@
       "bestFor": "监管环境",
       "step1": "发行凭证",
       "step2": "转账 (重新发行)",
-      "step3": "删除 (赎回)"
+      "step3": "删除 (赎回)",
+      "transferNoteTitle": "转账需要两步操作",
+      "transferNoteDesc": "由于凭证无法直接转账，您需要先删除旧凭证，然后向接收方重新发行新凭证。",
+      "step2a": "第一步：删除旧凭证",
+      "step2b": "第二步：发行新凭证"
     },
     "wizard": {
       "step": "步骤",

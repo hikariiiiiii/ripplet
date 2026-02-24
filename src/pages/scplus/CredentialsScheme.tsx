@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BadgeCheck, ArrowLeft, AlertCircle } from 'lucide-react';
+import { BadgeCheck, ArrowLeft, AlertCircle, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SchemeWizard } from '@/components/scplus/SchemeWizard';
 import { CredentialCreateForm } from '@/components/transaction/CredentialCreateForm';
@@ -117,10 +117,13 @@ export default function CredentialsScheme() {
             </div>
 
             {/* First: Delete old credential */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                {t('scplus.credentialsScheme.step2a')}
-              </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-red-500" />
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t('scplus.credentialsScheme.step2a')}
+                </h3>
+              </div>
               <CredentialDeleteForm
                 account={account}
                 onSubmit={(tx) => handleSubmit(tx)}
@@ -131,17 +134,22 @@ export default function CredentialsScheme() {
             </div>
 
             {/* Divider */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 py-2">
               <div className="flex-1 h-px bg-border/50" />
-              <span className="text-xs text-muted-foreground">{t('common.then')}</span>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{t('common.then')}</span>
+              </div>
               <div className="flex-1 h-px bg-border/50" />
             </div>
 
             {/* Second: Create new credential */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground">
-                {t('scplus.credentialsScheme.step2b')}
-              </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-green-500" />
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t('scplus.credentialsScheme.step2b')}
+                </h3>
+              </div>
               <CredentialCreateForm
                 account={account}
                 onSubmit={(tx) => handleSubmit(tx)}
