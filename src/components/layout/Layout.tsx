@@ -13,7 +13,7 @@ export function Layout() {
         <Header />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar />
-          <main className={`flex-1 flex flex-col overflow-hidden relative ${isHomePage ? 'bg-animated-gradient bg-grid-animated bg-floating-orbs' : 'bg-grid'}`}>
+          <main className={`flex-1 flex flex-col overflow-hidden relative ${isHomePage ? 'bg-animated-gradient bg-grid bg-floating-orbs' : 'bg-grid'}`}>
             {isHomePage ? (
               <Outlet />
             ) : (
