@@ -115,17 +115,16 @@ export function MPTokenIssuanceDestroyForm({
   };
 
   return (
-    
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                Warning: Irreversible Action
+                {t('mpt.destroy.warningTitle')}
               </p>
               <p className="text-sm text-amber-600/80 dark:text-amber-400/80">
-                Destroying an MPT issuance is permanent. This can only be done when no tokens are held by any accounts (all tokens have been burned).
+                {t('mpt.destroy.warningDesc')}
               </p>
             </div>
           </div>
@@ -133,26 +132,26 @@ export function MPTokenIssuanceDestroyForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="mptIssuanceId">MPT Issuance ID</Label>
+            <Label htmlFor="mptIssuanceId">{t('mpt.destroy.mptIssuanceId')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>The 48-character hexadecimal ID of the MPT issuance to destroy.</p>
+                <p>{t('mpt.destroy.mptIssuanceIdHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Input
             id="mptIssuanceId"
             type="text"
-            placeholder="00070C4495F14B0E44F78A264E41713C64B5F89242540EE255534400000000000000"
+            placeholder={t('mpt.destroy.mptIssuanceIdPlaceholder')}
             className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
             {...register('mptIssuanceId', {
-              required: 'MPT Issuance ID is required',
+              required: t('mpt.destroy.mptIssuanceIdRequired'),
               validate: (value: string) => {
                 if (!isValidMPTIssuanceID(value)) {
-                  return 'MPT Issuance ID must be a 48-character hexadecimal string';
+                  return t('mpt.destroy.mptIssuanceIdInvalid');
                 }
                 return true;
               },
@@ -171,7 +170,7 @@ export function MPTokenIssuanceDestroyForm({
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Transaction JSON
+              {t('common.transactionJson')}
             </span>
             <Button
               type="button"
@@ -180,7 +179,7 @@ export function MPTokenIssuanceDestroyForm({
               onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
               className="h-6 text-xs"
             >
-              Copy
+              {t('common.copy')}
             </Button>
           </div>
           <pre className="text-xs overflow-x-auto">
@@ -225,6 +224,5 @@ export function MPTokenIssuanceDestroyForm({
           </Button>
         </div>
       </form>
-    
   );
 }

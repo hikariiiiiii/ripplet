@@ -52,23 +52,23 @@ export function CredentialCreateForm({
     const newErrors: Partial<CredentialCreateFormData> = {}
 
     if (!formData.subject) {
-      newErrors.subject = 'Subject address is required'
+      newErrors.subject = t('credentialCreate.subjectRequired')
     } else if (!isValidCredentialAddress(formData.subject)) {
-      newErrors.subject = 'Invalid XRPL address format'
+      newErrors.subject = t('credentialCreate.subjectInvalid')
     }
 
     if (!formData.credentialType) {
-      newErrors.credentialType = 'Credential type is required'
+      newErrors.credentialType = t('credentialCreate.credentialTypeRequired')
     }
 
     if (formData.subject && formData.subject === account) {
-      newErrors.subject = 'Subject cannot be the same as your account'
+      newErrors.subject = t('credentialCreate.subjectSameAsAccount')
     }
 
     if (formData.expiration) {
       const exp = parseInt(formData.expiration, 10)
       if (isNaN(exp) || exp < 0) {
-        newErrors.expiration = 'Expiration must be a positive number'
+        newErrors.expiration = t('credentialCreate.expirationInvalid')
       }
     }
 
@@ -149,13 +149,13 @@ export function CredentialCreateForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="subject">Subject Address</Label>
+              <Label htmlFor="subject">{t('credentialCreate.subject')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The account that will receive this credential</p>
+                  <p>{t('credentialCreate.subjectHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -169,7 +169,7 @@ export function CredentialCreateForm({
           <Input
             id="subject"
             type="text"
-            placeholder="r..."
+            placeholder={t('credentialCreate.subjectPlaceholder')}
             className={`font-mono-address text-sm ${errors.subject ? 'border-destructive' : ''}`}
             value={formData.subject}
             onChange={(e) =>
@@ -177,20 +177,20 @@ export function CredentialCreateForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            The XRPL account address that will receive this credential
+            {t('credentialCreate.subjectHelp')}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="credentialType">Credential Type</Label>
+              <Label htmlFor="credentialType">{t('credentialCreate.credentialType')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>A type identifier for the credential (e.g., KYC, ID Verification)</p>
+                  <p>{t('credentialCreate.credentialTypeHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -204,7 +204,7 @@ export function CredentialCreateForm({
           <Input
             id="credentialType"
             type="text"
-            placeholder="e.g., KYC"
+            placeholder={t('credentialCreate.credentialTypePlaceholder')}
             className={`text-sm ${errors.credentialType ? 'border-destructive' : ''}`}
             value={formData.credentialType}
             onChange={(e) =>
@@ -212,20 +212,20 @@ export function CredentialCreateForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            Will be automatically hex-encoded for the transaction
+            {t('credentialCreate.credentialTypeHelp')}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="expiration">Expiration (Optional)</Label>
+              <Label htmlFor="expiration">{t('credentialCreate.expiration')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Ripple epoch time (seconds since 2000-01-01). Leave empty for no expiration.</p>
+                  <p>{t('credentialCreate.expirationHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -239,7 +239,7 @@ export function CredentialCreateForm({
           <Input
             id="expiration"
             type="number"
-            placeholder="Ripple epoch time"
+            placeholder={t('credentialCreate.expirationPlaceholder')}
             className={`text-sm ${errors.expiration ? 'border-destructive' : ''}`}
             value={formData.expiration}
             onChange={(e) =>
@@ -249,11 +249,11 @@ export function CredentialCreateForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="uri">URI (Optional)</Label>
+          <Label htmlFor="uri">{t('credentialCreate.uri')}</Label>
           <Input
             id="uri"
             type="text"
-            placeholder="https://..."
+            placeholder={t('credentialCreate.uriPlaceholder')}
             className="text-sm"
             value={formData.uri}
             onChange={(e) =>
@@ -261,7 +261,7 @@ export function CredentialCreateForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            Additional information about the credential
+            {t('credentialCreate.uriHelp')}
           </p>
         </div>
 
@@ -270,7 +270,7 @@ export function CredentialCreateForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -279,7 +279,7 @@ export function CredentialCreateForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

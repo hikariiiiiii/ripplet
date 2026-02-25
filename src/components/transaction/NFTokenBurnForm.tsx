@@ -51,11 +51,11 @@ export function NFTokenBurnForm({
     const newErrors: Partial<NFTokenBurnFormData> = {}
 
     if (!formData.nftokenId) {
-      newErrors.nftokenId = 'NFTokenID is required'
+      newErrors.nftokenId = t('nftBurn.nftokenIdRequired')
     }
 
     if (formData.owner && !isValidAddress(formData.owner)) {
-      newErrors.owner = 'Invalid owner address format'
+      newErrors.owner = t('nftBurn.ownerInvalid')
     }
 
     setErrors(newErrors)
@@ -127,13 +127,13 @@ export function NFTokenBurnForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="nftokenId">NFTokenID</Label>
+              <Label htmlFor="nftokenId">{t('nftBurn.nftokenId')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The unique identifier of the NFT to burn</p>
+                  <p>{t('nftBurn.nftokenIdHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -147,7 +147,7 @@ export function NFTokenBurnForm({
           <Input
             id="nftokenId"
             type="text"
-            placeholder="NFToken ID"
+            placeholder={t('nftBurn.nftokenIdPlaceholder')}
             className={`font-mono-address text-sm ${errors.nftokenId ? 'border-destructive' : ''}`}
             value={formData.nftokenId}
             onChange={(e) =>
@@ -155,20 +155,20 @@ export function NFTokenBurnForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            The 64-character hex identifier of the NFT
+            {t('nftBurn.nftokenIdHelp')}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="owner">Owner (Optional)</Label>
+              <Label htmlFor="owner">{t('nftBurn.owner')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Only needed if burning an NFT owned by another account (requires burnable flag)</p>
+                  <p>{t('nftBurn.ownerHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -182,7 +182,7 @@ export function NFTokenBurnForm({
           <Input
             id="owner"
             type="text"
-            placeholder="r..."
+            placeholder={t('nftBurn.ownerPlaceholder')}
             className={`font-mono-address text-sm ${errors.owner ? 'border-destructive' : ''}`}
             value={formData.owner}
             onChange={(e) =>
@@ -196,7 +196,7 @@ export function NFTokenBurnForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -205,7 +205,7 @@ export function NFTokenBurnForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

@@ -45,11 +45,11 @@ export function OfferCancelForm({
     const newErrors: Partial<OfferCancelFormData> = {}
 
     if (!formData.offerSequence) {
-      newErrors.offerSequence = 'Offer sequence is required'
+      newErrors.offerSequence = t('offerCancel.offerSequenceRequired')
     } else {
       const seq = parseInt(formData.offerSequence, 10)
       if (isNaN(seq) || seq < 0) {
-        newErrors.offerSequence = 'Offer sequence must be a non-negative integer'
+        newErrors.offerSequence = t('offerCancel.offerSequenceInvalid')
       }
     }
 
@@ -121,13 +121,13 @@ export function OfferCancelForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="offerSequence">Offer Sequence</Label>
+              <Label htmlFor="offerSequence">{t('offerCancel.offerSequence')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The sequence number of the OfferCreate transaction that created the offer you want to cancel</p>
+                  <p>{t('offerCancel.offerSequenceHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -141,7 +141,7 @@ export function OfferCancelForm({
           <Input
             id="offerSequence"
             type="number"
-            placeholder="e.g., 12345"
+            placeholder={t('offerCancel.offerSequencePlaceholder')}
             className={`text-sm ${errors.offerSequence ? 'border-destructive' : ''}`}
             value={formData.offerSequence}
             onChange={(e) =>
@@ -149,7 +149,7 @@ export function OfferCancelForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            You can find the sequence number in your account's offer list or transaction history
+            {t('offerCancel.offerSequenceHelp')}
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export function OfferCancelForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -167,7 +167,7 @@ export function OfferCancelForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

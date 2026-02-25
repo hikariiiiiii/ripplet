@@ -57,18 +57,18 @@ export function NFTokenAcceptOfferForm({
     const newErrors: Partial<NFTokenAcceptOfferFormData> = {}
 
     if (!formData.nftokenSellOffer && !formData.nftokenBuyOffer) {
-      newErrors.nftokenSellOffer = 'Either sell offer or buy offer is required'
+      newErrors.nftokenSellOffer = t('nftAcceptOffer.offerRequired')
     }
 
     if (formData.nftokenBrokerFee) {
       if (parseFloat(formData.nftokenBrokerFee) <= 0) {
-        newErrors.nftokenBrokerFee = 'Broker fee must be greater than 0'
+        newErrors.nftokenBrokerFee = t('nftAcceptOffer.brokerFeeInvalid')
       }
       if (formData.nftokenBrokerFeeCurrency !== 'XRP') {
         if (!formData.nftokenBrokerFeeIssuer) {
-          newErrors.nftokenBrokerFeeIssuer = 'Issuer is required for non-XRP currency'
+          newErrors.nftokenBrokerFeeIssuer = t('nftAcceptOffer.brokerFeeIssuerRequired')
         } else if (!isValidAddress(formData.nftokenBrokerFeeIssuer)) {
-          newErrors.nftokenBrokerFeeIssuer = 'Invalid issuer address format'
+          newErrors.nftokenBrokerFeeIssuer = t('nftAcceptOffer.brokerFeeIssuerInvalid')
         }
       }
     }
@@ -176,13 +176,13 @@ export function NFTokenAcceptOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="nftokenSellOffer">Sell Offer (Optional)</Label>
+              <Label htmlFor="nftokenSellOffer">{t('nftAcceptOffer.nftokenSellOffer')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The NFTokenID of a sell offer to accept. Use this if you're buying the NFT.</p>
+                  <p>{t('nftAcceptOffer.nftokenSellOfferHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -196,7 +196,7 @@ export function NFTokenAcceptOfferForm({
           <Input
             id="nftokenSellOffer"
             type="text"
-            placeholder="NFToken sell offer ID"
+            placeholder={t('nftAcceptOffer.nftokenSellOfferPlaceholder')}
             className={`font-mono-address text-sm ${errors.nftokenSellOffer ? 'border-destructive' : ''}`}
             value={formData.nftokenSellOffer}
             onChange={(e) =>
@@ -208,13 +208,13 @@ export function NFTokenAcceptOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="nftokenBuyOffer">Buy Offer (Optional)</Label>
+              <Label htmlFor="nftokenBuyOffer">{t('nftAcceptOffer.nftokenBuyOffer')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The NFTokenID of a buy offer to accept. Use this if you're selling your NFT.</p>
+                  <p>{t('nftAcceptOffer.nftokenBuyOfferHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -228,7 +228,7 @@ export function NFTokenAcceptOfferForm({
           <Input
             id="nftokenBuyOffer"
             type="text"
-            placeholder="NFToken buy offer ID"
+            placeholder={t('nftAcceptOffer.nftokenBuyOfferPlaceholder')}
             className={`font-mono-address text-sm ${errors.nftokenBuyOffer ? 'border-destructive' : ''}`}
             value={formData.nftokenBuyOffer}
             onChange={(e) =>
@@ -239,12 +239,12 @@ export function NFTokenAcceptOfferForm({
 
         <div className="space-y-4 pt-4 border-t">
           <p className="text-sm text-muted-foreground">
-            Broker Fee (Optional) - Only for brokered transactions
+            {t('nftAcceptOffer.brokerFeeTitle')}
           </p>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="nftokenBrokerFee">Fee Amount</Label>
+              <Label htmlFor="nftokenBrokerFee">{t('nftAcceptOffer.brokerFee')}</Label>
               {errors.nftokenBrokerFee && (
                 <span className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
@@ -268,11 +268,11 @@ export function NFTokenAcceptOfferForm({
           {formData.nftokenBrokerFee && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="nftokenBrokerFeeCurrency">Currency</Label>
+                <Label htmlFor="nftokenBrokerFeeCurrency">{t('nftAcceptOffer.brokerFeeCurrency')}</Label>
                 <Input
                   id="nftokenBrokerFeeCurrency"
                   type="text"
-                  placeholder="Currency code"
+                  placeholder={t('nftCreateOffer.currencyPlaceholder')}
                   className="text-sm"
                   value={formData.nftokenBrokerFeeCurrency}
                   onChange={(e) =>
@@ -284,7 +284,7 @@ export function NFTokenAcceptOfferForm({
               {formData.nftokenBrokerFeeCurrency !== 'XRP' && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="nftokenBrokerFeeIssuer">Issuer</Label>
+                    <Label htmlFor="nftokenBrokerFeeIssuer">{t('nftAcceptOffer.brokerFeeIssuer')}</Label>
                     {errors.nftokenBrokerFeeIssuer && (
                       <span className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
@@ -314,7 +314,7 @@ export function NFTokenAcceptOfferForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -323,7 +323,7 @@ export function NFTokenAcceptOfferForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

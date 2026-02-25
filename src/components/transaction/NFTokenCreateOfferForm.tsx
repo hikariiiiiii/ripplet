@@ -64,38 +64,38 @@ export function NFTokenCreateOfferForm({
     const newErrors: Partial<NFTokenCreateOfferFormData> = {}
 
     if (!formData.nftokenId) {
-      newErrors.nftokenId = 'NFTokenID is required'
+      newErrors.nftokenId = t('nftCreateOffer.nftokenIdRequired')
     }
 
     if (!formData.amount) {
-      newErrors.amount = 'Amount is required'
+      newErrors.amount = t('nftCreateOffer.amountRequired')
     } else if (parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Amount must be greater than 0'
+      newErrors.amount = t('nftCreateOffer.amountInvalid')
     }
 
     if (formData.amountCurrency !== 'XRP') {
       if (!formData.amountIssuer) {
-        newErrors.amountIssuer = 'Issuer is required for non-XRP currency'
+        newErrors.amountIssuer = t('nftCreateOffer.issuerRequired')
       } else if (!isValidAddress(formData.amountIssuer)) {
-        newErrors.amountIssuer = 'Invalid issuer address format'
+        newErrors.amountIssuer = t('nftCreateOffer.issuerInvalid')
       }
     }
 
     if (formData.destination && !isValidAddress(formData.destination)) {
-      newErrors.destination = 'Invalid destination address format'
+      newErrors.destination = t('nftCreateOffer.destinationInvalid')
     }
 
     if (formData.expiration) {
       const exp = parseInt(formData.expiration, 10)
       if (isNaN(exp) || exp < 0) {
-        newErrors.expiration = 'Expiration must be a positive number'
+        newErrors.expiration = t('nftCreateOffer.expirationInvalid')
       }
     }
 
     if (!formData.isSellOffer && !formData.owner) {
-      newErrors.owner = 'Owner is required for buy offers'
+      newErrors.owner = t('nftCreateOffer.ownerRequired')
     } else if (formData.owner && !isValidAddress(formData.owner)) {
-      newErrors.owner = 'Invalid owner address format'
+      newErrors.owner = t('nftCreateOffer.ownerInvalid')
     }
 
     setErrors(newErrors)
@@ -203,19 +203,19 @@ export function NFTokenCreateOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Offer Type</span>
+              <span className="text-sm font-medium">{t('nftCreateOffer.offerType')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Sell Offer: You're selling your NFT. Buy Offer: You're offering to buy someone else's NFT.</p>
+                  <p>{t('nftCreateOffer.offerTypeHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg border">
-            <span className="text-sm">{formData.isSellOffer ? 'Sell Offer' : 'Buy Offer'}</span>
+            <span className="text-sm">{formData.isSellOffer ? t('nftCreateOffer.sellOffer') : t('nftCreateOffer.buyOffer')}</span>
             <Switch
               checked={formData.isSellOffer}
               onCheckedChange={(checked) =>
@@ -228,13 +228,13 @@ export function NFTokenCreateOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="nftokenId">NFTokenID</Label>
+              <Label htmlFor="nftokenId">{t('nftCreateOffer.nftokenId')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The unique identifier of the NFT</p>
+                  <p>{t('nftCreateOffer.nftokenIdHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -248,7 +248,7 @@ export function NFTokenCreateOfferForm({
           <Input
             id="nftokenId"
             type="text"
-            placeholder="NFToken ID"
+            placeholder={t('nftCreateOffer.nftokenIdPlaceholder')}
             className={`font-mono-address text-sm ${errors.nftokenId ? 'border-destructive' : ''}`}
             value={formData.nftokenId}
             onChange={(e) =>
@@ -259,7 +259,7 @@ export function NFTokenCreateOfferForm({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{t('nftCreateOffer.amount')}</Label>
             {errors.amount && (
               <span className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
@@ -281,11 +281,11 @@ export function NFTokenCreateOfferForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amountCurrency">Currency</Label>
+          <Label htmlFor="amountCurrency">{t('nftCreateOffer.currency')}</Label>
           <Input
             id="amountCurrency"
             type="text"
-            placeholder="Currency code"
+            placeholder={t('nftCreateOffer.currencyPlaceholder')}
             className="text-sm"
             value={formData.amountCurrency}
             onChange={(e) =>
@@ -297,7 +297,7 @@ export function NFTokenCreateOfferForm({
         {formData.amountCurrency !== 'XRP' && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="amountIssuer">Issuer</Label>
+              <Label htmlFor="amountIssuer">{t('nftCreateOffer.issuer')}</Label>
               {errors.amountIssuer && (
                 <span className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
@@ -322,13 +322,13 @@ export function NFTokenCreateOfferForm({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Label htmlFor="owner">Owner</Label>
+                <Label htmlFor="owner">{t('nftCreateOffer.owner')}</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>The owner of the NFT you want to buy</p>
+                    <p>{t('nftCreateOffer.ownerHint')}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -342,7 +342,7 @@ export function NFTokenCreateOfferForm({
             <Input
               id="owner"
               type="text"
-              placeholder="r..."
+              placeholder={t('nftCreateOffer.ownerPlaceholder')}
               className={`font-mono-address text-sm ${errors.owner ? 'border-destructive' : ''}`}
               value={formData.owner}
               onChange={(e) =>
@@ -355,13 +355,13 @@ export function NFTokenCreateOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="destination">Destination (Optional)</Label>
+              <Label htmlFor="destination">{t('nftCreateOffer.destination')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Restrict this offer to a specific buyer/seller</p>
+                  <p>{t('nftCreateOffer.destinationHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -375,7 +375,7 @@ export function NFTokenCreateOfferForm({
           <Input
             id="destination"
             type="text"
-            placeholder="r..."
+            placeholder={t('nftCreateOffer.destinationPlaceholder')}
             className={`font-mono-address text-sm ${errors.destination ? 'border-destructive' : ''}`}
             value={formData.destination}
             onChange={(e) =>
@@ -387,13 +387,13 @@ export function NFTokenCreateOfferForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="expiration">Expiration (Optional)</Label>
+              <Label htmlFor="expiration">{t('nftCreateOffer.expiration')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Ledger index after which the offer expires</p>
+                  <p>{t('nftCreateOffer.expirationHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -407,7 +407,7 @@ export function NFTokenCreateOfferForm({
           <Input
             id="expiration"
             type="number"
-            placeholder="Ledger index"
+            placeholder={t('nftCreateOffer.expirationPlaceholder')}
             className={`text-sm ${errors.expiration ? 'border-destructive' : ''}`}
             value={formData.expiration}
             onChange={(e) =>
@@ -421,7 +421,7 @@ export function NFTokenCreateOfferForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -430,7 +430,7 @@ export function NFTokenCreateOfferForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

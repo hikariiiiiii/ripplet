@@ -43,46 +43,46 @@ interface MPTokenIssuanceCreateFormProps {
 interface FlagConfig {
   key: keyof Pick<MPTokenIssuanceCreateFormData, 'canTransfer' | 'requireAuth' | 'canLock' | 'canClawback' | 'canTrade' | 'canEscrow'>;
   flagValue: number;
-  label: string;
-  tooltip: string;
+  labelKey: string;
+  tooltipKey: string;
 }
 
 const FLAGS_CONFIG: FlagConfig[] = [
   {
     key: 'canTransfer',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanTransfer,
-    label: 'Transferable',
-    tooltip: 'Allow holders to transfer the token to each other',
+    labelKey: 'flagTransferable',
+    tooltipKey: 'flagTransferableHint',
   },
   {
     key: 'requireAuth',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTRequireAuth,
-    label: 'Require Authorization',
-    tooltip: 'Holders must get explicit approval from the issuer before they can hold this token',
+    labelKey: 'flagRequireAuth',
+    tooltipKey: 'flagRequireAuthHint',
   },
   {
     key: 'canLock',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanLock,
-    label: 'Can Lock/Freeze',
-    tooltip: 'Allow issuer to freeze/unfreeze individual holder balances',
+    labelKey: 'flagCanLock',
+    tooltipKey: 'flagCanLockHint',
   },
   {
     key: 'canClawback',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanClawback,
-    label: 'Can Clawback',
-    tooltip: 'Allow issuer to claw back tokens from holders',
+    labelKey: 'flagCanClawback',
+    tooltipKey: 'flagCanClawbackHint',
   },
   {
     key: 'canTrade',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanTrade,
-    label: 'Can Trade (DEX)',
-    tooltip: 'Allow trading in the decentralized exchange (not currently implemented)',
+    labelKey: 'flagCanTrade',
+    tooltipKey: 'flagCanTradeHint',
   },
   {
     key: 'canEscrow',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanEscrow,
-    label: 'Can Escrow',
-    tooltip: 'Allow placing tokens in escrow',
+    labelKey: 'flagCanEscrow',
+    tooltipKey: 'flagCanEscrowHint',
   },
 ];
 
@@ -224,13 +224,13 @@ export function MPTokenIssuanceCreateForm({
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="assetScale">Asset Scale (Decimal Places)</Label>
+            <Label htmlFor="assetScale">{t('mpt.create.assetScale')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Number of decimal places for the token (0-19). For example, scale 6 means amounts are in millionths.</p>
+                <p>{t('mpt.create.assetScaleHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -239,13 +239,13 @@ export function MPTokenIssuanceCreateForm({
             type="number"
             min="0"
             max="19"
-            placeholder="0"
+            placeholder={t('mpt.create.assetScalePlaceholder')}
             {...register('assetScale', {
               validate: (value: string) => {
                 if (!value) return true;
                 const num = parseInt(value, 10);
                 if (!isValidAssetScale(num)) {
-                  return 'Asset scale must be between 0 and 19';
+                  return t('mpt.create.assetScaleInvalid');
                 }
                 return true;
               },
@@ -262,29 +262,29 @@ export function MPTokenIssuanceCreateForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="maximumAmount">Maximum Supply (Optional)</Label>
+            <Label htmlFor="maximumAmount">{t('mpt.create.maximumAmount')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Maximum number of tokens that can be issued. Leave empty for unlimited supply.</p>
+                <p>{t('mpt.create.maximumAmountHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Input
             id="maximumAmount"
             type="text"
-            placeholder="Leave empty for unlimited"
+            placeholder={t('mpt.create.maximumAmountPlaceholder')}
             {...register('maximumAmount')}
           />
           <p className="text-xs text-muted-foreground">
-            Enter as integer (e.g., 1000000 for 1 million tokens)
+            {t('mpt.create.maximumAmountHelp')}
           </p>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Token Flags</h3>
+          <h3 className="text-lg font-semibold">{t('mpt.create.tokenFlags')}</h3>
           <div className="space-y-4">
             {FLAGS_CONFIG.map((config) => (
               <div
@@ -296,14 +296,14 @@ export function MPTokenIssuanceCreateForm({
                     htmlFor={config.key}
                     className="cursor-pointer text-sm font-medium"
                   >
-                    {config.label}
+                    {t(`mpt.create.${config.labelKey}`)}
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>{config.tooltip}</p>
+                      <p>{t(`mpt.create.${config.tooltipKey}`)}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -337,13 +337,13 @@ export function MPTokenIssuanceCreateForm({
           <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="transferFee">Transfer Fee (basis points)</Label>
+              <Label htmlFor="transferFee">{t('mpt.create.transferFee')}</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Fee charged on transfers between holders. 100 = 0.01%, 5000 = 0.5%, max 500000 = 50%</p>
+                    <p>{t('mpt.create.transferFeeHint')}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -358,7 +358,7 @@ export function MPTokenIssuanceCreateForm({
                     if (!value) return true;
                     const num = parseInt(value, 10);
                     if (!isValidTransferFee(num)) {
-                      return 'Transfer fee must be between 0 and 500000';
+                      return t('mpt.create.transferFeeInvalid');
                     }
                     return true;
                   },
@@ -379,16 +379,16 @@ export function MPTokenIssuanceCreateForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="metadata">Metadata (JSON, max 1024 bytes)</Label>
+              <Label htmlFor="metadata">{t('mpt.create.metadata')}</Label>
               <Input
                 id="metadata"
                 type="text"
-                placeholder='{"t":"TKN","n":"Token Name"}'
+                placeholder={t('mpt.create.metadataPlaceholder')}
                 {...register('metadata', {
                   validate: (value: string) => {
                     if (!value) return true;
                     if (value.length > 1024) {
-                      return 'Metadata cannot exceed 1024 bytes';
+                      return t('mpt.create.metadataInvalid');
                     }
                     return true;
                   },
@@ -402,7 +402,7 @@ export function MPTokenIssuanceCreateForm({
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Optional JSON metadata following XLS-89 schema
+                {t('mpt.create.metadataHelp')}
               </p>
             </div>
           </div>
@@ -413,7 +413,7 @@ export function MPTokenIssuanceCreateForm({
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Transaction JSON
+              {t('common.transactionJson')}
             </span>
             <Button
               type="button"
@@ -422,7 +422,7 @@ export function MPTokenIssuanceCreateForm({
               onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
               className="h-6 text-xs"
             >
-              Copy
+              {t('common.copy')}
             </Button>
           </div>
           <pre className="text-xs overflow-x-auto">

@@ -48,17 +48,17 @@ export function CredentialAcceptForm({
     const newErrors: Partial<CredentialAcceptFormData> = {}
 
     if (!formData.issuer) {
-      newErrors.issuer = 'Issuer address is required'
+      newErrors.issuer = t('credentialAccept.issuerRequired')
     } else if (!isValidCredentialAddress(formData.issuer)) {
-      newErrors.issuer = 'Invalid XRPL address format'
+      newErrors.issuer = t('credentialAccept.issuerInvalid')
     }
 
     if (!formData.credentialType) {
-      newErrors.credentialType = 'Credential type is required'
+      newErrors.credentialType = t('credentialAccept.credentialTypeRequired')
     }
 
     if (formData.issuer && formData.issuer === account) {
-      newErrors.issuer = 'Issuer cannot be the same as your account'
+      newErrors.issuer = t('credentialAccept.issuerSameAsAccount')
     }
 
     setErrors(newErrors)
@@ -132,13 +132,13 @@ export function CredentialAcceptForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="issuer">Issuer Address</Label>
+              <Label htmlFor="issuer">{t('credentialAccept.issuer')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The account that created the credential you want to accept</p>
+                  <p>{t('credentialAccept.issuerHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -152,7 +152,7 @@ export function CredentialAcceptForm({
           <Input
             id="issuer"
             type="text"
-            placeholder="r..."
+            placeholder={t('credentialAccept.issuerPlaceholder')}
             className={`font-mono-address text-sm ${errors.issuer ? 'border-destructive' : ''}`}
             value={formData.issuer}
             onChange={(e) =>
@@ -160,20 +160,20 @@ export function CredentialAcceptForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            The XRPL account address that issued the credential
+            {t('credentialAccept.issuerHelp')}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="credentialType">Credential Type</Label>
+              <Label htmlFor="credentialType">{t('credentialAccept.credentialType')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The type of credential to accept (must match the issued credential)</p>
+                  <p>{t('credentialAccept.credentialTypeHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -187,7 +187,7 @@ export function CredentialAcceptForm({
           <Input
             id="credentialType"
             type="text"
-            placeholder="e.g., KYC"
+            placeholder={t('credentialAccept.credentialTypePlaceholder')}
             className={`text-sm ${errors.credentialType ? 'border-destructive' : ''}`}
             value={formData.credentialType}
             onChange={(e) =>
@@ -195,7 +195,7 @@ export function CredentialAcceptForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            Must match the credential type that was issued to you
+            {t('credentialAccept.credentialTypeHelp')}
           </p>
         </div>
 
@@ -204,7 +204,7 @@ export function CredentialAcceptForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -213,7 +213,7 @@ export function CredentialAcceptForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

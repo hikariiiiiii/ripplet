@@ -35,22 +35,22 @@ interface MPTokenIssuanceSetFormProps {
 interface FlagConfig {
   key: keyof Pick<MPTokenIssuanceSetFormData, 'canLock' | 'canClawback'>;
   flagValue: number;
-  label: string;
-  tooltip: string;
+  labelKey: string;
+  tooltipKey: string;
 }
 
 const FLAGS_CONFIG: FlagConfig[] = [
   {
     key: 'canLock',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanLock,
-    label: 'Enable Lock/Freeze',
-    tooltip: 'Allow issuer to freeze/unfreeze individual holder balances',
+    labelKey: 'flagEnableLock',
+    tooltipKey: 'flagEnableLockHint',
   },
   {
     key: 'canClawback',
     flagValue: MPT_ISSUANCE_FLAGS.lsfMPTCanClawback,
-    label: 'Enable Clawback',
-    tooltip: 'Allow issuer to claw back tokens from holders',
+    labelKey: 'flagEnableClawback',
+    tooltipKey: 'flagEnableClawbackHint',
   },
 ];
 
@@ -172,26 +172,26 @@ export function MPTokenIssuanceSetForm({
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="mptIssuanceId">MPT Issuance ID</Label>
+            <Label htmlFor="mptIssuanceId">{t('mpt.set.mptIssuanceId')}</Label>
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>The 48-character hexadecimal ID of the MPT issuance to modify.</p>
+                <p>{t('mpt.set.mptIssuanceIdHint')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
           <Input
             id="mptIssuanceId"
             type="text"
-            placeholder="00070C4495F14B0E44F78A264E41713C64B5F89242540EE255534400000000000000"
+            placeholder={t('mpt.set.mptIssuanceIdPlaceholder')}
             className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
             {...register('mptIssuanceId', {
-              required: 'MPT Issuance ID is required',
+              required: t('mpt.set.mptIssuanceIdRequired'),
               validate: (value: string) => {
                 if (!isValidMPTIssuanceID(value)) {
-                  return 'MPT Issuance ID must be a 48-character hexadecimal string';
+                  return t('mpt.set.mptIssuanceIdInvalid');
                 }
                 return true;
               },
@@ -206,9 +206,9 @@ export function MPTokenIssuanceSetForm({
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Flags to Enable</h3>
+          <h3 className="text-lg font-semibold">{t('mpt.set.flagsTitle')}</h3>
           <p className="text-sm text-muted-foreground">
-            Note: Only certain flags can be changed after creation. You can only enable flags, not disable them.
+            {t('mpt.set.flagsNote')}
           </p>
           <div className="space-y-4">
             {FLAGS_CONFIG.map((config) => (
@@ -221,14 +221,14 @@ export function MPTokenIssuanceSetForm({
                     htmlFor={config.key}
                     className="cursor-pointer text-sm font-medium"
                   >
-                    {config.label}
+                    {t(`mpt.set.${config.labelKey}`)}
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>{config.tooltip}</p>
+                      <p>{t(`mpt.set.${config.tooltipKey}`)}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -247,7 +247,7 @@ export function MPTokenIssuanceSetForm({
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Transaction JSON
+              {t('common.transactionJson')}
             </span>
             <Button
               type="button"
@@ -256,7 +256,7 @@ export function MPTokenIssuanceSetForm({
               onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
               className="h-6 text-xs"
             >
-              Copy
+              {t('common.copy')}
             </Button>
           </div>
           <pre className="text-xs overflow-x-auto">

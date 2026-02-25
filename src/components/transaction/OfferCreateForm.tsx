@@ -63,44 +63,44 @@ export function OfferCreateForm({
     const newErrors: Partial<OfferCreateFormData> = {}
 
     if (!formData.takerGetsAmount) {
-      newErrors.takerGetsAmount = 'Amount is required'
+      newErrors.takerGetsAmount = t('offerCreate.amountRequired')
     } else if (parseFloat(formData.takerGetsAmount) <= 0) {
-      newErrors.takerGetsAmount = 'Amount must be greater than 0'
+      newErrors.takerGetsAmount = t('offerCreate.amountInvalid')
     }
 
     if (formData.takerGetsCurrency !== 'XRP') {
       if (!formData.takerGetsIssuer) {
-        newErrors.takerGetsIssuer = 'Issuer is required for non-XRP currency'
+        newErrors.takerGetsIssuer = t('offerCreate.issuerRequired')
       } else if (!isValidAddress(formData.takerGetsIssuer)) {
-        newErrors.takerGetsIssuer = 'Invalid issuer address format'
+        newErrors.takerGetsIssuer = t('offerCreate.issuerInvalid')
       }
     }
 
     if (!formData.takerPaysAmount) {
-      newErrors.takerPaysAmount = 'Amount is required'
+      newErrors.takerPaysAmount = t('offerCreate.amountRequired')
     } else if (parseFloat(formData.takerPaysAmount) <= 0) {
-      newErrors.takerPaysAmount = 'Amount must be greater than 0'
+      newErrors.takerPaysAmount = t('offerCreate.amountInvalid')
     }
 
     if (formData.takerPaysCurrency !== 'XRP') {
       if (!formData.takerPaysIssuer) {
-        newErrors.takerPaysIssuer = 'Issuer is required for non-XRP currency'
+        newErrors.takerPaysIssuer = t('offerCreate.issuerRequired')
       } else if (!isValidAddress(formData.takerPaysIssuer)) {
-        newErrors.takerPaysIssuer = 'Invalid issuer address format'
+        newErrors.takerPaysIssuer = t('offerCreate.issuerInvalid')
       }
     }
 
     if (formData.expiration) {
       const exp = parseInt(formData.expiration, 10)
       if (isNaN(exp) || exp < 0) {
-        newErrors.expiration = 'Expiration must be a positive number'
+        newErrors.expiration = t('offerCreate.expirationInvalid')
       }
     }
 
     if (formData.offerSequence) {
       const seq = parseInt(formData.offerSequence, 10)
       if (isNaN(seq) || seq < 0) {
-        newErrors.offerSequence = 'Offer sequence must be a non-negative integer'
+        newErrors.offerSequence = t('offerCreate.offerSequenceInvalid')
       }
     }
 
@@ -228,11 +228,11 @@ export function OfferCreateForm({
     
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/20">
-          <h3 className="text-base font-semibold text-white">You Offer (Taker Gets)</h3>
+          <h3 className="text-base font-semibold text-white">{t('offerCreate.youOffer')}</h3>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="takerGetsAmount">Amount</Label>
+              <Label htmlFor="takerGetsAmount">{t('offerCreate.takerGetsAmount')}</Label>
               {errors.takerGetsAmount && (
                 <span className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
@@ -254,26 +254,25 @@ export function OfferCreateForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="takerGetsCurrency">Currency</Label>
+            <Label htmlFor="takerGetsCurrency">{t('offerCreate.takerGetsCurrency')}</Label>
             <Input
               id="takerGetsCurrency"
               type="text"
-              placeholder="Currency code"
+              placeholder={t('offerCreate.currencyPlaceholder')}
               className="text-sm"
               value={formData.takerGetsCurrency}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, takerGetsCurrency: e.target.value.toUpperCase() }))
               }
             />
-            <p className="text-xs text-muted-foreground">
-              Use "XRP" for XRP, or 3-letter currency code for IOU
-            </p>
+            <p className="text-xs text-muted-foreground">{t('offerCreate.currencyHint')}</p>
+
           </div>
 
           {formData.takerGetsCurrency !== 'XRP' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="takerGetsIssuer">Issuer</Label>
+                <Label htmlFor="takerGetsIssuer">{t('offerCreate.takerGetsIssuer')}</Label>
                 {errors.takerGetsIssuer && (
                   <span className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
@@ -296,11 +295,11 @@ export function OfferCreateForm({
         </div>
 
         <div className="space-y-4 rounded-lg border border-border p-4 bg-muted/20">
-          <h3 className="text-base font-semibold text-xrpl-blue">You Want (Taker Pays)</h3>
+          <h3 className="text-base font-semibold text-xrpl-blue">{t('offerCreate.youWant')}</h3>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="takerPaysAmount">Amount</Label>
+              <Label htmlFor="takerPaysAmount">{t('offerCreate.takerPaysAmount')}</Label>
               {errors.takerPaysAmount && (
                 <span className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
@@ -322,11 +321,11 @@ export function OfferCreateForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="takerPaysCurrency">Currency</Label>
+            <Label htmlFor="takerPaysCurrency">{t('offerCreate.takerPaysCurrency')}</Label>
             <Input
               id="takerPaysCurrency"
               type="text"
-              placeholder="Currency code"
+              placeholder={t('offerCreate.currencyPlaceholder')}
               className="text-sm"
               value={formData.takerPaysCurrency}
               onChange={(e) =>
@@ -338,7 +337,7 @@ export function OfferCreateForm({
           {formData.takerPaysCurrency !== 'XRP' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="takerPaysIssuer">Issuer</Label>
+                <Label htmlFor="takerPaysIssuer">{t('offerCreate.takerPaysIssuer')}</Label>
                 {errors.takerPaysIssuer && (
                   <span className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
@@ -363,13 +362,13 @@ export function OfferCreateForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="expiration">Expiration (Optional)</Label>
+              <Label htmlFor="expiration">{t('offerCreate.expiration')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Ledger index after which the offer expires</p>
+                  <p>{t('offerCreate.expirationHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -383,7 +382,7 @@ export function OfferCreateForm({
           <Input
             id="expiration"
             type="number"
-            placeholder="Ledger index"
+            placeholder={t('offerCreate.expirationPlaceholder')}
             className={`text-sm ${errors.expiration ? 'border-destructive' : ''}`}
             value={formData.expiration}
             onChange={(e) =>
@@ -395,13 +394,13 @@ export function OfferCreateForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="offerSequence">Offer Sequence (Optional)</Label>
+              <Label htmlFor="offerSequence">{t('offerCreate.offerSequence')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Sequence number of an existing offer to replace</p>
+                  <p>{t('offerCreate.offerSequenceHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -415,7 +414,7 @@ export function OfferCreateForm({
           <Input
             id="offerSequence"
             type="number"
-            placeholder="Sequence number"
+            placeholder={t('offerCreate.offerSequencePlaceholder')}
             className={`text-sm ${errors.offerSequence ? 'border-destructive' : ''}`}
             value={formData.offerSequence}
             onChange={(e) =>
@@ -429,7 +428,7 @@ export function OfferCreateForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -438,7 +437,7 @@ export function OfferCreateForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

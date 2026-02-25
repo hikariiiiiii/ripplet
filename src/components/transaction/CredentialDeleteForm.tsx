@@ -53,18 +53,18 @@ export function CredentialDeleteForm({
 
     if (!formData.targetAddress) {
       newErrors.targetAddress = formData.deleteMode === 'issuer' 
-        ? 'Subject address is required' 
-        : 'Issuer address is required'
+        ? t('credentialDelete.subjectRequired') 
+        : t('credentialDelete.issuerRequired')
     } else if (!isValidCredentialAddress(formData.targetAddress)) {
-      newErrors.targetAddress = 'Invalid XRPL address format'
+      newErrors.targetAddress = t('credentialDelete.targetAddressInvalid')
     }
 
     if (!formData.credentialType) {
-      newErrors.credentialType = 'Credential type is required'
+      newErrors.credentialType = t('credentialDelete.credentialTypeRequired')
     }
 
     if (formData.targetAddress && formData.targetAddress === account) {
-      newErrors.targetAddress = 'Target address cannot be the same as your account'
+      newErrors.targetAddress = t('credentialDelete.targetAddressSameAsAccount')
     }
 
     setErrors(newErrors)
@@ -135,16 +135,16 @@ export function CredentialDeleteForm({
     await onSubmit(transaction)
   }
 
-  const targetLabel = formData.deleteMode === 'issuer' ? 'Subject Address' : 'Issuer Address'
+  const targetLabel = formData.deleteMode === 'issuer' ? t('credentialDelete.subjectAddress') : t('credentialDelete.issuerAddress')
   const targetPlaceholder = formData.deleteMode === 'issuer' 
-    ? 'The account that received the credential' 
-    : 'The account that issued the credential'
+    ? t('credentialDelete.targetAddressHintIssuer') 
+    : t('credentialDelete.targetAddressHintSubject')
 
   return (
     
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-3">
-          <Label>I am deleting as...</Label>
+          <Label>{t('credentialDelete.deleteAs')}</Label>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -152,7 +152,7 @@ export function CredentialDeleteForm({
               size="sm"
               onClick={() => setFormData((prev) => ({ ...prev, deleteMode: 'issuer', targetAddress: '' }))}
             >
-              Issuer
+              {t('credentialDelete.deleteAsIssuer')}
             </Button>
             <Button
               type="button"
@@ -160,13 +160,13 @@ export function CredentialDeleteForm({
               size="sm"
               onClick={() => setFormData((prev) => ({ ...prev, deleteMode: 'subject', targetAddress: '' }))}
             >
-              Subject
+              {t('credentialDelete.deleteAsSubject')}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
             {formData.deleteMode === 'issuer'
-              ? 'You created this credential and want to delete it'
-              : 'You received this credential and want to delete it'}
+              ? t('credentialDelete.deleteAsIssuerHelp')
+              : t('credentialDelete.deleteAsSubjectHelp')}
           </p>
         </div>
 
@@ -193,7 +193,7 @@ export function CredentialDeleteForm({
           <Input
             id="targetAddress"
             type="text"
-            placeholder="r..."
+            placeholder={t('credentialDelete.targetAddressPlaceholder')}
             className={`font-mono-address text-sm ${errors.targetAddress ? 'border-destructive' : ''}`}
             value={formData.targetAddress}
             onChange={(e) =>
@@ -208,13 +208,13 @@ export function CredentialDeleteForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="credentialType">Credential Type</Label>
+              <Label htmlFor="credentialType">{t('credentialDelete.credentialType')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The type of credential to delete</p>
+                  <p>{t('credentialDelete.credentialTypeHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -228,7 +228,7 @@ export function CredentialDeleteForm({
           <Input
             id="credentialType"
             type="text"
-            placeholder="e.g., KYC"
+            placeholder={t('credentialDelete.credentialTypePlaceholder')}
             className={`text-sm ${errors.credentialType ? 'border-destructive' : ''}`}
             value={formData.credentialType}
             onChange={(e) =>
@@ -236,7 +236,7 @@ export function CredentialDeleteForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            The type of the credential you want to delete
+            {t('credentialDelete.credentialTypeHelp')}
           </p>
         </div>
 
@@ -245,7 +245,7 @@ export function CredentialDeleteForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -254,7 +254,7 @@ export function CredentialDeleteForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">

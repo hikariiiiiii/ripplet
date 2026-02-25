@@ -50,8 +50,6 @@ export function MPTokenAuthorizeForm({
     setValue,
     trigger,
     formState: { errors },
-
-
   } = useForm<MPTokenAuthorizeFormData>({
     defaultValues: {
       mptIssuanceId: '',
@@ -131,111 +129,107 @@ export function MPTokenAuthorizeForm({
   };
 
   return (
-    
-      <form onSubmit={handleFormSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="mptIssuanceId">MPT Issuance ID</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>The 48-character hexadecimal ID of the MPT issuance.</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="mptIssuanceId"
-            type="text"
-            placeholder="00070C4495F14B0E44F78A264E41713C64B5F89242540EE255534400000000000000"
-            className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
-            {...register('mptIssuanceId', {
-              required: 'MPT Issuance ID is required',
-              validate: (value: string) => {
-                if (!isValidMPTIssuanceID(value)) {
-                  return 'MPT Issuance ID must be a 48-character hexadecimal string';
-                }
-                return true;
-              },
-            })}
-          />
-          {errors.mptIssuanceId && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.mptIssuanceId.message}
-            </p>
-          )}
+    <form onSubmit={handleFormSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="mptIssuanceId">{t('mpt.authorize.mptIssuanceId')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mpt.authorize.mptIssuanceIdHint')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="holder">Holder Address (Optional)</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>
-                  <strong>For Issuers:</strong> Enter the holder address to authorize/unauthorize a specific account.<br />
-                  <strong>For Holders:</strong> Leave empty to opt-in to holding this MPT.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="holder"
-            type="text"
-            placeholder="r..."
-            className={`font-mono text-sm ${errors.holder ? 'border-destructive' : ''}`}
-            {...register('holder', {
-              validate: (value: string) => {
-                if (!value) return true;
-                if (!isValidXRPLAddress(value)) {
-                  return 'Invalid XRPL address format';
-                }
-                return true;
-              },
-            })}
-          />
-          {errors.holder && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.holder.message}
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Leave empty if you are a holder opting in to hold this MPT
+        <Input
+          id="mptIssuanceId"
+          type="text"
+          placeholder={t('mpt.authorize.mptIssuanceIdPlaceholder')}
+          className={`font-mono text-sm ${errors.mptIssuanceId ? 'border-destructive' : ''}`}
+          {...register('mptIssuanceId', {
+            required: t('mpt.authorize.mptIssuanceIdRequired'),
+            validate: (value: string) => {
+              if (!isValidMPTIssuanceID(value)) {
+                return t('mpt.authorize.mptIssuanceIdInvalid');
+              }
+              return true;
+            },
+          })}
+        />
+        {errors.mptIssuanceId && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.mptIssuanceId.message}
           </p>
-        </div>
+        )}
+      </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="unauthorize" className="cursor-pointer text-sm font-medium">
-              Revoke Authorization
-            </Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>Enable this to remove authorization from the holder instead of granting it.</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Switch
-            id="unauthorize"
-            checked={watchedFields.unauthorize}
-            onCheckedChange={(checked) => setValue('unauthorize', checked)}
-          />
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="holder">{t('mpt.authorize.holder')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mpt.authorize.holderHint')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
+        <Input
+          id="holder"
+          type="text"
+          placeholder={t('mpt.authorize.holderPlaceholder')}
+          className={`font-mono text-sm ${errors.holder ? 'border-destructive' : ''}`}
+          {...register('holder', {
+            validate: (value: string) => {
+              if (!value) return true;
+              if (!isValidXRPLAddress(value)) {
+                return t('mpt.authorize.holderInvalid');
+              }
+              return true;
+            },
+          })}
+        />
+        {errors.holder && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.holder.message}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {t('mpt.authorize.holderHelp')}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="unauthorize" className="cursor-pointer text-sm font-medium">
+            {t('mpt.authorize.revokeAuth')}
+          </Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mpt.authorize.revokeAuthHint')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <Switch
+          id="unauthorize"
+          checked={watchedFields.unauthorize}
+          onCheckedChange={(checked) => setValue('unauthorize', checked)}
+        />
+      </div>
 
       {/* JSON Preview Toggle */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Transaction JSON
+              {t('common.transactionJson')}
             </span>
             <Button
               type="button"
@@ -244,7 +238,7 @@ export function MPTokenAuthorizeForm({
               onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
               className="h-6 text-xs"
             >
-              Copy
+              {t('common.copy')}
             </Button>
           </div>
           <pre className="text-xs overflow-x-auto">
@@ -253,42 +247,41 @@ export function MPTokenAuthorizeForm({
         </div>
       )}
 
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handlePreviewToggle}
-            disabled={isSubmitting}
-            className="flex items-center gap-2"
-          >
-            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
-          </Button>
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePreviewToggle}
+          disabled={isSubmitting}
+          className="flex items-center gap-2"
+        >
+          {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
+        </Button>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('common.loading')}
-              </>
-            ) : isConnected ? (
-              <>
-                <Wallet className="w-4 h-4 mr-2" />
-                {t('common.signAndSend')}
-              </>
-            ) : (
-              <>
-                <Wallet className="w-4 h-4 mr-2" />
-                {t('wallet.connect')}
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {t('common.loading')}
+            </>
+          ) : isConnected ? (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('common.signAndSend')}
+            </>
+          ) : (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('wallet.connect')}
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

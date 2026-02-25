@@ -65,20 +65,20 @@ export function NFTokenMintForm({
     const newErrors: Partial<NFTokenMintFormData> = {}
 
     if (!formData.nftokenTaxon) {
-      newErrors.nftokenTaxon = 'NFTokenTaxon is required'
+      newErrors.nftokenTaxon = t('nftMint.nftokenTaxonRequired')
     } else if (!Number.isInteger(parseInt(formData.nftokenTaxon, 10))) {
-      newErrors.nftokenTaxon = 'NFTokenTaxon must be an integer'
+      newErrors.nftokenTaxon = t('nftMint.nftokenTaxonInvalid')
     }
 
     if (formData.transferFee) {
       const fee = parseInt(formData.transferFee, 10)
       if (isNaN(fee) || fee < 0 || fee > 50000) {
-        newErrors.transferFee = 'TransferFee must be between 0 and 50000'
+        newErrors.transferFee = t('nftMint.transferFeeInvalid')
       }
     }
 
     if (formData.issuer && !isValidAddress(formData.issuer)) {
-      newErrors.issuer = 'Invalid issuer address format'
+      newErrors.issuer = t('nftMint.issuerInvalid')
     }
 
     setErrors(newErrors)
@@ -177,13 +177,13 @@ export function NFTokenMintForm({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="nftokenTaxon">NFTokenTaxon</Label>
+              <Label htmlFor="nftokenTaxon">{t('nftMint.nftokenTaxon')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>A taxon (category) for this NFT. Can be any integer. Use 0 if not categorizing.</p>
+                  <p>{t('nftMint.nftokenTaxonHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -197,7 +197,7 @@ export function NFTokenMintForm({
           <Input
             id="nftokenTaxon"
             type="number"
-            placeholder="e.g., 0"
+            placeholder={t('nftMint.nftokenTaxonPlaceholder')}
             className={`text-sm ${errors.nftokenTaxon ? 'border-destructive' : ''}`}
             value={formData.nftokenTaxon}
             onChange={(e) =>
@@ -207,11 +207,11 @@ export function NFTokenMintForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="uri">URI (Optional)</Label>
+          <Label htmlFor="uri">{t('nftMint.uri')}</Label>
           <Input
             id="uri"
             type="text"
-            placeholder="https://... or hex-encoded data"
+            placeholder={t('nftMint.uriPlaceholder')}
             className="text-sm"
             value={formData.uri}
             onChange={(e) =>
@@ -219,20 +219,20 @@ export function NFTokenMintForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            URL or data pointing to NFT metadata. Will be hex-encoded.
+            {t('nftMint.uriHelp')}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label htmlFor="transferFee">Transfer Fee (Optional)</Label>
+              <Label htmlFor="transferFee">{t('nftMint.transferFee')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Percentage fee for secondary sales (0-50000 = 0%-50%). Only applies if transferable.</p>
+                  <p>{t('nftMint.transferFeeHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -246,7 +246,7 @@ export function NFTokenMintForm({
           <Input
             id="transferFee"
             type="number"
-            placeholder="0-50000 (0% to 50%)"
+            placeholder={t('nftMint.transferFeePlaceholder')}
             className={`text-sm ${errors.transferFee ? 'border-destructive' : ''}`}
             value={formData.transferFee}
             onChange={(e) =>
@@ -257,7 +257,7 @@ export function NFTokenMintForm({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="issuer">Issuer (Optional)</Label>
+            <Label htmlFor="issuer">{t('nftMint.issuer')}</Label>
             {errors.issuer && (
               <span className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
@@ -268,7 +268,7 @@ export function NFTokenMintForm({
           <Input
             id="issuer"
             type="text"
-            placeholder="r..."
+            placeholder={t('nftMint.issuerPlaceholder')}
             className={`font-mono-address text-sm ${errors.issuer ? 'border-destructive' : ''}`}
             value={formData.issuer}
             onChange={(e) =>
@@ -276,22 +276,22 @@ export function NFTokenMintForm({
             }
           />
           <p className="text-xs text-muted-foreground">
-            Another account that can issue NFTs on behalf of this minter
+            {t('nftMint.issuerHelp')}
           </p>
         </div>
 
         <div className="space-y-4">
-          <Label>Flags</Label>
+          <Label>{t('nftMint.flags')}</Label>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Burnable</span>
+              <span className="text-sm">{t('nftMint.flagBurnable')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Allow the issuer to burn this NFT</p>
+                  <p>{t('nftMint.flagBurnableHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -305,13 +305,13 @@ export function NFTokenMintForm({
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Only XRP</span>
+              <span className="text-sm">{t('nftMint.flagOnlyXrp')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Only XRP can be used for buying/selling this NFT</p>
+                  <p>{t('nftMint.flagOnlyXrpHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -325,13 +325,13 @@ export function NFTokenMintForm({
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Trust Line</span>
+              <span className="text-sm">{t('nftMint.flagTrustLine')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Create a trust line to hold this NFT</p>
+                  <p>{t('nftMint.flagTrustLineHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -345,13 +345,13 @@ export function NFTokenMintForm({
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Transferable</span>
+              <span className="text-sm">{t('nftMint.flagTransferable')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Allow this NFT to be transferred (recommended)</p>
+                  <p>{t('nftMint.flagTransferableHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -369,7 +369,7 @@ export function NFTokenMintForm({
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -378,7 +378,7 @@ export function NFTokenMintForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">
