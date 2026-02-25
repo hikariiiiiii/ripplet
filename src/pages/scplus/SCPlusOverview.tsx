@@ -88,8 +88,8 @@ export default function SCPlusOverview() {
                 <td className="p-4 text-sm font-medium text-muted-foreground">
                   {t('scplus.overviewPage.transactionSteps')}
                 </td>
-                <td className="p-4 text-sm text-center font-semibold text-purple-400">6</td>
-                <td className="p-4 text-sm text-center font-semibold text-blue-400">4</td>
+                <td className="p-4 text-sm text-center font-semibold text-purple-400">5~6</td>
+                <td className="p-4 text-sm text-center font-semibold text-blue-400">5</td>
                 <td className="p-4 text-sm text-center font-semibold text-pink-400">4</td>
                 <td className="p-4 text-sm text-center font-semibold text-amber-400">3</td>
               </tr>
