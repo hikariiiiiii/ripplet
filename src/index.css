@@ -392,6 +392,21 @@
     }
   }
 
+  /* Reduced motion - disable animations for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-bounce-down,
+    .animate-fade-in,
+    .bg-grid-animated,
+    .text-gradient-animated,
+    .animated-gradient-text,
+    .float {
+      animation: none !important;
+    }
+
+    .status-pulse::before {
+      animation: none !important;
+    }
+  }
 
 }
 
