@@ -193,6 +193,87 @@ import type { Transaction } from '@/types'
 - **Semicolons**: Required
 - **Trailing commas**: ES5 compatible (no trailing commas in function parameters)
 
+## Internationalization (i18n) Guidelines
+
+Ripplet supports Chinese and English using react-i18next. All user-facing text MUST be internationalized.
+
+### File Locations
+
+| File | Purpose |
+|------|---------|
+| `src/i18n/index.ts` | i18n configuration |
+| `src/i18n/locales/zh.json` | Chinese translations |
+| `src/i18n/locales/en.json` | English translations |
+
+### Development Rules
+
+1. **NO hardcoded text in components** - All visible text must use `t()` function
+2. **Add new keys to BOTH language files** - When adding text, update both `zh.json` and `en.json`
+3. **Use nested keys for organization** - Group related translations by feature/module
+
+### Usage Pattern
+
+```typescript
+import { useTranslation } from 'react-i18next';
+
+export function MyComponent() {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('module.title')}</h1>
+      <p>{t('module.description')}</p>
+      <button>{t('common.submit')}</button>
+    </div>
+  );
+}
+```
+
+### Key Naming Convention
+
+| Category | Pattern | Example |
+|----------|---------|---------|
+| Common | `common.*` | `common.submit`, `common.cancel`, `common.loading` |
+| Navigation | `nav.*` | `nav.payment`, `nav.nft` |
+| Feature modules | `moduleName.*` | `payment.amount`, `nft.mint` |
+| Form labels | `form.*` | `form.amount`, `form.destination` |
+| Error messages | `error.*` | `error.invalidAddress`, `error.insufficientBalance` |
+| Wallet | `wallet.*` | `wallet.connect`, `wallet.disconnect` |
+
+### Adding New Translations
+
+When adding a new feature or page:
+
+1. **Add keys to `zh.json`:**
+```json
+{
+  "newFeature": {
+    "title": "新功能标题",
+    "description": "功能描述",
+    "action": "执行操作"
+  }
+}
+```
+
+2. **Add matching keys to `en.json`:**
+```json
+{
+  "newFeature": {
+    "title": "New Feature Title",
+    "description": "Feature description",
+    "action": "Execute Action"
+  }
+}
+```
+
+### Checklist for New Components
+
+- [ ] All text content uses `t()` function
+- [ ] Keys added to both `zh.json` and `en.json`
+- [ ] Keys follow naming convention (lowercase, dot notation)
+- [ ] No hardcoded strings in JSX
+- [ ] Placeholder text and validation messages are also internationalized
+
 ## Component Guidelines
 
 ### Functional Components
