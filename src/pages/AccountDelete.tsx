@@ -9,7 +9,7 @@ export default function AccountDeletePage() {
   return (
     <TransactionPageWrapper
       title={t('accountdelete.title')}
-      subtitle="Delete your XRPL account and transfer remaining XRP"
+      subtitle={t('accountdelete.subtitle')}
       icon={<Trash2 className="w-5 h-5 text-red-500" />}
       iconBgColor="bg-red-500/10"
       borderColor="border-red-500/20"

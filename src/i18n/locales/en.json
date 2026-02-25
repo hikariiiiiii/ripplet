@@ -167,9 +167,7 @@
     "destinationInvalid": "Invalid XRPL address format",
     "amountRequired": "Amount is required",
     "amountInvalid": "Amount must be greater than 0",
-    "destinationTagInvalid": "Destination tag must be between 0 and 4294967295",
-    "memo": "Memo",
-    "memoPlaceholder": "Optional message"
+    "destinationTagInvalid": "Destination tag must be between 0 and 4294967295"
   },
   "ioudPayment": {
     "title": "IOU Payment",
@@ -238,7 +236,6 @@
     "offerSequencePlaceholder": "Sequence number",
     "offerSequenceRequired": "Offer sequence is required",
     "offerSequenceInvalid": "Offer sequence must be a non-negative integer",
-    "offerSequencePlaceholder": "Sequence number",
     "offerSequenceHint": "The sequence number of the escrow creation transaction",
     "condition": "Condition",
     "conditionPlaceholder": "Hex-encoded crypto-condition",
@@ -370,7 +367,8 @@
     "confirmLabel": "I understand this will permanently delete my account",
     "confirmHint": "Please confirm you understand the risks",
     "confirmRequired": "Please confirm to proceed",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "subtitle": "Delete your XRPL account and transfer remaining XRP"
   },
   "escrow": {
     "title": "Escrow",
@@ -414,7 +412,10 @@
     "offerSequenceHint": "The sequence number of the escrow creation transaction",
     "createEscrow": "Create Escrow",
     "finishEscrow": "Finish Escrow",
-    "cancelEscrow": "Cancel Escrow"
+    "cancelEscrow": "Cancel Escrow",
+    "createSubtitle": "Create a time-locked XRP escrow",
+    "finishSubtitle": "Release funds from an escrow",
+    "cancelSubtitle": "Cancel an escrow and reclaim funds"
   },
   "mpt": {
     "create": {
@@ -587,5 +588,18 @@
       "complete": "Complete",
       "refreshWarning": "Refreshing the page will reset your progress"
     }
+  },
+  "header": {
+    "connect": "Connect",
+    "copyAddress": "Copy address",
+    "viewOnExplorer": "View on explorer",
+    "disconnectWallet": "Disconnect wallet"
+  },
+  "walletConnect": {
+    "connectedDescription": "Your wallet is connected to XRPL",
+    "address": "Address",
+    "copiedToClipboard": "Copied to clipboard!",
+    "connectYourWallet": "Connect Your Wallet",
+    "installPrompt": "Install a wallet extension:"
   }
 }

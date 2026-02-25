@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Wallet, ChevronDown, Copy, Check, LogOut, Loader2, Zap, AlertTriangle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -122,6 +123,7 @@ const WALLET_OPTIONS: { type: WalletType; name: string; description: string; Ico
 ]
 
 export function WalletConnect() {
+  const { t } = useTranslation()
   const { address, connected, connecting, walletType, connect, disconnect } = useWallet()
   const [modalOpen, setModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -133,7 +135,7 @@ export function WalletConnect() {
       await connect(type)
       setModalOpen(false)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to connect wallet'
+      const message = err instanceof Error ? err.message : t('wallet.connectionFailed')
       setError(message)
     }
   }
@@ -181,10 +183,10 @@ export function WalletConnect() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
-                Wallet Connected
+                {t('wallet.connected')}
               </DialogTitle>
               <DialogDescription>
-                Your wallet is connected to XRPL
+                {t('walletConnect.connectedDescription')}
               </DialogDescription>
             </DialogHeader>
 
@@ -201,7 +203,7 @@ export function WalletConnect() {
 
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Address
+                  {t('walletConnect.address')}
                 </label>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 p-3 rounded-lg bg-secondary/50 font-mono text-xs break-all">
@@ -222,7 +224,7 @@ export function WalletConnect() {
                 </div>
                 {copied && (
                   <p className="text-xs text-accent animate-in fade-in slide-in-from-top-1">
-                    Copied to clipboard!
+                    {t('walletConnect.copiedToClipboard')}
                   </p>
                 )}
               </div>
@@ -233,7 +235,7 @@ export function WalletConnect() {
                 onClick={handleDisconnect}
               >
                 <LogOut className="w-4 h-4" />
-                Disconnect Wallet
+                {t('wallet.disconnect')}
               </Button>
             </div>
           </DialogContent>
@@ -247,15 +249,15 @@ export function WalletConnect() {
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Wallet className="w-4 h-4" />
-          Connect
+          {t('wallet.connect')}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
         <DialogHeader>
-          <DialogTitle>Connect Your Wallet</DialogTitle>
+          <DialogTitle>{t('walletConnect.connectYourWallet')}</DialogTitle>
           <DialogDescription>
-            Select a wallet to connect to XRPL
+            {t('wallet.connectDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -300,13 +302,13 @@ export function WalletConnect() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm text-destructive font-medium mb-1">Connection Failed</p>
+                <p className="text-sm text-destructive font-medium mb-1">{t('wallet.connectionFailed')}</p>
                 <p className="text-xs text-destructive/80">{error}</p>
               </div>
             </div>
             {(error.includes('not found') || error.includes('not installed')) && (
               <div className="mt-3 pt-3 border-t border-destructive/20">
-                <p className="text-xs text-muted-foreground mb-2">Install a wallet extension:</p>
+                <p className="text-xs text-muted-foreground mb-2">{t('walletConnect.installPrompt')}</p>
                 <div className="flex flex-wrap gap-2">
                   {WALLET_OPTIONS.filter(w => w.installUrl).map(wallet => (
                     <a
@@ -330,7 +332,7 @@ export function WalletConnect() {
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-accent" />
-              <p className="text-sm text-muted-foreground">Connecting...</p>
+              <p className="text-sm text-muted-foreground">{t('wallet.connecting')}</p>
             </div>
           </div>
         )}
@@ -340,6 +342,7 @@ export function WalletConnect() {
 }
 
 export function NetworkSwitch() {
+  const { t } = useTranslation()
   const network = useWalletStore((state) => state.network)
   const setNetwork = useWalletStore((state) => state.setNetwork)
 
@@ -351,8 +354,8 @@ export function NetworkSwitch() {
         onChange={(e) => setNetwork(e.target.value as 'mainnet' | 'testnet')}
         className="bg-transparent border-0 text-sm focus:ring-0 focus:outline-none cursor-pointer"
       >
-        <option value="mainnet">Mainnet</option>
-        <option value="testnet">Testnet</option>
+        <option value="mainnet">{t('network.mainnet')}</option>
+        <option value="testnet">{t('network.testnet')}</option>
       </select>
     </div>
   )

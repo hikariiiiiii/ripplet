@@ -3,12 +3,14 @@ import { NetworkSwitcher } from '@/components/common/NetworkSwitcher';
 import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { useWalletStore } from '@/stores/wallet';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RippletLogo } from '@/components/common/RippletLogo';
 import { cn } from '@/lib/utils';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 import { NETWORKS } from '@/types';
 
 export function Header() {
+  const { t } = useTranslation();
   const { address, connected, disconnect, network } = useWalletStore();
   const [copied, setCopied] = useState(false);
   const [showDisconnect, setShowDisconnect] = useState(false);
@@ -65,7 +67,7 @@ export function Header() {
               <button
                 onClick={copyAddress}
                 className="p-1.5 rounded-md hover:bg-primary/10 transition-all group"
-                title="Copy address"
+                title={t('header.copyAddress')}
               >
                 {copied ? (
                   <Check className="w-4 h-4 text-primary transition-all" />
@@ -79,7 +81,7 @@ export function Header() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1.5 rounded-md hover:bg-primary/10 transition-all"
-                title="View on explorer"
+                title={t('header.viewOnExplorer')}
               >
                 <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
               </a>
@@ -92,7 +94,7 @@ export function Header() {
                     ? "opacity-100 hover:bg-destructive/20" 
                     : "opacity-0 pointer-events-none"
                 )}
-                title="Disconnect wallet"
+                title={t('header.disconnectWallet')}
               >
                 <LogOut className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
               </button>
@@ -103,7 +105,7 @@ export function Header() {
               className="btn-primary text-background font-semibold px-4 py-2 rounded-lg text-sm transition-all duration-300 hover:scale-105 flex items-center gap-2"
             >
               <Wallet className="w-4 h-4" />
-              <span>Connect</span>
+              <span>{t('header.connect')}</span>
             </button>
           )}
         </div>

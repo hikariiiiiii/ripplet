@@ -294,9 +294,9 @@ export function MPTClawbackForm({
             </>
           ) : isConnected ? (
             <>
-              <Wallet className="w-4 h-4 mr-2" />
-              Sign & Send
-            </>
+                          <Wallet className="w-4 h-4 mr-2" />
+                          {t('common.signAndSend')}
+                        </>
           ) : (
             <>
               <Wallet className="w-4 h-4 mr-2" />

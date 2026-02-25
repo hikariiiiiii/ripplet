@@ -290,7 +290,7 @@ export function MPTokenIssuanceSetForm({
             ) : isConnected ? (
               <>
                 <Wallet className="w-4 h-4 mr-2" />
-                Sign & Send
+                {t('common.signAndSend')}
               </>
             ) : (
               <>

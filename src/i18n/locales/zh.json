@@ -367,7 +367,8 @@
     "confirmLabel": "我了解此操作将永久删除我的账户",
     "confirmHint": "请确认您已了解此操作的风险",
     "confirmRequired": "请确认以继续",
-    "deleteAccount": "删除账户"
+    "deleteAccount": "删除账户",
+    "subtitle": "删除您的 XRPL 账户并转账剩余 XRP"
   },
   "escrow": {
     "title": "托管",
@@ -411,7 +412,10 @@
     "offerSequenceHint": "托管创建交易的序列号",
     "createEscrow": "创建托管",
     "finishEscrow": "完成托管",
-    "cancelEscrow": "取消托管"
+    "cancelEscrow": "取消托管",
+    "createSubtitle": "创建一个时间锁定的 XRP 托管",
+    "finishSubtitle": "从托管中释放资金",
+    "cancelSubtitle": "取消托管并收回资金"
   },
   "mpt": {
     "create": {
@@ -584,5 +588,18 @@
       "complete": "完成",
       "refreshWarning": "刷新页面将重置您的进度"
     }
+  },
+  "header": {
+    "connect": "连接",
+    "copyAddress": "复制地址",
+    "viewOnExplorer": "在浏览器中查看",
+    "disconnectWallet": "断开钱包"
+  },
+  "walletConnect": {
+    "connectedDescription": "您的钱包已连接到 XRPL",
+    "address": "地址",
+    "copiedToClipboard": "已复制到剪贴板！",
+    "connectYourWallet": "连接您的钱包",
+    "installPrompt": "安装钱包扩展："
   }
 }

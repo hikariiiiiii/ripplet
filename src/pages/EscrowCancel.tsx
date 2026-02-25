@@ -9,7 +9,7 @@ export default function EscrowCancelPage() {
   return (
     <TransactionPageWrapper
       title={t('escrow.cancelTitle')}
-      subtitle="Cancel an escrow and reclaim funds"
+      subtitle={t('escrow.cancelSubtitle')}
       icon={<Lock className="w-5 h-5 text-amber-500" />}
       iconBgColor="bg-amber-500/10"
       borderColor="border-amber-500/20"

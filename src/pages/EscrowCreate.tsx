@@ -9,7 +9,7 @@ export default function EscrowCreatePage() {
   return (
     <TransactionPageWrapper
       title={t('escrow.createTitle')}
-      subtitle="Create a time-locked XRP escrow"
+      subtitle={t('escrow.createSubtitle')}
       icon={<Lock className="w-5 h-5 text-amber-500" />}
       iconBgColor="bg-amber-500/10"
       borderColor="border-amber-500/20"
