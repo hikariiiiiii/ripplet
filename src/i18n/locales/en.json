@@ -550,6 +550,7 @@
       "positioning": "Fast and flexible",
       "features": "Mature ecosystem, Memo field support",
       "bestFor": "Quick deployment",
+      "step0": "Configure Issuer",
       "step1": "Setup Trustline",
       "step2": "Issue Credential",
       "step3": "Transfer",

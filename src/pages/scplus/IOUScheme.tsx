@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { SchemeWizard } from '@/components/scplus/SchemeWizard';
 import { TrustSetForm } from '@/components/transaction/TrustSetForm';
 import { IOUPaymentForm } from '@/components/transaction/IOUPaymentForm';
+import { AccountSetForm } from '@/components/transaction/AccountSetForm';
 import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult';
@@ -78,6 +79,7 @@ export default function IOUScheme() {
   };
 
   const steps = [
+    { key: 'accountset', title: t('scplus.iouScheme.step0') },
     { key: 'trustline', title: t('scplus.iouScheme.step1') },
     { key: 'issue', title: t('scplus.iouScheme.step2') },
     { key: 'transfer', title: t('scplus.iouScheme.step3') },
@@ -91,7 +93,7 @@ export default function IOUScheme() {
     switch (currentStep) {
       case 0:
         return (
-          <TrustSetForm
+          <AccountSetForm
             account={account}
             onSubmit={(tx) => handleSubmit(tx)}
             isSubmitting={viewState === 'submitting'}
@@ -101,7 +103,7 @@ export default function IOUScheme() {
         );
       case 1:
         return (
-          <IOUPaymentForm
+          <TrustSetForm
             account={account}
             onSubmit={(tx) => handleSubmit(tx)}
             isSubmitting={viewState === 'submitting'}
@@ -120,6 +122,16 @@ export default function IOUScheme() {
           />
         );
       case 3:
+        return (
+          <IOUPaymentForm
+            account={account}
+            onSubmit={(tx) => handleSubmit(tx)}
+            isSubmitting={viewState === 'submitting'}
+            isConnected={isConnected}
+            onConnectWallet={handleConnectWallet}
+          />
+        );
+      case 4:
         return (
           <IOUPaymentForm
             account={account}

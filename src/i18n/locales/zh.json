@@ -550,6 +550,7 @@
       "positioning": "快速灵活",
       "features": "成熟生态、Memo 字段支持",
       "bestFor": "快速部署",
+      "step0": "配置发行方",
       "step1": "设置信任线",
       "step2": "发行凭证",
       "step3": "转账",
