@@ -50,7 +50,7 @@ export function MPTokenIssuanceDestroyForm({
     },
   });
 
-  const watchedFields = watch();
+  const mptIssuanceId = watch('mptIssuanceId');
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -63,7 +63,7 @@ export function MPTokenIssuanceDestroyForm({
       try {
         const tx = buildMPTokenIssuanceDestroy({
           Account: account,
-          MPTokenIssuanceID: watchedFields.mptIssuanceId,
+          MPTokenIssuanceID: mptIssuanceId,
         });
         setTransactionJson(tx);
       } catch {
@@ -72,7 +72,7 @@ export function MPTokenIssuanceDestroyForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [mptIssuanceId, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -86,7 +86,7 @@ export function MPTokenIssuanceDestroyForm({
 
     const tx = buildMPTokenIssuanceDestroy({
       Account: account,
-      MPTokenIssuanceID: watchedFields.mptIssuanceId,
+      MPTokenIssuanceID: mptIssuanceId,
     });
     setTransactionJson(tx);
     setShowPreview(true);

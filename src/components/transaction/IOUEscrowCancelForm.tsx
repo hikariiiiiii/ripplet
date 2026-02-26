@@ -47,7 +47,8 @@ export function IOUEscrowCancelForm({
     },
   })
 
-  const watchedFields = watch()
+  const owner = watch('owner')
+  const offerSequence = watch('offerSequence')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -60,8 +61,8 @@ export function IOUEscrowCancelForm({
       try {
         const tx = buildEscrowCancel({
           Account: account,
-          Owner: watchedFields.owner,
-          OfferSequence: parseInt(watchedFields.offerSequence, 10),
+          Owner: owner,
+          OfferSequence: parseInt(offerSequence, 10),
         })
         setTransactionJson(tx)
         setBuildError(null)
@@ -71,7 +72,7 @@ export function IOUEscrowCancelForm({
     }
 
     validateAndBuild()
-  }, [watchedFields.owner, watchedFields.offerSequence, showPreview, account, trigger])
+  }, [owner, offerSequence, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -88,8 +89,8 @@ export function IOUEscrowCancelForm({
     try {
       const tx = buildEscrowCancel({
         Account: account,
-        Owner: watchedFields.owner,
-        OfferSequence: parseInt(watchedFields.offerSequence, 10),
+        Owner: owner,
+        OfferSequence: parseInt(offerSequence, 10),
       })
       setTransactionJson(tx)
       setShowPreview(true)

@@ -65,7 +65,14 @@ export function IOUEscrowCreateForm({
     },
   })
 
-  const watchedFields = watch()
+  const destination = watch('destination')
+  const destinationTag = watch('destinationTag')
+  const currency = watch('currency')
+  const issuer = watch('issuer')
+  const amount = watch('amount')
+  const finishAfter = watch('finishAfter')
+  const cancelAfter = watch('cancelAfter')
+  const condition = watch('condition')
 
   // Auto-refresh Transaction JSON when form changes and preview is open
   useEffect(() => {
@@ -76,11 +83,11 @@ export function IOUEscrowCreateForm({
       if (!isValid) return
 
       try {
-        const finishAfterValue = watchedFields.finishAfter
-          ? parseInt(watchedFields.finishAfter, 10)
+        const finishAfterValue = finishAfter
+          ? parseInt(finishAfter, 10)
           : undefined
-        const cancelAfterValue = watchedFields.cancelAfter
-          ? parseInt(watchedFields.cancelAfter, 10)
+        const cancelAfterValue = cancelAfter
+          ? parseInt(cancelAfter, 10)
           : undefined
 
         if (finishAfterValue !== undefined && cancelAfterValue !== undefined) {
@@ -89,18 +96,18 @@ export function IOUEscrowCreateForm({
 
         const tx = buildIOUEscrowCreate({
           Account: account,
-          Destination: watchedFields.destination,
+          Destination: destination,
           Amount: {
-            currency: watchedFields.currency,
-            issuer: watchedFields.issuer,
-            value: watchedFields.amount,
+            currency: currency,
+            issuer: issuer,
+            value: amount,
           },
-          DestinationTag: watchedFields.destinationTag
-            ? parseInt(watchedFields.destinationTag, 10)
+          DestinationTag: destinationTag
+            ? parseInt(destinationTag, 10)
             : undefined,
           FinishAfter: finishAfterValue,
           CancelAfter: cancelAfterValue,
-          Condition: watchedFields.condition || undefined,
+          Condition: condition || undefined,
         })
         setTransactionJson(tx)
       } catch {
@@ -109,7 +116,7 @@ export function IOUEscrowCreateForm({
     }
 
     validateAndBuild()
-  }, [watchedFields, showPreview, account, trigger])
+  }, [destination, destinationTag, currency, issuer, amount, finishAfter, cancelAfter, condition, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -124,11 +131,11 @@ export function IOUEscrowCreateForm({
     setBuildError(null)
 
     try {
-      const finishAfterValue = watchedFields.finishAfter
-        ? parseInt(watchedFields.finishAfter, 10)
+      const finishAfterValue = finishAfter
+        ? parseInt(finishAfter, 10)
         : undefined
-      const cancelAfterValue = watchedFields.cancelAfter
-        ? parseInt(watchedFields.cancelAfter, 10)
+      const cancelAfterValue = cancelAfter
+        ? parseInt(cancelAfter, 10)
         : undefined
 
       // Validate finishAfter < cancelAfter if both provided
@@ -141,18 +148,18 @@ export function IOUEscrowCreateForm({
 
       const tx = buildIOUEscrowCreate({
         Account: account,
-        Destination: watchedFields.destination,
+        Destination: destination,
         Amount: {
-          currency: watchedFields.currency,
-          issuer: watchedFields.issuer,
-          value: watchedFields.amount,
+          currency: currency,
+          issuer: issuer,
+          value: amount,
         },
-        DestinationTag: watchedFields.destinationTag
-          ? parseInt(watchedFields.destinationTag, 10)
+        DestinationTag: destinationTag
+          ? parseInt(destinationTag, 10)
           : undefined,
         FinishAfter: finishAfterValue,
         CancelAfter: cancelAfterValue,
-        Condition: watchedFields.condition || undefined,
+        Condition: condition || undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)

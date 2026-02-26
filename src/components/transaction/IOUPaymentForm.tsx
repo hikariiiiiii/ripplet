@@ -61,7 +61,12 @@ export function IOUPaymentForm({
     },
   })
 
-  const watchedFields = watch()
+  const destination = watch('destination')
+  const currency = watch('currency')
+  const issuer = watch('issuer')
+  const amount = watch('amount')
+  const destinationTag = watch('destinationTag')
+  const memo = watch('memo')
 
   // Auto-refresh Transaction JSON when form changes and preview is open
   useEffect(() => {
@@ -74,14 +79,14 @@ export function IOUPaymentForm({
       try {
         const tx = buildIOUPayment({
           Account: account,
-          Destination: watchedFields.destination,
-          currency: watchedFields.currency,
-          issuer: watchedFields.issuer,
-          value: watchedFields.amount,
-          DestinationTag: watchedFields.destinationTag
-            ? parseInt(watchedFields.destinationTag, 10)
+          Destination: destination,
+          currency: currency,
+          issuer: issuer,
+          value: amount,
+          DestinationTag: destinationTag
+            ? parseInt(destinationTag, 10)
             : undefined,
-          Memos: watchedFields.memo ? [{ data: watchedFields.memo }] : undefined,
+          Memos: memo ? [{ data: memo }] : undefined,
         })
         setTransactionJson(tx)
       } catch {
@@ -90,7 +95,7 @@ export function IOUPaymentForm({
     }
 
     validateAndBuild()
-  }, [watchedFields, showPreview, account, trigger])
+  }, [destination, currency, issuer, amount, destinationTag, memo, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -107,14 +112,14 @@ export function IOUPaymentForm({
     try {
       const tx = buildIOUPayment({
         Account: account,
-        Destination: watchedFields.destination,
-        currency: watchedFields.currency,
-        issuer: watchedFields.issuer,
-        value: watchedFields.amount,
-        DestinationTag: watchedFields.destinationTag
-          ? parseInt(watchedFields.destinationTag, 10)
+        Destination: destination,
+        currency: currency,
+        issuer: issuer,
+        value: amount,
+        DestinationTag: destinationTag
+          ? parseInt(destinationTag, 10)
           : undefined,
-        Memos: watchedFields.memo ? [{ data: watchedFields.memo }] : undefined,
+        Memos: memo ? [{ data: memo }] : undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)

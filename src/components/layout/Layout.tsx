@@ -2,10 +2,13 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { useXamanTxStore } from '@/stores/xamanTx';
+import { XamanQrModal } from '@/components/wallet/XamanQrModal';
 
 export function Layout() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const { isOpen, qrUrl, payloadUrl, scanned, cancel } = useXamanTxStore();
   
   return (
     <TooltipProvider delayDuration={200}>
@@ -23,6 +26,13 @@ export function Layout() {
             )}
           </main>
         </div>
+        <XamanQrModal
+          isOpen={isOpen}
+          qrUrl={qrUrl}
+          payloadUrl={payloadUrl}
+          scanned={scanned}
+          onClose={cancel}
+        />
       </div>
     </TooltipProvider>
   );

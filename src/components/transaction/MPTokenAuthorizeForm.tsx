@@ -58,7 +58,9 @@ export function MPTokenAuthorizeForm({
     },
   });
 
-  const watchedFields = watch();
+  const mptIssuanceId = watch('mptIssuanceId');
+  const holder = watch('holder');
+  const unauthorize = watch('unauthorize');
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -71,9 +73,9 @@ export function MPTokenAuthorizeForm({
       try {
         const tx = buildMPTokenAuthorize({
           Account: account,
-          MPTokenIssuanceID: watchedFields.mptIssuanceId,
-          Holder: watchedFields.holder || undefined,
-          Flags: watchedFields.unauthorize ? MPT_AUTHORIZE_FLAGS.tfMPTUnauthorize : undefined,
+          MPTokenIssuanceID: mptIssuanceId,
+          Holder: holder || undefined,
+          Flags: unauthorize ? MPT_AUTHORIZE_FLAGS.tfMPTUnauthorize : undefined,
         });
         setTransactionJson(tx);
       } catch {
@@ -82,7 +84,7 @@ export function MPTokenAuthorizeForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [mptIssuanceId, holder, unauthorize, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -96,9 +98,9 @@ export function MPTokenAuthorizeForm({
 
     const tx = buildMPTokenAuthorize({
       Account: account,
-      MPTokenIssuanceID: watchedFields.mptIssuanceId,
-      Holder: watchedFields.holder || undefined,
-      Flags: watchedFields.unauthorize ? MPT_AUTHORIZE_FLAGS.tfMPTUnauthorize : undefined,
+      MPTokenIssuanceID: mptIssuanceId,
+      Holder: holder || undefined,
+      Flags: unauthorize ? MPT_AUTHORIZE_FLAGS.tfMPTUnauthorize : undefined,
     });
     setTransactionJson(tx);
     setShowPreview(true);
@@ -219,7 +221,7 @@ export function MPTokenAuthorizeForm({
         </div>
         <Switch
           id="unauthorize"
-          checked={watchedFields.unauthorize}
+        checked={unauthorize}
           onCheckedChange={(checked) => setValue('unauthorize', checked)}
         />
       </div>

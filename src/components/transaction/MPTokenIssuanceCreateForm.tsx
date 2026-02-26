@@ -91,12 +91,13 @@ export function MPTokenIssuanceCreateForm({
   onSubmit,
   isSubmitting = false,
   isConnected = true,
-  onConnectWallet,
+  onConnectWallet
 }: MPTokenIssuanceCreateFormProps) {
   const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [transactionJson, setTransactionJson] = useState<MPTokenIssuanceCreate | null>(null);
+  const [buildError, setBuildError] = useState<string | null>(null);
 
   const {
     register,
@@ -120,9 +121,17 @@ export function MPTokenIssuanceCreateForm({
       canEscrow: false,
     },
   });
-
-  const watchedFields = watch();
-
+  // Watch each field individually to stable references
+  const assetScale = watch('assetScale');
+  const maximumAmount = watch('maximumAmount');
+  const transferFee = watch('transferFee');
+  const metadata = watch('metadata');
+  const canTransfer = watch('canTransfer');
+  const requireAuth = watch('requireAuth');
+  const canLock = watch('canLock');
+  const canClawback = watch('canClawback');
+  const canTrade = watch('canTrade');
+  const canEscrow = watch('canEscrow');
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
     if (!showPreview) return;
@@ -155,51 +164,44 @@ export function MPTokenIssuanceCreateForm({
     };
 
     validateAndBuild();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPreview, account]);
-
+  }, [assetScale, maximumAmount, transferFee, metadata, canTransfer, requireAuth, canLock, canClawback, canTrade, canEscrow, showPreview, account, trigger, getValues]);
   const handlePreviewToggle = async () => {
     if (showPreview) {
       setShowPreview(false);
       setTransactionJson(null);
+      setBuildError(null);
       return;
     }
-
     const isValid = await trigger();
     if (!isValid) return;
-
+    const formValues = getValues();
     let flags = 0;
     for (const config of FLAGS_CONFIG) {
-      if (watchedFields[config.key]) {
+      if (formValues[config.key]) {
         flags |= config.flagValue;
       }
     }
-
     const tx = buildMPTokenIssuanceCreate({
       Account: account,
-      AssetScale: watchedFields.assetScale ? parseInt(watchedFields.assetScale, 10) : undefined,
-      MaximumAmount: watchedFields.maximumAmount || undefined,
-      TransferFee: watchedFields.transferFee ? parseInt(watchedFields.transferFee, 10) : undefined,
-      MPTokenMetadata: watchedFields.metadata || undefined,
+      AssetScale: formValues.assetScale ? parseInt(formValues.assetScale, 10) : undefined,
+      MaximumAmount: formValues.maximumAmount || undefined,
+      TransferFee: formValues.transferFee ? parseInt(formValues.transferFee, 10) : undefined,
+      MPTokenMetadata: formValues.metadata || undefined,
       Flags: flags > 0 ? flags : undefined,
     });
     setTransactionJson(tx);
     setShowPreview(true);
   };
-
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     // 1. Connection check FIRST (no validation)
     if (!isConnected && onConnectWallet) {
       onConnectWallet();
       return;
     }
-
     // 2. Form validation SECOND - use react-hook-form's handleSubmit
     handleSubmit(onFormSubmit)();
   };
-
   const onFormSubmit = async (data: MPTokenIssuanceCreateFormData) => {
     let flags = 0;
     for (const config of FLAGS_CONFIG) {
@@ -207,7 +209,6 @@ export function MPTokenIssuanceCreateForm({
         flags |= config.flagValue;
       }
     }
-
     const transaction = buildMPTokenIssuanceCreate({
       Account: account,
       AssetScale: data.assetScale ? parseInt(data.assetScale, 10) : undefined,
@@ -216,198 +217,190 @@ export function MPTokenIssuanceCreateForm({
       MPTokenMetadata: data.metadata || undefined,
       Flags: flags > 0 ? flags : undefined,
     });
-
     await onSubmit(transaction);
   };
-
   return (
-      <form onSubmit={handleFormSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="assetScale">{t('mpt.create.assetScale')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{t('mpt.create.assetScaleHint')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="assetScale"
-            type="number"
-            min="0"
-            max="19"
-            placeholder={t('mpt.create.assetScalePlaceholder')}
-            {...register('assetScale', {
-              validate: (value: string) => {
-                if (!value) return true;
-                const num = parseInt(value, 10);
-                if (!isValidAssetScale(num)) {
-                  return t('mpt.create.assetScaleInvalid');
-                }
-                return true;
-              },
-            })}
-            className={errors.assetScale ? 'border-destructive' : ''}
-          />
-          {errors.assetScale && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.assetScale.message}
-            </p>
-          )}
+    <form onSubmit={handleFormSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="assetScale">{t('mpt.create.assetScale')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mpt.create.assetScaleHint')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="maximumAmount">{t('mpt.create.maximumAmount')}</Label>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{t('mpt.create.maximumAmountHint')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Input
-            id="maximumAmount"
-            type="text"
-            placeholder={t('mpt.create.maximumAmountPlaceholder')}
-            {...register('maximumAmount')}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t('mpt.create.maximumAmountHelp')}
+        <Input
+          id="assetScale"
+          type="number"
+          min="0"
+          max="19"
+          placeholder={t('mpt.create.assetScalePlaceholder')}
+          {...register('assetScale', {
+            validate: (value: string) => {
+              if (!value) return true;
+              const num = parseInt(value, 10);
+              if (!isValidAssetScale(num)) {
+                return t('mpt.create.assetScaleInvalid');
+              }
+              return true;
+            },
+          })}
+          className={errors.assetScale ? 'border-destructive' : ''}
+        />
+        {errors.assetScale && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.assetScale.message}
           </p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="maximumAmount">{t('mpt.create.maximumAmount')}</Label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{t('mpt.create.maximumAmountHint')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
-
+        <Input
+          id="maximumAmount"
+          type="text"
+          placeholder={t('mpt.create.maximumAmountPlaceholder')}
+          {...register('maximumAmount')}
+        />
+        <p className="text-xs text-muted-foreground">
+          {t('mpt.create.maximumAmountHelp')}
+        </p>
+      </div>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">{t('mpt.create.tokenFlags')}</h3>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">{t('mpt.create.tokenFlags')}</h3>
-          <div className="space-y-4">
-            {FLAGS_CONFIG.map((config) => (
-              <div
-                key={config.key}
-                className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4"
-              >
-                <div className="flex items-center gap-2">
-                  <Label
-                    htmlFor={config.key}
-                    className="cursor-pointer text-sm font-medium"
-                  >
-                    {t(`mpt.create.${config.labelKey}`)}
-                  </Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{t(`mpt.create.${config.tooltipKey}`)}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <Switch
-                  id={config.key}
-                  {...register(config.key)}
-                  checked={watchedFields[config.key]}
-                  onCheckedChange={(checked) => {
-                    setValue(config.key, checked, { shouldValidate: true })
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {showAdvanced ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-          <span>{t('common.advancedOptions')}</span>
-        </button>
-
-        {showAdvanced && (
-          <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
-            <div className="space-y-2">
+          {FLAGS_CONFIG.map((config) => (
+            <div
+              key={config.key}
+              className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4"
+            >
               <div className="flex items-center gap-2">
-              <Label htmlFor="transferFee">{t('mpt.create.transferFee')}</Label>
+                <Label
+                  htmlFor={config.key}
+                  className="cursor-pointer text-sm font-medium"
+                >
+                  {t(`mpt.create.${config.labelKey}`)}
+                </Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>{t('mpt.create.transferFeeHint')}</p>
+                    <p>{t(`mpt.create.${config.tooltipKey}`)}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Input
-                id="transferFee"
-                type="number"
-                min="0"
-                max="500000"
-                placeholder="0"
-                {...register('transferFee', {
-                  validate: (value: string) => {
-                    if (!value) return true;
-                    const num = parseInt(value, 10);
-                    if (!isValidTransferFee(num)) {
-                      return t('mpt.create.transferFeeInvalid');
-                    }
-                    return true;
-                  },
-                })}
-                className={errors.transferFee ? 'border-destructive' : ''}
+              <Switch
+                id={config.key}
+                {...register(config.key)}
+                checked={getValues(config.key)}
+                onCheckedChange={(checked) => {
+                  setValue(config.key, checked, { shouldValidate: true })
+                }}
               />
-              {errors.transferFee && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.transferFee.message}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {watchedFields.transferFee && (
-                  <>Fee: {(parseInt(watchedFields.transferFee, 10) / 10000).toFixed(4)}%</>
-                )}
-              </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="metadata">{t('mpt.create.metadata')}</Label>
-              <Input
-                id="metadata"
-                type="text"
-                placeholder={t('mpt.create.metadataPlaceholder')}
-                {...register('metadata', {
-                  validate: (value: string) => {
-                    if (!value) return true;
-                    if (value.length > 1024) {
-                      return t('mpt.create.metadataInvalid');
-                    }
-                    return true;
-                  },
-                })}
-                className={errors.metadata ? 'border-destructive' : ''}
-              />
-              {errors.metadata && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.metadata.message}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {t('mpt.create.metadataHelp')}
-              </p>
-            </div>
-          </div>
+          ))}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {showAdvanced ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
         )}
-
+        <span>{t('common.advancedOptions')}</span>
+      </button>
+      {showAdvanced && (
+        <div className="space-y-4 pl-4 border-l-2 border-border/50 animate-fade-in">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="transferFee">{t('mpt.create.transferFee')}</Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{t('mpt.create.transferFeeHint')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <Input
+              id="transferFee"
+              type="number"
+              min="0"
+              max="500000"
+              placeholder="0"
+              {...register('transferFee', {
+                validate: (value: string) => {
+                  if (!value) return true;
+                  const num = parseInt(value, 10);
+                  if (!isValidTransferFee(num)) {
+                    return t('mpt.create.transferFeeInvalid');
+                  }
+                  return true;
+                },
+              })}
+              className={errors.transferFee ? 'border-destructive' : ''}
+            />
+            {errors.transferFee && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.transferFee.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {transferFee && (
+                <>Fee: {(parseInt(transferFee, 10) / 10000).toFixed(4)}%</>
+              )}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="metadata">{t('mpt.create.metadata')}</Label>
+            <Input
+              id="metadata"
+              type="text"
+              placeholder={t('mpt.create.metadataPlaceholder')}
+              {...register('metadata', {
+                validate: (value: string) => {
+                  if (!value) return true;
+                  if (value.length > 1024) {
+                    return t('mpt.create.metadataInvalid');
+                  }
+                  return true;
+                },
+              })}
+              className={errors.metadata ? 'border-destructive' : ''}
+            />
+            {errors.metadata && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.metadata.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {t('mpt.create.metadataHelp')}
+            </p>
+          </div>
+        </div>
+      )}
       {/* JSON Preview Toggle */}
       {transactionJson && showPreview && (
         <div className="code-block scanlines">
@@ -430,42 +423,45 @@ export function MPTokenIssuanceCreateForm({
           </pre>
         </div>
       )}
-
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handlePreviewToggle}
-            disabled={isSubmitting}
-            className="flex items-center gap-2"
-          >
-            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('common.loading')}
-              </>
-            ) : isConnected ? (
-              <>
-                <Wallet className="w-4 h-4 mr-2" />
-                {t('common.signAndSend')}
-              </>
-            ) : (
-              <>
-                <Wallet className="w-4 h-4 mr-2" />
-                {t('wallet.connect')}
-              </>
-            )}
-          </Button>
+      {buildError && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">{buildError}</p>
         </div>
-      </form>
+      )}
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePreviewToggle}
+          disabled={isSubmitting}
+          className="flex items-center gap-2"
+        >
+          {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <span className="hidden sm:inline">{showPreview ? t('common.hide') : t('common.preview')}</span>
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 btn-glow bg-gradient-to-r from-xrpl-green to-xrpl-green-light hover:from-xrpl-green-light hover:to-xrpl-green text-background font-semibold"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {t('common.loading')}
+            </>
+          ) : isConnected ? (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('common.signAndSend')}
+            </>
+          ) : (
+            <>
+              <Wallet className="w-4 h-4 mr-2" />
+              {t('wallet.connect')}
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

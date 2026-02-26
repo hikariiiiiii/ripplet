@@ -1,5 +1,5 @@
 import type { Client, SubmittableTransaction, TxResponse } from 'xrpl'
-import { type TransactionSubmitResult, categorizeErrorCode } from './types'
+import { type TransactionSubmitResult, categorizeErrorCode, TransactionErrorCategory } from './types'
 
 export async function prepareTransaction(
   client: Client,
@@ -174,4 +174,77 @@ export function createMemo(
   }
 
   return memo
+}
+
+
+/**
+ * Fetch transaction result from the ledger by hash with retry logic
+ * Use this after wallet submission to verify actual transaction result
+ */
+export async function fetchTransactionResult(
+  client: Client,
+  hash: string,
+  maxRetries = 10,
+  retryDelay = 2000,
+): Promise<TransactionSubmitResult> {
+  if (!client.isConnected()) {
+    throw new Error('XRPL client is not connected')
+  }
+
+  let lastError: Error | null = null
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Query the transaction from the ledger
+      const response = await client.request({
+        command: 'tx',
+        transaction: hash,
+      })
+
+      // Check if transaction was not found
+      if ((response.result as any).error === 'txnNotFound') {
+        throw new Error('Transaction not found yet')
+      }
+
+      // Extract the result from the response
+      const meta = response.result.meta
+      let code = 'unknown'
+      if (meta && typeof meta === 'object' && 'TransactionResult' in meta) {
+        code = meta.TransactionResult as string
+      }
+
+      const category = categorizeErrorCode(code)
+      const success = code === 'tesSUCCESS'
+      const message = getTransactionResultMessage(code)
+
+      return {
+        hash,
+        success,
+        code,
+        message,
+        category,
+        ledgerIndex: response.result.ledger_index,
+        rawResult: response.result,
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      console.log(`[fetchTransactionResult] Attempt ${attempt + 1}/${maxRetries} failed:`, lastError.message)
+      
+      // Wait before retrying
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+      }
+    }
+  }
+
+  // All retries failed - return a "not found" result instead of throwing
+  console.error(`[fetchTransactionResult] All ${maxRetries} attempts failed for tx ${hash}`)
+  return {
+    hash,
+    success: false,
+    code: 'NOT_FOUND',
+    message: 'Transaction not found on ledger. It may still be processing. Check the explorer.',
+    category: TransactionErrorCategory.UNKNOWN,
+    rawResult: { error: lastError?.message },
+  }
 }

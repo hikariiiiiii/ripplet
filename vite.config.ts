@@ -23,6 +23,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
+    'globalThis.MockedWebSocket': 'undefined',
   },
   optimizeDeps: {
     include: ['xrpl'],
@@ -34,6 +35,16 @@ export default defineConfig({
     target: 'es2020',
     commonjsOptions: {
       transformMixedEsModules: true,
+    },
+  },
+  server: {
+    proxy: {
+      '/xumm-api': {
+        target: 'https://xumm.app',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/xumm-api/, '/api/v1/platform'),
+        secure: true,
+      },
     },
   },
 })

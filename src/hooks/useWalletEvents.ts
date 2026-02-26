@@ -115,6 +115,11 @@ export async function checkWalletConnection(walletType: string): Promise<boolean
       const response = await getAddress();
       return response?.type === 'response' && !!response.result?.address;
     }
+    if (walletType === 'xaman') {
+      // Xaman is always "connected" if we have the address in store
+      // The actual connection happens via QR code each time
+      return true;
+    }
   } catch (e) {
     console.warn('Wallet connection check failed:', e);
   }

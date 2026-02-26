@@ -3,14 +3,17 @@ import { ArrowLeft, ExternalLink, BookOpen, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useWallet } from '@/lib/wallets';
+import { useXRPL } from '@/hooks/useXRPL';
+import { fetchTransactionResult } from '@/lib/xrpl/transactions/builder';
+import type { TransactionSubmitResult } from '@/lib/xrpl/transactions/types';
 
 import { Button } from '@/components/ui/button';
 import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult';
+
 import type { TransactionResult, WalletMismatchError } from '@/types';
 import type { Transaction } from 'xrpl';
-
 type ViewState = 'form' | 'submitting' | 'result';
 
 interface TransactionPageWrapperProps {
@@ -42,6 +45,7 @@ export function TransactionPageWrapper({
 }: TransactionPageWrapperProps) {
   const { t } = useTranslation();
   const { address, connected, signAndSubmit, network } = useWallet();
+  const { getClient } = useXRPL();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [result, setResult] = useState<TransactionResult | null>(null);
   const [showMismatchDialog, setShowMismatchDialog] = useState(false);
@@ -62,11 +66,18 @@ export function TransactionPageWrapper({
     setResult(null);
 
     try {
+      // Submit transaction via wallet
       const response = await signAndSubmit(transaction);
+      
+      // Fetch actual transaction result from the ledger
+      const client = getClient();
+      const txResult: TransactionSubmitResult = await fetchTransactionResult(client, response.hash);
+      
       setResult({
-        hash: response.hash,
-        success: true,
-        code: 'tesSUCCESS',
+        hash: txResult.hash,
+        success: txResult.success,
+        code: txResult.code,
+        message: txResult.message,
       });
       setViewState('result');
     } catch (err) {
@@ -76,6 +87,13 @@ export function TransactionPageWrapper({
         setViewState('form');
       } else {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        
+        // If user cancelled, return to form instead of showing error
+        if (errorMessage === 'cancelled') {
+          setViewState('form');
+          return;
+        }
+        
         setResult({
           hash: '',
           success: false,

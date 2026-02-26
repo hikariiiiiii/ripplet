@@ -79,7 +79,9 @@ export function MPTokenIssuanceSetForm({
     },
   });
 
-  const watchedFields = watch();
+  const mptIssuanceId = watch('mptIssuanceId');
+  const canLock = watch('canLock');
+  const canClawback = watch('canClawback');
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -92,14 +94,14 @@ export function MPTokenIssuanceSetForm({
       try {
         let flags = 0;
         for (const config of FLAGS_CONFIG) {
-          if (watchedFields[config.key]) {
+          if ((config.key === 'canLock' && canLock) || (config.key === 'canClawback' && canClawback)) {
             flags |= config.flagValue;
           }
         }
 
         const tx = buildMPTokenIssuanceSet({
           Account: account,
-          MPTokenIssuanceID: watchedFields.mptIssuanceId,
+          MPTokenIssuanceID: mptIssuanceId,
           Flags: flags > 0 ? flags : undefined,
         });
         setTransactionJson(tx);
@@ -109,7 +111,7 @@ export function MPTokenIssuanceSetForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [mptIssuanceId, canLock, canClawback, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -123,14 +125,14 @@ export function MPTokenIssuanceSetForm({
 
     let flags = 0;
     for (const config of FLAGS_CONFIG) {
-      if (watchedFields[config.key]) {
+      if ((config.key === 'canLock' && canLock) || (config.key === 'canClawback' && canClawback)) {
         flags |= config.flagValue;
       }
     }
 
     const tx = buildMPTokenIssuanceSet({
       Account: account,
-      MPTokenIssuanceID: watchedFields.mptIssuanceId,
+      MPTokenIssuanceID: mptIssuanceId,
       Flags: flags > 0 ? flags : undefined,
     });
     setTransactionJson(tx);
@@ -234,7 +236,7 @@ export function MPTokenIssuanceSetForm({
                 </div>
                 <Switch
                   id={config.key}
-                  checked={watchedFields[config.key]}
+                  checked={config.key === 'canLock' ? canLock : canClawback}
                   onCheckedChange={(checked) => setValue(config.key, checked)}
                 />
               </div>

@@ -52,7 +52,9 @@ export function TrustSetForm({
     },
   })
 
-  const watchedFields = watch()
+  const currency = watch('currency')
+  const issuer = watch('issuer')
+  const limit = watch('limit')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -63,7 +65,7 @@ export function TrustSetForm({
       if (!isValid) return
 
       // Check if issuer is same as account
-      if (watchedFields.issuer === account) {
+      if (issuer === account) {
         return
       }
 
@@ -71,9 +73,9 @@ export function TrustSetForm({
         const tx = buildTrustSet({
           Account: account,
           LimitAmount: {
-            currency: watchedFields.currency.toUpperCase(),
-            issuer: watchedFields.issuer,
-            value: watchedFields.limit,
+            currency: currency.toUpperCase(),
+            issuer: issuer,
+            value: limit,
           },
         })
         setTransactionJson(tx)
@@ -84,7 +86,7 @@ export function TrustSetForm({
     }
 
     validateAndBuild()
-  }, [watchedFields.currency, watchedFields.issuer, watchedFields.limit, showPreview, account, trigger])
+  }, [currency, issuer, limit, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -98,12 +100,12 @@ export function TrustSetForm({
     if (!isValid) return
 
     // Double check fields have values
-    if (!watchedFields.currency || !watchedFields.issuer || !watchedFields.limit) {
+    if (!currency || !issuer || !limit) {
       return
     }
 
     // Check if issuer is same as account
-    if (watchedFields.issuer === account) {
+    if (issuer === account) {
       setBuildError('Cannot create a trust line to yourself (issuer cannot be the same as Account)')
       return
     }
@@ -113,9 +115,9 @@ export function TrustSetForm({
       const tx = buildTrustSet({
         Account: account,
         LimitAmount: {
-          currency: watchedFields.currency.toUpperCase(),
-          issuer: watchedFields.issuer,
-          value: watchedFields.limit,
+          currency: currency.toUpperCase(),
+          issuer: issuer,
+          value: limit,
         },
       })
       setTransactionJson(tx)

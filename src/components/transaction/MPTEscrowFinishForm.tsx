@@ -56,7 +56,10 @@ export function MPTEscrowFinishForm({
     },
   })
 
-  const watchedFields = watch()
+  const owner = watch('owner')
+  const offerSequence = watch('offerSequence')
+  const condition = watch('condition')
+  const fulfillment = watch('fulfillment')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -69,10 +72,10 @@ export function MPTEscrowFinishForm({
       try {
         const tx = buildEscrowFinish({
           Account: account,
-          Owner: watchedFields.owner,
-          OfferSequence: parseInt(watchedFields.offerSequence, 10),
-          Condition: watchedFields.condition || undefined,
-          Fulfillment: watchedFields.fulfillment || undefined,
+          Owner: owner,
+          OfferSequence: parseInt(offerSequence, 10),
+          Condition: condition || undefined,
+          Fulfillment: fulfillment || undefined,
         })
         setTransactionJson(tx)
         setBuildError(null)
@@ -82,7 +85,7 @@ export function MPTEscrowFinishForm({
     }
 
     validateAndBuild()
-  }, [watchedFields.owner, watchedFields.offerSequence, watchedFields.condition, watchedFields.fulfillment, showPreview, account, trigger])
+  }, [owner, offerSequence, condition, fulfillment, showPreview, account, trigger])
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -99,10 +102,10 @@ export function MPTEscrowFinishForm({
     try {
       const tx = buildEscrowFinish({
         Account: account,
-        Owner: watchedFields.owner,
-        OfferSequence: parseInt(watchedFields.offerSequence, 10),
-        Condition: watchedFields.condition || undefined,
-        Fulfillment: watchedFields.fulfillment || undefined,
+        Owner: owner,
+        OfferSequence: parseInt(offerSequence, 10),
+        Condition: condition || undefined,
+        Fulfillment: fulfillment || undefined,
       })
       setTransactionJson(tx)
       setShowPreview(true)

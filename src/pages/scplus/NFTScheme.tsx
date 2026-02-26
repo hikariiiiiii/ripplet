@@ -11,6 +11,9 @@ import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult';
 import { useWallet } from '@/lib/wallets';
+import { useXRPL } from '@/hooks/useXRPL';
+import { fetchTransactionResult } from '@/lib/xrpl/transactions/builder';
+import type { TransactionSubmitResult } from '@/lib/xrpl/transactions/types';
 import type { TransactionResult, WalletMismatchError } from '@/types';
 import type { Transaction } from 'xrpl';
 import { XRPL_DOC_CONCEPTS } from '@/lib/xrpl/docUrls';
@@ -20,6 +23,7 @@ type ViewState = 'wizard' | 'submitting' | 'result';
 export default function NFTScheme() {
   const { t } = useTranslation();
   const { address, connected, signAndSubmit, network } = useWallet();
+  const { getClient } = useXRPL();
   const [currentStep, setCurrentStep] = useState(0);
   const [viewState, setViewState] = useState<ViewState>('wizard');
   const [result, setResult] = useState<TransactionResult | null>(null);
@@ -41,11 +45,18 @@ export default function NFTScheme() {
     setResult(null);
 
     try {
+      // Submit transaction via wallet
       const response = await signAndSubmit(transaction);
+      
+      // Fetch actual transaction result from the ledger
+      const client = getClient();
+      const txResult: TransactionSubmitResult = await fetchTransactionResult(client, response.hash);
+      
       setResult({
-        hash: response.hash,
-        success: true,
-        code: 'tesSUCCESS',
+        hash: txResult.hash,
+        success: txResult.success,
+        code: txResult.code,
+        message: txResult.message,
       });
       setViewState('result');
     } catch (err) {

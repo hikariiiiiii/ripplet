@@ -1,3 +1,5 @@
+import { Xumm } from 'xumm';
+
 import { useWalletStore } from '@/stores/wallet';
 import type { WalletType, NetworkType } from '@/types';
 import { WalletMismatchError } from '@/types';
@@ -206,14 +208,473 @@ async function getGemwalletNetwork(): Promise<string | null> {
   return null;
 }
 
+// Xaman - Direct API calls via Vite proxy
+const XUMM_API_ENDPOINT = '/xumm-api';
+
+export async function createXummPayload(txJson: object): Promise<any> {
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+  
+  console.log('[Xaman API] Creating payload...');
+  
+  if (!apiKey || !apiSecret) {
+    throw new Error('Xumm API credentials not configured');
+  }
+  
+  const response = await fetch(`${XUMM_API_ENDPOINT}/payload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+    body: JSON.stringify({ txjson: txJson }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('[Xaman API] Error:', error);
+    throw new Error(`Xumm API error: ${error}`);
+  }
+  
+  const data = await response.json();
+  console.log('[Xaman API] Payload created:', data);
+  return data;
+}
+
+export async function getXummPayload(uuid: string): Promise<any> {
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+  
+  if (!apiKey || !apiSecret) {
+    throw new Error('Xumm API credentials not configured');
+  }
+  
+  const response = await fetch(`${XUMM_API_ENDPOINT}/payload/${uuid}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Xumm API error: ${error}`);
+  }
+  
+  return response.json();
+}
+
+let xummInstance: Xumm | null = null;
+
+export function getXummInstance(): Xumm {
+  if (!xummInstance) {
+    const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+    const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+    if (!apiKey) {
+      throw new Error('VITE_XUMM_API_KEY is not configured');
+    }
+    if (!apiSecret) {
+      throw new Error('VITE_XUMM_API_SECRET is not configured');
+    }
+    xummInstance = new Xumm(apiKey, apiSecret);
+  }
+  return xummInstance;
+}
+
+async function connectXaman(): Promise<{ account: string; network?: string }> {
+  console.log('[Xaman Connect] Starting direct API connection...');
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+  
+  if (!apiKey || !apiSecret) {
+    throw new Error('Xumm API credentials not configured');
+  }
+  
+  // Create SignIn payload for wallet connection
+  const response = await fetch(`${XUMM_API_ENDPOINT}/payload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+    body: JSON.stringify({
+      options: {
+        submit: false,
+        expire: 5, // 5 minutes
+      },
+      txjson: {
+        TransactionType: 'SignIn',
+      },
+    }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('[Xaman Connect] Error:', error);
+    throw new Error(`Failed to create payload: ${error}`);
+  }
+  
+  const payload = await response.json();
+  console.log('[Xaman Connect] Payload created:', payload);
+  
+  if (!payload?.uuid) {
+    throw new Error('Failed to create payload');
+  }
+  
+  // Show QR modal using store
+  console.log('[Xaman Connect] Showing QR modal...');
+  const { useXamanTxStore } = await import('@/stores/xamanTx');
+  useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
+  
+  // Subscribe via WebSocket
+  const wsUrl = payload.refs.websocket_status;
+  const ws = new WebSocket(wsUrl);
+  
+  const result = await new Promise<any>((resolve, reject) => {
+    // Check for user cancellation - must be defined first
+    const cancelCheckInterval = setInterval(() => {
+      if (useXamanTxStore.getState().cancelled) {
+        clearInterval(cancelCheckInterval);
+        clearTimeout(timeout);
+        ws.close();
+        reject(new Error('cancelled'));
+      }
+    }, 500);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(cancelCheckInterval);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('Connection timeout'));
+    }, 300000); // 5 min timeout
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('[Xaman Connect] Event:', data);
+        
+        // Handle opened event - user scanned the QR
+        if (data.opened === true) {
+          console.log('[Xaman Connect] User opened the payload');
+          useXamanTxStore.getState().setScanned();
+        }
+        
+        // Handle final resolution - use 'in' operator for robust detection
+        if (('signed' in data) || data.expired) {
+          console.log('[Xaman Connect] Connection resolved:', data.signed !== false ? 'approved' : 'rejected');
+          clearInterval(cancelCheckInterval);
+          clearTimeout(timeout);
+          ws.close();
+          useXamanTxStore.getState().close();
+          resolve(data);
+        }
+      } catch (e) {
+        console.error('[Xaman Connect] Failed to parse message:', e);
+      }
+    };
+    
+    ws.onerror = () => {
+      clearInterval(cancelCheckInterval);
+      clearTimeout(timeout);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('WebSocket error'));
+    };
+  });
+  console.log('[Xaman Connect] Result:', result);
+  
+  if (!result?.signed) {
+    throw new Error('Connection rejected');
+  }
+  
+  // Fetch full payload result to get the account
+  const payloadResult = await fetch(`${XUMM_API_ENDPOINT}/payload/${payload.uuid}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+  });
+  
+  if (!payloadResult.ok) {
+    throw new Error('Failed to fetch payload result');
+  }
+  
+  const payloadData = await payloadResult.json();
+  console.log('[Xaman Connect] Payload data:', payloadData);
+  
+  // Get account from response - it might be in different places depending on SignIn vs transaction
+  const account = payloadData.response?.account || result.response?.account;
+  if (!account) {
+    console.error('[Xaman Connect] No account in response. WebSocket result:', result, 'Payload data:', payloadData);
+    throw new Error('No address received from Xaman');
+  }
+  
+  // Get network info from response
+  // Xumm returns network info in payload.response.environment
+  const environment = payloadData.response?.environment;
+  let network: string | undefined;
+  if (environment) {
+    // environment.nodetype could be 'MAINNET', 'TESTNET', 'DEVNET', etc.
+    const nodeType = environment.nodetype || environment.name;
+    if (nodeType) {
+      network = mapNetworkType(nodeType);
+      console.log('[Xaman Connect] Detected network:', network, 'from nodeType:', nodeType);
+    }
+  }
+  
+  console.log('[Xaman Connect] Connected account:', account, 'network:', network);
+  
+  // Return both account and network info
+  return { account, network };
+}
+
+async function signAndSubmitXaman(transaction: object): Promise<{ hash: string }> {
+  console.log('[Xaman TX] signAndSubmitXaman called with:', transaction);
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+  
+  console.log('[Xaman TX] API credentials:', { hasApiKey: !!apiKey, hasApiSecret: !!apiSecret });
+  
+  if (!apiKey || !apiSecret) {
+    throw new Error('Xumm API credentials not configured');
+  }
+  
+  console.log('[Xaman TX] Creating payload...', { endpoint: XUMM_API_ENDPOINT });
+  
+  // Create payload
+  const response = await fetch(`${XUMM_API_ENDPOINT}/payload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+    body: JSON.stringify({ txjson: transaction }),
+  });
+  
+  console.log('[Xaman TX] Response status:', response.status);
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to create payload: ${error}`);
+  }
+  
+  const payload = await response.json();
+  console.log('[Xaman TX] Payload created:', payload);
+  
+  if (!payload?.uuid) {
+    throw new Error('Failed to create payload');
+  }
+  
+  // Show QR modal using store
+  console.log('[Xaman TX] Showing QR modal...');
+  const { useXamanTxStore } = await import('@/stores/xamanTx');
+  useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
+  console.log('[Xaman TX] QR modal shown');
+  // Subscribe via WebSocket
+  const wsUrl = payload.refs.websocket_status;
+  const ws = new WebSocket(wsUrl);
+  
+  const result = await new Promise<any>((resolve, reject) => {
+    // Check for user cancellation - must be defined first
+    const cancelCheckInterval = setInterval(() => {
+      if (useXamanTxStore.getState().cancelled) {
+        clearInterval(cancelCheckInterval);
+        clearTimeout(timeout);
+        ws.close();
+        reject(new Error('cancelled'));
+      }
+    }, 500);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(cancelCheckInterval);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('Transaction timeout'));
+    }, 300000); // 5 min timeout
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('[Xaman TX] Event:', data);
+        
+        // Handle opened event - user scanned the QR
+        if (data.opened === true) {
+          console.log('[Xaman TX] User opened the payload');
+          useXamanTxStore.getState().setScanned();
+        }
+        
+        // Handle final resolution - use 'in' operator for robust detection
+        if (('signed' in data) || ('txid' in data) || data.expired) {
+          console.log('[Xaman TX] Transaction resolved:', data.signed !== false ? 'signed' : 'rejected');
+          clearInterval(cancelCheckInterval);
+          clearTimeout(timeout);
+          ws.close();
+          useXamanTxStore.getState().close();
+          resolve(data);
+        }
+      } catch (e) {
+        console.error('[Xaman TX] Failed to parse message:', e);
+      }
+    };
+    
+    ws.onerror = () => {
+      clearInterval(cancelCheckInterval);
+      clearTimeout(timeout);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('WebSocket error'));
+    };
+  });
+  
+  console.log('[Xaman TX] Result:', result);
+  
+  if (!result?.signed) {
+    throw new Error('Transaction rejected');
+  }
+  
+  // txid may be in response object or directly in result
+  const txid = result.txid || result.response?.txid;
+  if (!txid) {
+    throw new Error('Transaction not submitted');
+  }
+  
+  return { hash: txid };
+}
+
+async function signXaman(transaction: object): Promise<{ signedTx: string; txJson: unknown }> {
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const apiSecret = import.meta.env.VITE_XUMM_API_SECRET;
+  
+  if (!apiKey || !apiSecret) {
+    throw new Error('Xumm API credentials not configured');
+  }
+  
+  console.log('[Xaman Sign] Creating payload...');
+  
+  // Create payload
+  const response = await fetch(`${XUMM_API_ENDPOINT}/payload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+    body: JSON.stringify({ txjson: transaction }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to create payload: ${error}`);
+  }
+  
+  const payload = await response.json();
+  console.log('[Xaman Sign] Payload created:', payload);
+  
+  if (!payload?.uuid) {
+    throw new Error('Failed to create payload');
+  }
+  
+  // Show QR modal using store
+  const { useXamanTxStore } = await import('@/stores/xamanTx');
+  useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
+  
+  // Subscribe via WebSocket
+  const wsUrl = payload.refs.websocket_status;
+  const ws = new WebSocket(wsUrl);
+  
+  const result = await new Promise<any>((resolve, reject) => {
+    // Check for user cancellation - must be defined first
+    const cancelCheckInterval = setInterval(() => {
+      if (useXamanTxStore.getState().cancelled) {
+        clearInterval(cancelCheckInterval);
+        clearTimeout(timeout);
+        ws.close();
+        reject(new Error('cancelled'));
+      }
+    }, 500);
+    
+    const timeout = setTimeout(() => {
+      clearInterval(cancelCheckInterval);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('Transaction timeout'));
+    }, 300000); // 5 min timeout
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('[Xaman Sign] Event:', data);
+        
+        // Handle opened event - user scanned the QR
+        if (data.opened === true) {
+          console.log('[Xaman Sign] User opened the payload');
+          useXamanTxStore.getState().setScanned();
+        }
+        
+        // Handle final resolution - use 'in' operator for robust detection
+        if (('signed' in data) || data.expired) {
+          console.log('[Xaman Sign] Transaction resolved:', data.signed !== false ? 'signed' : 'rejected');
+          clearInterval(cancelCheckInterval);
+          clearTimeout(timeout);
+          ws.close();
+          useXamanTxStore.getState().close();
+          resolve(data);
+        }
+      } catch (e) {
+        console.error('[Xaman Sign] Failed to parse message:', e);
+      }
+    };
+    
+    ws.onerror = () => {
+      clearInterval(cancelCheckInterval);
+      clearTimeout(timeout);
+      ws.close();
+      useXamanTxStore.getState().close();
+      reject(new Error('WebSocket error'));
+    };
+  });
+  
+  console.log('[Xaman Sign] Result:', result);
+  
+  if (!result?.signed) {
+    throw new Error('Transaction rejected');
+  }
+  
+  // Get the hex blob from the response
+  return { 
+    signedTx: result.response?.hex || '', 
+    txJson: transaction 
+  };
+}
+
+async function disconnectXaman(): Promise<void> {
+  if (xummInstance) {
+    await xummInstance.logout();
+  }
+}
+
+
 // Unified API
-export async function connectWallet(type: WalletType): Promise<string> {
+export async function connectWallet(type: WalletType): Promise<{ address: string; network?: string }> {
   try {
     if (type === 'crossmark') {
-      return connectCrossmark();
+      const address = await connectCrossmark();
+      return { address };
     }
     if (type === 'gemwallet') {
-      return connectGemwallet();
+      const address = await connectGemwallet();
+      return { address };
+    }
+    if (type === 'xaman') {
+      const result = await connectXaman();
+      return { address: result.account, network: result.network };
     }
     throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
@@ -226,12 +687,17 @@ export async function signAndSubmitTransaction(
   type: WalletType, 
   transaction: object
 ): Promise<{ hash: string }> {
+  console.log('[signAndSubmitTransaction] Called with type:', type);
   try {
     if (type === 'crossmark') {
       return signAndSubmitCrossmark(transaction);
     }
     if (type === 'gemwallet') {
       return signAndSubmitGemwallet(transaction);
+    }
+    if (type === 'xaman') {
+      console.log('[signAndSubmitTransaction] Calling signAndSubmitXaman...');
+      return signAndSubmitXaman(transaction);
     }
     throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
@@ -251,6 +717,9 @@ export async function signTransaction(
     if (type === 'gemwallet') {
       return signGemwallet(transaction);
     }
+    if (type === 'xaman') {
+      return signXaman(transaction);
+    }
     throw new Error(`Unsupported wallet type: ${type}`);
   } catch (error) {
     console.error(`Signing error (${type}):`, error);
@@ -265,6 +734,9 @@ export async function disconnectWallet(type: WalletType): Promise<void> {
       if (crossmarkSDK?.methods?.signOut) {
         await crossmarkSDK.methods.signOut();
       }
+    }
+    if (type === 'xaman') {
+      await disconnectXaman();
     }
   } catch (e) {
     console.warn(`Disconnect warning (${type}):`, e);
@@ -301,6 +773,13 @@ export function useWallet() {
             : null,
         };
       }
+      if (store.walletType === 'xaman') {
+        // Xaman doesn't have persistent session - use store values
+        return {
+          address: store.address || null,
+          network: store.network || null,
+        };
+      }
     } catch (e) {
       console.warn('Failed to get current wallet state:', e);
     }
@@ -310,26 +789,32 @@ export function useWallet() {
   const connect = async (type: WalletType) => {
     store.setConnecting(true);
     try {
-      const address = await connectWallet(type);
-      store.setAddress(address);
+      const result = await connectWallet(type);
+      store.setAddress(result.address);
       store.setWalletType(type);
       store.setConnected(true);
       
-      try {
-        let network: string | null = null;
-        if (type === 'crossmark') {
-          network = getCrossmarkNetwork();
-        } else if (type === 'gemwallet') {
-          network = await getGemwalletNetwork();
+      // Use network from Xaman SignIn response, or detect for other wallets
+      let network: string | null | undefined = result.network;
+      
+      if (!network) {
+        // Fallback to detecting network for other wallets
+        try {
+          if (type === 'crossmark') {
+            network = getCrossmarkNetwork();
+          } else if (type === 'gemwallet') {
+            network = await getGemwalletNetwork();
+          }
+        } catch (e) {
+          console.warn('Could not detect wallet network:', e);
         }
-        if (network) {
-          store.setNetwork(network as NetworkType);
-        }
-      } catch (e) {
-        console.warn('Could not detect wallet network:', e);
       }
       
-      return address;
+      if (network) {
+        store.setNetwork(network as NetworkType);
+      }
+      
+      return result.address;
     } catch (error) {
       console.error('Wallet connection error:', error);
       throw error;
@@ -346,12 +831,14 @@ export function useWallet() {
   };
 
   const signAndSubmit = async (transaction: object) => {
+    console.log('[signAndSubmit] Starting...', { walletType: store.walletType });
     if (!store.walletType) {
       throw new Error('No wallet connected');
     }
     
     // Check current wallet state
     const { address, network } = await getCurrentWalletState();
+    console.log('[signAndSubmit] Wallet state:', { address, network, storeAddress: store.address, storeNetwork: store.network });
     
     // Check if address matches
     if (address && address !== store.address) {
@@ -374,10 +861,11 @@ export function useWallet() {
     }
     
     const isActuallyConnected = await checkWalletConnection(store.walletType);
+    console.log('[signAndSubmit] isActuallyConnected:', isActuallyConnected);
     if (!isActuallyConnected) {
       try {
-        const newAddress = await connectWallet(store.walletType);
-        store.setAddress(newAddress);
+        const result = await connectWallet(store.walletType);
+        store.setAddress(result.address);
         store.setConnected(true);
       } catch {
         store.disconnect();
@@ -385,9 +873,9 @@ export function useWallet() {
       }
     }
     
+    console.log('[signAndSubmit] Calling signAndSubmitTransaction...');
     return signAndSubmitTransaction(store.walletType, transaction);
   };
-
   const sign = async (transaction: object) => {
     if (!store.walletType) {
       throw new Error('No wallet connected');
@@ -419,8 +907,8 @@ export function useWallet() {
     const isActuallyConnected = await checkWalletConnection(store.walletType);
     if (!isActuallyConnected) {
       try {
-        const newAddress = await connectWallet(store.walletType);
-        store.setAddress(newAddress);
+        const result = await connectWallet(store.walletType);
+        store.setAddress(result.address);
         store.setConnected(true);
       } catch {
         store.disconnect();

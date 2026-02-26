@@ -15,6 +15,7 @@ import { useWalletStore } from '@/stores/wallet'
 import type { WalletType } from '@/types'
 import { cn } from '@/lib/utils'
 
+
 function CrossmarkIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -131,6 +132,7 @@ export function WalletConnect() {
 
   const handleConnect = async (type: WalletType) => {
     setError(null)
+    
     try {
       await connect(type)
       setModalOpen(false)
@@ -252,7 +254,6 @@ export function WalletConnect() {
           {t('wallet.connect')}
         </Button>
       </DialogTrigger>
-
       <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/50">
         <DialogHeader>
           <DialogTitle>{t('walletConnect.connectYourWallet')}</DialogTitle>
@@ -337,8 +338,8 @@ export function WalletConnect() {
           </div>
         )}
       </DialogContent>
-    </Dialog>
-  )
+  </Dialog>
+  );
 }
 
 export function NetworkSwitch() {

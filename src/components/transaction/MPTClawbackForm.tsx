@@ -49,7 +49,9 @@ export function MPTClawbackForm({
     },
   })
 
-  const watchedFields = watch()
+  const holder = watch('holder')
+  const mptIssuanceId = watch('mptIssuanceId')
+  const amount = watch('amount')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -60,15 +62,15 @@ export function MPTClawbackForm({
       if (!isValid) return;
 
       try {
-        const amount: MPTAmount = {
-          mpt_issuance_id: watchedFields.mptIssuanceId,
-          value: watchedFields.amount,
+        const mptAmount: MPTAmount = {
+          mpt_issuance_id: mptIssuanceId,
+          value: amount,
         };
         
         const tx = buildMPTClawback({
           Account: account,
-          Holder: watchedFields.holder,
-          Amount: amount,
+          Holder: holder,
+          Amount: mptAmount,
         });
         setTransactionJson(tx);
       } catch {
@@ -77,7 +79,7 @@ export function MPTClawbackForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [holder, mptIssuanceId, amount, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -92,15 +94,15 @@ export function MPTClawbackForm({
     setBuildError(null)
 
     try {
-      const amount: MPTAmount = {
-        mpt_issuance_id: watchedFields.mptIssuanceId,
-        value: watchedFields.amount,
+      const mptAmount: MPTAmount = {
+        mpt_issuance_id: mptIssuanceId,
+        value: amount,
       }
       
       const tx = buildMPTClawback({
         Account: account,
-        Holder: watchedFields.holder,
-        Amount: amount,
+        Holder: holder,
+        Amount: mptAmount,
       })
       setTransactionJson(tx)
       setShowPreview(true)

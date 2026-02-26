@@ -15,18 +15,18 @@ import type { BaseTransactionParams } from './types';
  * These flags control the behavior and properties of MPT issuances.
  */
 export const MPT_ISSUANCE_FLAGS = {
-  /** Allow holders to transfer the token to each other */
-  lsfMPTCanTransfer: 0x00000001,
+  /** Allow issuer to lock/unfreeze individual holder balances */
+  lsfMPTCanLock: 0x00000002,
   /** Require issuer authorization before holders can hold the token */
-  lsfMPTRequireAuth: 0x00000002,
-  /** Allow issuer to freeze/unfreeze individual holder balances */
-  lsfMPTCanLock: 0x00000004,
-  /** Allow issuer to claw back tokens from holders */
-  lsfMPTCanClawback: 0x00000008,
-  /** Allow trading in the DEX (not currently implemented) */
-  lsfMPTCanTrade: 0x00000010,
+  lsfMPTRequireAuth: 0x00000004,
   /** Allow placing tokens in escrow */
-  lsfMPTCanEscrow: 0x00000020,
+  lsfMPTCanEscrow: 0x00000008,
+  /** Allow trading in the DEX */
+  lsfMPTCanTrade: 0x00000010,
+  /** Allow holders to transfer the token to each other */
+  lsfMPTCanTransfer: 0x00000020,
+  /** Allow issuer to claw back tokens from holders */
+  lsfMPTCanClawback: 0x00000040,
 } as const;
 
 /**

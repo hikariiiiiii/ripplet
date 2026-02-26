@@ -38,7 +38,7 @@ export interface WalletInfo {
   walletType: WalletType
 }
 
-export type WalletType = 'xaman' | 'crossmark' | 'gemwallet'
+export type WalletType = 'xaman' | 'crossmark' | 'gemwallet' | 'ledger'
 
 export interface TransactionResult {
   hash: string

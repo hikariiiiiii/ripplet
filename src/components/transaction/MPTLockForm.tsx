@@ -53,7 +53,10 @@ export function MPTLockForm({
     },
   })
 
-  const watchedFields = watch()
+  const holder = watch('holder')
+  const mptIssuanceId = watch('mptIssuanceId')
+  const lockedAmount = watch('lockedAmount')
+  const action = watch('action')
 
   // Auto-refresh transaction JSON when form content changes and Preview is enabled
   useEffect(() => {
@@ -64,15 +67,15 @@ export function MPTLockForm({
       if (!isValid) return;
 
       try {
-        const flags = watchedFields.action === 'lock' 
+        const flags = action === 'lock' 
           ? MPT_LOCK_FLAGS.tfMPTLock 
           : MPT_LOCK_FLAGS.tfMPTUnlock;
         
         const tx = buildMPTLock({
           Account: account,
-          Holder: watchedFields.holder,
-          MPTokenIssuanceID: watchedFields.mptIssuanceId,
-          LockedAmount: watchedFields.lockedAmount || undefined,
+          Holder: holder,
+          MPTokenIssuanceID: mptIssuanceId,
+          LockedAmount: lockedAmount || undefined,
           Flags: flags,
         });
         setTransactionJson(tx);
@@ -82,7 +85,7 @@ export function MPTLockForm({
     };
 
     validateAndBuild();
-  }, [watchedFields, showPreview, account, trigger]);
+  }, [holder, mptIssuanceId, lockedAmount, action, showPreview, account, trigger]);
 
   const handlePreviewToggle = async () => {
     if (showPreview) {
@@ -97,15 +100,15 @@ export function MPTLockForm({
     setBuildError(null)
 
     try {
-      const flags = watchedFields.action === 'lock' 
+      const flags = action === 'lock' 
         ? MPT_LOCK_FLAGS.tfMPTLock 
         : MPT_LOCK_FLAGS.tfMPTUnlock
       
       const tx = buildMPTLock({
         Account: account,
-        Holder: watchedFields.holder,
-        MPTokenIssuanceID: watchedFields.mptIssuanceId,
-        LockedAmount: watchedFields.lockedAmount || undefined,
+        Holder: holder,
+        MPTokenIssuanceID: mptIssuanceId,
+        LockedAmount: lockedAmount || undefined,
         Flags: flags,
       })
       setTransactionJson(tx)
@@ -233,14 +236,14 @@ export function MPTLockForm({
         <div className="flex items-center justify-between">
           <Label>{t('mptLock.action')}</Label>
           <div className="flex items-center gap-2">
-            <span className={`text-sm ${watchedFields.action === 'lock' ? 'text-foreground' : 'text-muted-foreground'}`}>
+            <span className={`text-sm ${action === 'lock' ? 'text-foreground' : 'text-muted-foreground'}`}>
               {t('mptLock.actionLock')}
             </span>
             <Switch
-              checked={watchedFields.action === 'unlock'}
+              checked={action === 'unlock'}
               onCheckedChange={(checked) => setValue('action', checked ? 'unlock' : 'lock')}
             />
-            <span className={`text-sm ${watchedFields.action === 'unlock' ? 'text-foreground' : 'text-muted-foreground'}`}>
+            <span className={`text-sm ${action === 'unlock' ? 'text-foreground' : 'text-muted-foreground'}`}>
               {t('mptLock.actionUnlock')}
             </span>
           </div>

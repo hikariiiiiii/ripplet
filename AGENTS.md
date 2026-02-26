@@ -458,3 +458,205 @@ Do NOT override with other colors unless absolutely necessary.
   {/* button content */}
 </Button>
 ```
+
+## Wallet Connection Guidelines
+
+### No Navigation After Connection
+
+**CRITICAL**: When a user connects their wallet on ANY page (transaction pages, SC+ Labs, etc.), the application MUST stay on the current page. DO NOT navigate to home or any other page after successful wallet connection.
+
+**Why**: Users often connect their wallet while filling out a transaction form. Navigating away would lose their form data and disrupt their workflow.
+
+**Implementation**:
+
+```typescript
+// ❌ WRONG - Navigating after connection
+try {
+  await connect(wallet.type);
+  onOpenChange(false);
+  navigate('/');  // NEVER do this!
+} catch (err) {
+  // error handling
+}
+
+// ✅ CORRECT - Stay on current page
+try {
+  await connect(wallet.type);
+  onOpenChange(false);  // Just close the modal, stay on page
+} catch (err) {
+  // error handling
+}
+```
+
+**Files affected**:
+- `src/components/wallet/WalletSelectModal.tsx`
+- Any component that handles wallet connection callbacks
+
+**This rule exists because this bug has occurred multiple times. Do NOT reintroduce navigation after wallet connection.**
+
+## JSON Preview Reactivity Guidelines
+
+**CRITICAL**: All transaction forms with JSON preview MUST update the preview reactively when form values change.
+
+### The Bug Pattern (DO NOT DO THIS)
+
+The most common regression is **incomplete useEffect dependencies**:
+
+```typescript
+// ❌ WRONG - Missing form fields in dependency array
+const watchedFields = watch();
+
+useEffect(() => {
+  if (!showPreview) return;
+  // ... build transaction ...
+  // eslint-disable-next-line react-hooks/exhaustive-deps  <-- NEVER add this!
+}, [showPreview, account]);  // <-- MISSING watchedFields!
+```
+
+This causes the JSON preview to **not update** when form values change because React doesn't know to re-run the effect.
+
+### Correct Patterns
+
+There are **three acceptable patterns** for reactive JSON preview:
+
+#### Pattern A: useState with formData (Recommended for complex validation)
+
+Use when you need custom validation logic or complex form state.
+
+```typescript
+const [formData, setFormData] = useState<FormDataType>({
+  field1: '',
+  field2: '',
+});
+const [showPreview, setShowPreview] = useState(false);
+const [transactionJson, setTransactionJson] = useState<TransactionType | null>(null);
+
+// Auto-refresh when form changes and preview is open
+useEffect(() => {
+  if (!showPreview) return;
+  if (!validateForm()) return;  // Custom validation
+
+  try {
+    const tx = buildTransaction({ Account: account, ...formData });
+    setTransactionJson(tx);
+  } catch {
+    // Silent fail on auto-refresh
+  }
+}, [formData, showPreview, account]);  // ✅ formData triggers re-run
+```
+
+#### Pattern B: react-hook-form with individual watch() calls
+
+Use when you have few fields and want granular control.
+
+```typescript
+const { register, watch, trigger } = useForm<FormDataType>();
+
+// Watch each field individually
+const field1 = watch('field1');
+const field2 = watch('field2');
+
+useEffect(() => {
+  if (!showPreview) return;
+
+  const validateAndBuild = async () => {
+    const isValid = await trigger(['field1', 'field2']);
+    if (!isValid) return;
+
+    try {
+      const tx = buildTransaction({ Account: account, field1, field2 });
+      setTransactionJson(tx);
+    } catch {
+      // Silent fail
+    }
+  };
+
+  validateAndBuild();
+}, [field1, field2, showPreview, account, trigger]);  // ✅ Each field triggers re-run
+```
+
+#### Pattern C: react-hook-form with watchedFields object
+
+Use when you have many fields and want concise code.
+
+```typescript
+const { register, watch, trigger } = useForm<FormDataType>();
+const watchedFields = watch();  // Watch all fields
+
+useEffect(() => {
+  if (!showPreview) return;
+
+  const validateAndBuild = async () => {
+    const isValid = await trigger(['field1', 'field2']);
+    if (!isValid) return;
+
+    try {
+      const tx = buildTransaction({
+        Account: account,
+        field1: watchedFields.field1,
+        field2: watchedFields.field2,
+      });
+      setTransactionJson(tx);
+    } catch {
+      // Silent fail
+    }
+  };
+
+  validateAndBuild();
+}, [watchedFields, showPreview, account, trigger]);  // ✅ watchedFields triggers re-run
+```
+
+### Key Rules
+
+1. **NEVER use `eslint-disable-next-line react-hooks/exhaustive-deps`** - If ESLint warns about missing deps, add them!
+2. **Always include form state in dependencies** - `formData`, `watchedFields`, or individual `watch('field')` values
+3. **Always include `showPreview`** - To only build when preview is visible
+4. **Always include `account`** - Account is needed for transaction building
+5. **Include `trigger` when using react-hook-form** - For validation function stability
+
+### Files Affected
+
+All 31 transaction form components in `src/components/transaction/`:
+
+| Pattern | Forms |
+|---------|-------|
+| Pattern A (useState) | AccountSetForm, NFTokenMintForm, CredentialCreateForm, EscrowCreateForm, OfferCreateForm, etc. |
+| Pattern B (individual watch) | PaymentForm, MPTEscrowCreateForm, MPTTransferForm |
+| Pattern C (watchedFields) | TrustSetForm, MPTokenIssuanceSetForm, MPTokenAuthorizeForm, IOUPaymentForm, IOUEscrowCreateForm, etc. |
+
+| Pattern | Forms |
+| **Pattern B (individual watch)** | PaymentForm, MPTEscrowCreateForm, MPTTransferForm
+| **Pattern C (watchedFields)** | TrustSetForm, MPTokenIssuanceSetForm, MPTokenAuthorizeForm, IOUPaymentForm, IOUEscrowCreateForm, etc. | Pattern D (useWatch - stable reference)
+ | MPTokenIssuanceCreateForm (many fields + use `useWatch` for stable reference
+
+### Important: Avoiding Infinite Loops with watch()
+
+**WARNING**: Using `watch()` directly in useEffect dependencies can cause infinite loops!
+
+```typescript
+// ❌ DANGEROUS - watch() returns new object reference every render
+const watchedFields = watch();
+
+useEffect(() => {
+  // ...
+}, [watchedFields]);  // Infinite loop! watchedFields is always "new"
+``
+
+**Solution**: Use `useWatch` for stable object references:
+
+```typescript
+import { useForm, useWatch } from 'react-hook-form';
+
+const { control } = useForm<FormDataType>();
+
+// Use useWatch for stable reference - only re-renders when values actually change
+const watchedFields = useWatch<FormDataType>({ control }) as FormDataType;
+
+useEffect(() => {
+  if (!showPreview) return;
+  // ...
+}, [watchedFields, showPreview, account, trigger, getValues]);  // ✅ Stable - no infinite loop
+```
+
+**This rule exists because this bug has occurred multiple times. NEVER bypass ESLint exhaustive-deps warnings with disable comments."
+**This rule exists because this bug has occurred multiple times. NEVER bypass ESLint exhaustive-deps warnings with disable comments.**
