@@ -1,0 +1,175 @@
+TASK-02: XRPL Concept Page URL Mapping
+Date: 2026-02-26
+Status: COMPLETED
+
+================================================================================
+VERIFICATION METHOD
+================================================================================
+All URLs were verified by fetching the actual pages from xrpl.org using webfetch.
+Each page was confirmed to exist and contain relevant content.
+
+================================================================================
+Base URL: https://xrpl.org/docs/concepts
+
+================================================================================
+CONCEPT URL MAPPING TABLE
+================================================================================
+
+| Category     | Concept URL                                                      | Verified |
+|--------------|------------------------------------------------------------------|----------|
+| mpt          | https://xrpl.org/docs/concepts/tokens/fungible-tokens/multi-purpose-tokens | ✅ |
+| nft          | https://xrpl.org/docs/concepts/tokens/nfts                       | ✅ |
+| iou          | https://xrpl.org/docs/concepts/tokens/fungible-tokens            | ✅ |
+| iou-trustline| https://xrpl.org/docs/concepts/tokens/fungible-tokens/trust-line-tokens | ✅ |
+| credential   | https://xrpl.org/docs/concepts/decentralized-storage/credentials | ✅ |
+| payment      | https://xrpl.org/docs/concepts/payment-types                     | ✅ |
+| escrow       | https://xrpl.org/docs/concepts/payment-types/escrow              | ✅ |
+| account      | https://xrpl.org/docs/concepts/accounts                          | ✅ |
+| transaction  | https://xrpl.org/docs/concepts/transactions                      | ✅ |
+
+================================================================================
+ADDITIONAL VERIFIED URLS
+================================================================================
+
+Payment Type Sub-pages:
+- direct-xrp-payment:    https://xrpl.org/docs/concepts/payment-types/direct-xrp-payments
+- cross-currency:        https://xrpl.org/docs/concepts/payment-types/cross-currency-payments
+- checks:                https://xrpl.org/docs/concepts/payment-types/checks
+- partial-payments:      https://xrpl.org/docs/concepts/payment-types/partial-payments
+- payment-channels:      https://xrpl.org/docs/concepts/payment-types/payment-channels
+
+Token Sub-pages:
+- fungible-tokens:       https://xrpl.org/docs/concepts/tokens/fungible-tokens
+- nfts:                  https://xrpl.org/docs/concepts/tokens/nfts
+- dex:                   https://xrpl.org/docs/concepts/tokens/decentralized-exchange
+- lending:               https://xrpl.org/docs/concepts/tokens/lending-protocol
+- vaults:                https://xrpl.org/docs/concepts/tokens/single-asset-vaults
+
+Decentralized Storage Sub-pages:
+- credentials:           https://xrpl.org/docs/concepts/decentralized-storage/credentials
+- did:                   https://xrpl.org/docs/concepts/decentralized-storage/decentralized-identifiers
+- oracles:               https://xrpl.org/docs/concepts/decentralized-storage/price-oracles
+
+Account Sub-pages:
+- account-types:         https://xrpl.org/docs/concepts/accounts/account-types
+- configuring-accounts:  https://xrpl.org/docs/concepts/accounts/configuring-accounts
+- deleting-accounts:     https://xrpl.org/docs/concepts/accounts/deleting-accounts
+- reserves:              https://xrpl.org/docs/concepts/accounts/reserves
+- addresses:             https://xrpl.org/docs/concepts/accounts/addresses
+- cryptographic-keys:    https://xrpl.org/docs/concepts/accounts/cryptographic-keys
+- multi-signing:         https://xrpl.org/docs/concepts/accounts/multi-signing
+- deposit-auth:          https://xrpl.org/docs/concepts/accounts/depositauth
+- tickets:               https://xrpl.org/docs/concepts/accounts/tickets
+- permission-delegation: https://xrpl.org/docs/concepts/accounts/permission-delegation
+- pseudo-accounts:       https://xrpl.org/docs/concepts/accounts/pseudo-accounts
+
+================================================================================
+FINAL MAPPING (FOR CODE)
+================================================================================
+
+```typescript
+/**
+ * XRPL Documentation Concept Page URLs
+ * Base: https://xrpl.org/docs/concepts
+ */
+export const XRPL_DOC_CONCEPTS = {
+  // Token Categories
+  mpt: '/concepts/tokens/fungible-tokens/multi-purpose-tokens',
+  nft: '/concepts/tokens/nfts',
+  iou: '/concepts/tokens/fungible-tokens',
+  iouTrustline: '/concepts/tokens/fungible-tokens/trust-line-tokens',
+  
+  // Decentralized Storage
+  credential: '/concepts/decentralized-storage/credentials',
+  did: '/concepts/decentralized-storage/decentralized-identifiers',
+  oracle: '/concepts/decentralized-storage/price-oracles',
+  
+  // Payment Types
+  payment: '/concepts/payment-types',
+  escrow: '/concepts/payment-types/escrow',
+  checks: '/concepts/payment-types/checks',
+  directXrpPayment: '/concepts/payment-types/direct-xrp-payments',
+  crossCurrencyPayment: '/concepts/payment-types/cross-currency-payments',
+  partialPayments: '/concepts/payment-types/partial-payments',
+  paymentChannels: '/concepts/payment-types/payment-channels',
+  
+  // Core Concepts
+  account: '/concepts/accounts',
+  transaction: '/concepts/transactions',
+  ledger: '/concepts/ledgers',
+  consensus: '/concepts/consensus-protocol',
+  networks: '/concepts/networks-and-servers',
+  
+  // DeFi
+  dex: '/concepts/tokens/decentralized-exchange',
+  lending: '/concepts/tokens/lending-protocol',
+  vaults: '/concepts/tokens/single-asset-vaults',
+  
+  // Cross-chain
+  sidechains: '/concepts/xrpl-sidechains',
+} as const;
+
+/**
+ * Get full URL for a concept page
+ */
+export function getConceptUrl(path: string): string {
+  return `https://xrpl.org/docs${path}`;
+}
+```
+
+================================================================================
+NOTES
+================================================================================
+
+1. URL Structure Pattern:
+   - All concept pages follow: https://xrpl.org/docs/concepts/{category}/{subcategory}
+   - Some categories have direct pages: https://xrpl.org/docs/concepts/{category}
+
+2. MPT vs IOU Distinction:
+   - MPT (Multi-Purpose Tokens) is a subsection of Fungible Tokens
+   - IOU/Trust Line Tokens is another subsection of Fungible Tokens
+   - Both share the parent: /concepts/tokens/fungible-tokens
+
+3. Escrow Location:
+   - Escrow is under payment-types, not tokens
+   - URL: /concepts/payment-types/escrow
+
+4. Credentials Location:
+   - Credentials is under decentralized-storage, not tokens
+   - URL: /concepts/decentralized-storage/credentials
+
+================================================================================
+TRANSACTION TYPE TO CONCEPT PAGE MAPPING
+================================================================================
+
+| Transaction Type              | Concept Page URL                                          |
+|-------------------------------|-----------------------------------------------------------|
+| MPTokenIssuanceCreate         | /concepts/tokens/fungible-tokens/multi-purpose-tokens    |
+| MPTokenIssuanceSet            | /concepts/tokens/fungible-tokens/multi-purpose-tokens    |
+| MPTokenIssuanceDestroy        | /concepts/tokens/fungible-tokens/multi-purpose-tokens    |
+| MPTokenAuthorize              | /concepts/tokens/fungible-tokens/multi-purpose-tokens    |
+| NFTokenMint                   | /concepts/tokens/nfts                                     |
+| NFTokenBurn                   | /concepts/tokens/nfts                                     |
+| NFTokenCreateOffer            | /concepts/tokens/nfts/trading                             |
+| NFTokenAcceptOffer            | /concepts/tokens/nfts/trading                             |
+| NFTokenCancelOffer            | /concepts/tokens/nfts/trading                             |
+| TrustSet                      | /concepts/tokens/fungible-tokens/trust-line-tokens       |
+| Payment (IOU)                 | /concepts/payment-types/cross-currency-payments          |
+| Payment (XRP)                 | /concepts/payment-types/direct-xrp-payments              |
+| OfferCreate                   | /concepts/tokens/decentralized-exchange                   |
+| OfferCancel                   | /concepts/tokens/decentralized-exchange                   |
+| EscrowCreate                  | /concepts/payment-types/escrow                            |
+| EscrowFinish                  | /concepts/payment-types/escrow                            |
+| EscrowCancel                  | /concepts/payment-types/escrow                            |
+| AccountSet                    | /concepts/accounts/configuring-accounts                   |
+| AccountDelete                 | /concepts/accounts/deleting-accounts                      |
+| CredentialCreate              | /concepts/decentralized-storage/credentials               |
+| CredentialAccept              | /concepts/decentralized-storage/credentials               |
+| CredentialDelete              | /concepts/decentralized-storage/credentials               |
+| CheckCreate                   | /concepts/payment-types/checks                            |
+| CheckCash                     | /concepts/payment-types/checks                            |
+| CheckCancel                   | /concepts/payment-types/checks                            |
+
+================================================================================
+END OF EVIDENCE FILE
+================================================================================
