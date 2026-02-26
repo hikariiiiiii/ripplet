@@ -1,6 +1,9 @@
 import { useState, ReactNode } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink, BookOpen, Lightbulb } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { useWallet } from '@/lib/wallets';
+
 import { Button } from '@/components/ui/button';
 import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
@@ -16,6 +19,8 @@ interface TransactionPageWrapperProps {
   icon: ReactNode;
   iconBgColor?: string;
   borderColor?: string;
+  docUrl?: string;
+  conceptUrl?: string;
   children: (props: {
     address: string;
     onSubmit: (transaction: Transaction) => void | Promise<void>;
@@ -31,8 +36,11 @@ export function TransactionPageWrapper({
   icon,
   iconBgColor = 'bg-xrpl-green/10',
   borderColor = 'border-xrpl-green/20',
+  docUrl,
+  conceptUrl,
   children,
 }: TransactionPageWrapperProps) {
+  const { t } = useTranslation();
   const { address, connected, signAndSubmit, network } = useWallet();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [result, setResult] = useState<TransactionResult | null>(null);
@@ -92,32 +100,62 @@ export function TransactionPageWrapper({
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          {viewState === 'result' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleBack}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-full"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-          <div className="flex items-stretch gap-3">
-            <div className={`flex items-center justify-center px-2.5 rounded-lg ${iconBgColor} border ${borderColor}`}>
-              {icon}
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-xl font-bold animated-gradient-text leading-6">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-sm text-muted-foreground leading-5">
-                  {subtitle}
-                </p>
-              )}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-4">
+            {viewState === 'result' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-full"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
+            <div className="flex items-stretch gap-3">
+              <div className={`flex items-center justify-center px-2.5 rounded-lg ${iconBgColor} border ${borderColor}`}>
+                {icon}
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-xl font-bold animated-gradient-text leading-6">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-sm text-muted-foreground leading-5">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
+          {(docUrl || conceptUrl) && (
+            <div className="flex items-center gap-4 text-xs text-muted-foreground ml-1">
+              {docUrl && (
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>{t('transaction.apiDocs')}</span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-50" />
+                </a>
+              )}
+              {conceptUrl && (
+                <a
+                  href={conceptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  <span>{t('transaction.conceptDocs')}</span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-50" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         <div
