@@ -135,7 +135,8 @@
     "signAndSend": "签名并发送",
     "advancedOptions": "高级选项",
     "failedToBuild": "构建交易失败",
-    "then": "然后"
+    "then": "然后",
+    "learnMore": "了解更多"
   },
   "transaction": {
     "pending": "交易处理中...",
@@ -147,7 +148,9 @@
     "hash": "交易哈希",
     "viewExplorer": "在浏览器中查看",
     "errorCode": "错误代码",
-    "tryAgain": "重试"
+    "tryAgain": "重试",
+    "apiDocs": "API 文档",
+    "conceptDocs": "概念说明"
   },
   "payment": {
     "title": "支付",
@@ -707,9 +710,13 @@
     "title": "取消 NFT 挂单",
     "subtitle": "取消您创建的 NFT 挂单",
     "nftOffers": "NFT 挂单 ID",
-    "nftOffersPlaceholder": "输入 NFT 挂单 ID",
+    "nftOffersHint": "要取消的 NFT 买入或卖出挂单的唯一标识符",
+    "nftOffersPlaceholder": "NFT 挂单 ID",
     "nftOffersRequired": "至少需要一个 NFT 挂单 ID",
-    "addOffer": "添加挂单"
+    "offerIdRequired": "挂单 ID 为必填项",
+    "offerNumber": "挂单 #{{index}}",
+    "addOffer": "添加挂单",
+    "hint": "输入您要取消的挂单 ID。您可以在单个交易中取消多个挂单。"
   },
   "iouEscrowCancel": {
     "title": "取消托管",

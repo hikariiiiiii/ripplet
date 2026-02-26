@@ -46,10 +46,9 @@ export function NFTokenCancelOfferForm({
 
     formData.nftokenOffers.forEach((offer, index) => {
       if (!offer || offer.trim() === '') {
-        newErrors[index] = 'Offer ID is required'
+        newErrors[index] = t('nftCancelOffer.offerIdRequired')
       }
     })
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -146,13 +145,13 @@ export function NFTokenCancelOfferForm({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Label>NFToken Offers</Label>
+              <Label>{t('nftCancelOffer.nftOffers')}</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>The unique identifiers of the NFT buy or sell offers to cancel</p>
+                  <p>{t('nftCancelOffer.nftOffersHint')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -165,7 +164,7 @@ export function NFTokenCancelOfferForm({
               className="h-7 text-xs"
             >
               <Plus className="w-3 h-3 mr-1" />
-              Add Offer
+              {t('nftCancelOffer.addOffer')}
             </Button>
           </div>
 
@@ -174,7 +173,7 @@ export function NFTokenCancelOfferForm({
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">Offer #{index + 1}</span>
+                    <span className="text-xs text-muted-foreground">{t('nftCancelOffer.offerNumber', { index: index + 1 })}</span>
                     {errors[index] && (
                       <span className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
@@ -184,7 +183,7 @@ export function NFTokenCancelOfferForm({
                   </div>
                   <Input
                     type="text"
-                    placeholder="NFToken Offer ID"
+                    placeholder={t('nftCancelOffer.nftOffersPlaceholder')}
                     className={`font-mono-address text-sm ${errors[index] ? 'border-destructive' : ''}`}
                     value={offer}
                     onChange={(e) => handleOfferChange(index, e.target.value)}
@@ -207,16 +206,15 @@ export function NFTokenCancelOfferForm({
           ))}
 
           <p className="text-xs text-muted-foreground">
-            Enter the offer IDs you want to cancel. You can cancel multiple offers in a single transaction.
+            {t('nftCancelOffer.hint')}
           </p>
-        </div>
 
         {/* JSON Preview Toggle */}
         {transactionJson && showPreview && (
           <div className="code-block scanlines">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                Transaction JSON
+                {t('common.transactionJson')}
               </span>
               <Button
                 type="button"
@@ -225,7 +223,7 @@ export function NFTokenCancelOfferForm({
                 onClick={() => navigator.clipboard.writeText(JSON.stringify(transactionJson, null, 2))}
                 className="h-6 text-xs"
               >
-                Copy
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="text-xs overflow-x-auto">
@@ -269,6 +267,7 @@ export function NFTokenCancelOfferForm({
               </>
             )}
           </Button>
+        </div>
         </div>
       </form>
     

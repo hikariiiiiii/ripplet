@@ -135,7 +135,8 @@
     "signAndSend": "Sign & Send",
     "advancedOptions": "Advanced Options",
     "failedToBuild": "Failed to build transaction",
-    "then": "Then"
+    "then": "Then",
+    "learnMore": "Learn More"
   },
   "transaction": {
     "pending": "Transaction in progress...",
@@ -147,7 +148,9 @@
     "hash": "Transaction Hash",
     "viewExplorer": "View on Explorer",
     "errorCode": "Error Code",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "apiDocs": "API Docs",
+    "conceptDocs": "Concept Guide"
   },
   "payment": {
     "title": "Payment",
@@ -707,9 +710,13 @@
     "title": "Cancel NFT Offer",
     "subtitle": "Cancel an NFT offer you created",
     "nftOffers": "NFT Offer IDs",
-    "nftOffersPlaceholder": "Enter NFT offer ID",
+    "nftOffersHint": "The unique identifiers of the NFT buy or sell offers to cancel",
+    "nftOffersPlaceholder": "NFT Offer ID",
     "nftOffersRequired": "At least one NFT offer ID is required",
-    "addOffer": "Add Offer"
+    "offerIdRequired": "Offer ID is required",
+    "offerNumber": "Offer #{{index}}",
+    "addOffer": "Add Offer",
+    "hint": "Enter the offer IDs you want to cancel. You can cancel multiple offers in a single transaction."
   },
   "iouEscrowCancel": {
     "title": "Cancel Escrow",
