@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BadgeCheck, ArrowLeft, AlertCircle, Trash2, Plus } from 'lucide-react';
+import { BadgeCheck, ArrowLeft, AlertCircle, Trash2, Plus, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SchemeWizard } from '@/components/scplus/SchemeWizard';
 import { CredentialCreateForm } from '@/components/transaction/CredentialCreateForm';
@@ -11,6 +11,7 @@ import { TransactionResultDisplay } from '@/components/transaction/TransactionRe
 import { useWallet } from '@/lib/wallets';
 import type { TransactionResult, WalletMismatchError } from '@/types';
 import type { Transaction } from 'xrpl';
+import { XRPL_DOC_CONCEPTS } from '@/lib/xrpl/docUrls';
 
 type ViewState = 'wizard' | 'submitting' | 'result';
 
@@ -194,7 +195,7 @@ export default function CredentialsScheme() {
               <div className="flex items-center justify-center px-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
                 <BadgeCheck className="w-6 h-6 text-amber-400" />
               </div>
-              <div className="flex flex-col justify-center">
+              <div className="flex flex-col justify-center flex-1">
                 <h1 className="text-2xl font-bold animated-gradient-text">
                   {t('scplus.credentialsScheme.title')}
                 </h1>
@@ -202,6 +203,15 @@ export default function CredentialsScheme() {
                   {t('scplus.credentialsScheme.subtitle')}
                 </p>
               </div>
+              <a
+                href={XRPL_DOC_CONCEPTS.credential}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors self-start"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{t('common.learnMore')}</span>
+              </a>
             </div>
           </div>
         </div>

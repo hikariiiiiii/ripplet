@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Layers, ArrowLeft } from 'lucide-react';
+import { Layers, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SchemeWizard } from '@/components/scplus/SchemeWizard';
 import { NFTokenMintForm } from '@/components/transaction/NFTokenMintForm';
@@ -13,6 +13,7 @@ import { TransactionResultDisplay } from '@/components/transaction/TransactionRe
 import { useWallet } from '@/lib/wallets';
 import type { TransactionResult, WalletMismatchError } from '@/types';
 import type { Transaction } from 'xrpl';
+import { XRPL_DOC_CONCEPTS } from '@/lib/xrpl/docUrls';
 
 type ViewState = 'wizard' | 'submitting' | 'result';
 
@@ -155,7 +156,7 @@ export default function NFTScheme() {
               <div className="flex items-center justify-center px-3 rounded-lg bg-pink-500/10 border border-pink-500/30">
                 <Layers className="w-6 h-6 text-pink-400" />
               </div>
-              <div className="flex flex-col justify-center">
+              <div className="flex flex-col justify-center flex-1">
                 <h1 className="text-2xl font-bold animated-gradient-text">
                   {t('scplus.nftScheme.title')}
                 </h1>
@@ -163,6 +164,15 @@ export default function NFTScheme() {
                   {t('scplus.nftScheme.subtitle')}
                 </p>
               </div>
+              <a
+                href={XRPL_DOC_CONCEPTS.nft}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors self-start"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{t('common.learnMore')}</span>
+              </a>
             </div>
           </div>
         </div>
