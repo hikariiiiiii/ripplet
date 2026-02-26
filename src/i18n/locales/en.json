@@ -503,6 +503,7 @@
     "cancelSubtitle": "Cancel an escrow and reclaim funds"
   },
   "mpt": {
+    "amountPrecisionHint": "MPT precision depends on the Asset Scale set at issuance (0-19 decimal places). Enter the amount according to the actual precision of this MPT.",
     "create": {
       "title": "Create MPT",
       "subtitle": "Issue a new MPToken issuance",

@@ -503,6 +503,7 @@
     "cancelSubtitle": "取消托管并收回资金"
   },
   "mpt": {
+    "amountPrecisionHint": "MPT精度取决于发行时设置的资产精度（0-19位小数）。请根据该MPT的实际精度输入金额。",
     "create": {
       "title": "创建 MPT",
       "subtitle": "发行新的 MPToken",

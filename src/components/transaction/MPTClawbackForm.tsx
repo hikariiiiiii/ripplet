@@ -218,7 +218,7 @@ export function MPTClawbackForm({
         <Input
           id="amount"
           type="text"
-          placeholder="0.00"
+          placeholder="0"
           className={`${errors.amount ? 'border-destructive' : ''}`}
           {...register('amount', {
             required: t('mptClawback.amountRequired'),
@@ -237,6 +237,9 @@ export function MPTClawbackForm({
             {errors.amount.message}
           </p>
         )}
+        <p className="text-xs text-muted-foreground">
+          {t('mpt.amountPrecisionHint')}
+        </p>
       </div>
 
       {buildError && (

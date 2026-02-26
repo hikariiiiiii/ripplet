@@ -227,7 +227,7 @@ export function MPTTransferForm({
         <Input
           id="amount"
           type="text"
-          placeholder="0.00"
+          placeholder="0"
           className={`${errors.amount ? 'border-destructive' : ''}`}
           {...register('amount', {
             required: t('mptTransfer.amountRequired'),
@@ -246,6 +246,9 @@ export function MPTTransferForm({
             {errors.amount.message}
           </p>
         )}
+        <p className="text-xs text-muted-foreground">
+          {t('mpt.amountPrecisionHint')}
+        </p>
       </div>
 
       {/* Advanced Options Toggle */}

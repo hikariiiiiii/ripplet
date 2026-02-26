@@ -230,6 +230,9 @@ export function MPTLockForm({
             {errors.lockedAmount.message}
           </p>
         )}
+        <p className="text-xs text-muted-foreground">
+          {t('mpt.amountPrecisionHint')}
+        </p>
       </div>
 
       <div className="space-y-2">
