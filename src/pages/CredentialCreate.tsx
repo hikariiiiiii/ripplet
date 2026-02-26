@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { BadgeCheck } from 'lucide-react';
 import { CredentialCreateForm } from '@/components/transaction/CredentialCreateForm';
 import { TransactionPageWrapper } from '@/components/transaction/TransactionPageWrapper';
+import { getXRPLTransactionDocUrl, XRPL_DOC_CONCEPTS } from '@/lib/xrpl/docUrls';
 
 export default function CredentialCreatePage() {
   const { t } = useTranslation();
@@ -13,6 +14,8 @@ export default function CredentialCreatePage() {
       icon={<BadgeCheck className="w-5 h-5 text-indigo-500" />}
       iconBgColor="bg-indigo-500/10"
       borderColor="border-indigo-500/20"
+      docUrl={getXRPLTransactionDocUrl('CredentialCreate')}
+      conceptUrl={XRPL_DOC_CONCEPTS.credential}
     >
       {({ address, onSubmit, isSubmitting, isConnected, onConnectWallet }) => (
         <CredentialCreateForm
