@@ -323,8 +323,15 @@ export function MPTMetadataModal({
             <FileJson className="w-5 h-5" />
             {t('mpt.metadata.title', { defaultValue: 'MPT Metadata Editor' })}
           </DialogTitle>
-          <DialogDescription>
-            {t('mpt.metadata.description', { defaultValue: 'Define token metadata following XLS-89 standard' })}
+          <DialogDescription className="space-y-1.5 text-sm">
+            <p>{t('mpt.metadata.descriptionDetail', { defaultValue: 'Define your MPT metadata according to the XLS-89 specification.' })}</p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-0.5 text-xs">
+              <li>{t('mpt.metadata.descriptionLine1', { defaultValue: 'Use templates to get started quickly, or fill in fields manually.' })}</li>
+              <li>{t('mpt.metadata.descriptionLine2', { defaultValue: 'Ticker and Name are required fields.' })}</li>
+              <li>{t('mpt.metadata.descriptionLine3', { defaultValue: 'Asset Subclass is only needed when Asset Class is set to RWA.' })}</li>
+              <li>{t('mpt.metadata.descriptionLine4', { defaultValue: 'Advanced users can switch to JSON mode for direct editing.' })}</li>
+              <li>{t('mpt.metadata.descriptionLine5', { defaultValue: 'Total metadata size must not exceed 1024 bytes.' })}</li>
+            </ul>
           </DialogDescription>
         </DialogHeader>
 
@@ -521,7 +528,7 @@ export function MPTMetadataModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Asset Class */}
-                  <div className="space-y-2">
+                  <div className={cn("space-y-2", !showAssetSubclass && "sm:col-span-2")}>
                     <div className="flex items-center gap-2">
                       <Label htmlFor="asset_class">{t('mpt.metadata.assetClass', { defaultValue: 'Asset Class' })}</Label>
                       <Tooltip>

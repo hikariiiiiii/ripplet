@@ -619,6 +619,12 @@
     "metadata": {
       "title": "MPT Metadata Editor",
       "description": "Define token metadata following XLS-89 standard",
+      "descriptionDetail": "Define your MPT metadata according to the XLS-89 specification.",
+      "descriptionLine1": "Use templates to get started quickly, or fill in fields manually.",
+      "descriptionLine2": "Ticker and Name are required fields.",
+      "descriptionLine3": "Asset Subclass is only needed when Asset Class is set to RWA.",
+      "descriptionLine4": "Advanced users can switch to JSON mode for direct editing.",
+      "descriptionLine5": "Total metadata size must not exceed 1024 bytes.",
       "basicInfo": "Basic Information",
       "ticker": "Ticker",
       "tickerHint": "Short token symbol (A-Z, 0-9, max 6 chars recommended)",

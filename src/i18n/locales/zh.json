@@ -619,6 +619,12 @@
     "metadata": {
       "title": "MPT 元数据编辑器",
       "description": "定义代币元数据（遵循 XLS-89 标准）",
+      "descriptionDetail": "按照 XLS-89 规范定义您的 MPT 元数据。",
+      "descriptionLine1": "使用模板快速开始，或手动填写表单字段。",
+      "descriptionLine2": "Ticker（代币符号）和 Name（名称）为必填项。",
+      "descriptionLine3": "Asset Subclass（资产子类别）仅在 Asset Class 选择 RWA 时需要。",
+      "descriptionLine4": "高级用户可切换到 JSON 模式直接编辑。",
+      "descriptionLine5": "元数据总大小不得超过 1024 字节。",
       "basicInfo": "基本信息",
       "ticker": "代币符号",
       "tickerHint": "代币符号（A-Z, 0-9，建议最多6位）",
