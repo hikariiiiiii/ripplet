@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, EyeOff, HelpCircle, Wallet } from 'lucide-react';
+import { AlertCircle, Loader2, ChevronDown, ChevronUp, Eye, EyeOff, HelpCircle, Wallet, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,7 @@ import {
   isValidTransferFee,
 } from '@/lib/xrpl/transactions/mpt';
 import type { MPTokenIssuanceCreate } from 'xrpl';
+import { MPTMetadataModal } from './MPTMetadataModal';
 
 interface MPTokenIssuanceCreateFormData {
   assetScale: string;
@@ -98,6 +99,7 @@ export function MPTokenIssuanceCreateForm({
   const [showPreview, setShowPreview] = useState(false);
   const [transactionJson, setTransactionJson] = useState<MPTokenIssuanceCreate | null>(null);
   const [buildError, setBuildError] = useState<string | null>(null);
+  const [metadataModalOpen, setMetadataModalOpen] = useState(false);
 
   const {
     register,
@@ -220,7 +222,8 @@ export function MPTokenIssuanceCreateForm({
     await onSubmit(transaction);
   };
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-6">
+    <>
+      <form onSubmit={handleFormSubmit} className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="assetScale">{t('mpt.create.assetScale')}</Label>
@@ -374,21 +377,32 @@ export function MPTokenIssuanceCreateForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="metadata">{t('mpt.create.metadata')}</Label>
-            <Input
-              id="metadata"
-              type="text"
-              placeholder={t('mpt.create.metadataPlaceholder')}
-              {...register('metadata', {
-                validate: (value: string) => {
-                  if (!value) return true;
-                  if (value.length > 1024) {
-                    return t('mpt.create.metadataInvalid');
-                  }
-                  return true;
-                },
-              })}
-              className={errors.metadata ? 'border-destructive' : ''}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="metadata"
+                type="text"
+                placeholder={t('mpt.create.metadataPlaceholder')}
+                {...register('metadata', {
+                  validate: (value: string) => {
+                    if (!value) return true;
+                    if (value.length > 1024) {
+                      return t('mpt.create.metadataInvalid');
+                    }
+                    return true;
+                  },
+                })}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMetadataModalOpen(true)}
+                className="shrink-0"
+              >
+                <Edit className="w-4 h-4 mr-1" />
+                {t('mpt.metadata.editButton', { defaultValue: 'Edit' })}
+              </Button>
+            </div>
             {errors.metadata && (
               <p className="text-sm text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
@@ -463,5 +477,14 @@ export function MPTokenIssuanceCreateForm({
         </Button>
       </div>
     </form>
+      <MPTMetadataModal
+        open={metadataModalOpen}
+        onOpenChange={setMetadataModalOpen}
+        initialMetadata={watch('metadata') || ''}
+        onMetadataChange={(json) => {
+          setValue('metadata', json);
+        }}
+      />
+    </>
   );
 }
