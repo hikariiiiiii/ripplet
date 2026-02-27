@@ -428,7 +428,10 @@
       "setDeepFreeze": "深度冻结",
       "setDeepFreezeTooltip": "深度冻结此信任线，阻止所有转账。仅发行者可用，需要先启用标准冻结。",
       "clearDeepFreeze": "解除深度冻结",
-      "clearDeepFreezeTooltip": "解除此信任线的深度冻结。仅发行者可用。"
+      "clearDeepFreezeTooltip": "解除此信任线的深度冻结。仅发行者可用。",
+      "noRipple": "NoRipple",
+      "freeze": "冻结",
+      "deepFreeze": "深度冻结"
     },
     "advancedOptions": "高级选项",
     "qualityIn": "入账质量",
@@ -438,7 +441,10 @@
     "qualityOutPlaceholder": "0 - 4294967295",
     "qualityOutHint": "出账资金的质量值（0-4294967295）",
     "freezeWarning": "警告：冻结操作会阻止对方使用信任线进行转账。",
-    "authIrreversible": "此操作不可撤销，一旦授权无法取消"
+    "authIrreversible": "此操作不可撤销，一旦授权无法取消",
+    "trustLine": "信任线",
+    "flagsTitle": "标志",
+    "freezeWarningTitle": "警告：冻结操作"
   },
   "accountset": {
     "title": "账户设置",
@@ -512,7 +518,30 @@
       "tickSizePlaceholder": "0 或 3-15",
       "tickSizeHint": "交易对汇率的最小精度。0表示禁用，3-15表示有效精度。"
     },
-    "irreversibleWarning": "警告：此操作不可逆！一旦启用将永久生效，无法撤销。"
+    "irreversibleWarning": "警告：此操作不可逆！一旦启用将永久生效，无法撤销。",
+    "flagsHint": "XRPL 每笔交易只能设置或清除一个标志。",
+    "fieldsTitle": "账户字段",
+    "irreversibleWarningDesc": "此操作无法撤销，请谨慎操作。",
+    "flagState": {
+      "unchanged": "不改变",
+      "set": "设置",
+      "clear": "清除"
+    },
+    "transferRate": "转账费率",
+    "transferRatePlaceholder": "0 或 1000000000-2000000000",
+    "transferRateHint": "发行货币的转账费率（十亿分之一）。0表示无费率，1000000000表示0%费率，2000000000表示100%费率。",
+    "emailHash": "邮箱哈希",
+    "emailHashPlaceholder": "32位十六进制字符",
+    "emailHashHint": "邮箱地址的MD5哈希（128位，32个十六进制字符）",
+    "messageKey": "消息公钥",
+    "messageKeyPlaceholder": "66位十六进制字符或留空清除",
+    "messageKeyHint": "用于接收加密消息的公钥（33字节，66个十六进制字符）",
+    "nftokenMinter": "NFT铸造者",
+    "nftokenMinterPlaceholder": "r...",
+    "nftokenMinterHint": "被授权代表此账户铸造NFT的账户地址",
+    "tickSize": "汇率精度",
+    "tickSizePlaceholder": "0 或 3-15",
+    "tickSizeHint": "交易对汇率的最小精度。0表示禁用，3-15表示有效精度。"
   },
   "accountdelete": {
     "title": "删除账户",
@@ -699,7 +728,7 @@
     },
     "metadata": {
       "title": "MPT 元数据编辑器",
-      "description": "定义代币元数据（遵循 XLS-89 标准）",
+      "description": "描述",
       "descriptionDetail": "按照 XLS-89 规范定义您的 MPT 元数据。",
       "descriptionLine1": "使用模板快速开始，或手动填写表单字段。",
       "descriptionLine2": "Ticker（代币符号）和 Name（名称）为必填项。",
@@ -712,7 +741,6 @@
       "tickerPlaceholder": "例如：USDX",
       "name": "代币名称",
       "namePlaceholder": "例如：美元稳定币",
-      "description": "描述",
       "descriptionPlaceholder": "代币描述",
       "icon": "图标 URL",
       "iconHint": "代币图标图片的 URL（建议 PNG、SVG 格式）",

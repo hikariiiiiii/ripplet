@@ -428,7 +428,10 @@
       "setDeepFreeze": "Deep Freeze",
       "setDeepFreezeTooltip": "Deep freeze this trust line, blocking all transfers. Issuer only, requires standard freeze to be enabled first.",
       "clearDeepFreeze": "Clear Deep Freeze",
-      "clearDeepFreezeTooltip": "Clear the deep freeze on this trust line. Issuer only."
+      "clearDeepFreezeTooltip": "Clear the deep freeze on this trust line. Issuer only.",
+      "noRipple": "NoRipple",
+      "freeze": "Freeze",
+      "deepFreeze": "Deep Freeze"
     },
     "advancedOptions": "Advanced Options",
     "qualityIn": "Quality In",
@@ -438,7 +441,10 @@
     "qualityOutPlaceholder": "0 - 4294967295",
     "qualityOutHint": "Quality value for outgoing funds (0-4294967295)",
     "freezeWarning": "Warning: Freezing will prevent the counterparty from using the trust line for transfers.",
-    "authIrreversible": "This action is irreversible. Once authorized, it cannot be undone."
+    "authIrreversible": "This action is irreversible. Once authorized, it cannot be undone.",
+    "trustLine": "Trust Line",
+    "flagsTitle": "Flags",
+    "freezeWarningTitle": "Warning: Freeze Action"
   },
   "accountset": {
     "title": "Account Settings",
@@ -512,7 +518,30 @@
       "tickSizePlaceholder": "0 or 3-15",
       "tickSizeHint": "Minimum precision for exchange rates. 0 means disabled, 3-15 means valid precision."
     },
-    "irreversibleWarning": "Warning: This action is irreversible! Once enabled, it will take effect permanently and cannot be undone."
+    "irreversibleWarning": "Warning: This action is irreversible! Once enabled, it will take effect permanently and cannot be undone.",
+    "flagsHint": "XRPL only allows setting or clearing ONE flag per transaction.",
+    "fieldsTitle": "Account Fields",
+    "irreversibleWarningDesc": "This action cannot be undone. Please proceed with caution.",
+    "flagState": {
+      "unchanged": "Unchanged",
+      "set": "Set",
+      "clear": "Clear"
+    },
+    "transferRate": "Transfer Rate",
+    "transferRatePlaceholder": "0 or 1000000000-2000000000",
+    "transferRateHint": "Transfer fee for issued currencies (in billionths). 0 means no fee, 1000000000 means 0% fee, 2000000000 means 100% fee.",
+    "emailHash": "Email Hash",
+    "emailHashPlaceholder": "32 hex characters",
+    "emailHashHint": "MD5 hash of email address (128-bit, 32 hex characters)",
+    "messageKey": "Message Public Key",
+    "messageKeyPlaceholder": "66 hex characters or leave empty to clear",
+    "messageKeyHint": "Public key for receiving encrypted messages (33 bytes, 66 hex characters)",
+    "nftokenMinter": "NFT Minter",
+    "nftokenMinterPlaceholder": "r...",
+    "nftokenMinterHint": "Account address authorized to mint NFTs on behalf of this account",
+    "tickSize": "Tick Size",
+    "tickSizePlaceholder": "0 or 3-15",
+    "tickSizeHint": "Minimum precision for exchange rates. 0 means disabled, 3-15 means valid precision."
   },
   "accountdelete": {
     "title": "Delete Account",
@@ -699,7 +728,7 @@
     },
     "metadata": {
       "title": "MPT Metadata Editor",
-      "description": "Define token metadata following XLS-89 standard",
+      "description": "Description",
       "descriptionDetail": "Define your MPT metadata according to the XLS-89 specification.",
       "descriptionLine1": "Use templates to get started quickly, or fill in fields manually.",
       "descriptionLine2": "Ticker and Name are required fields.",
@@ -712,7 +741,6 @@
       "tickerPlaceholder": "e.g. USDX",
       "name": "Name",
       "namePlaceholder": "e.g. USD Stablecoin",
-      "description": "Description",
       "descriptionPlaceholder": "Description of the token",
       "icon": "Icon URL",
       "iconHint": "URL to token icon image (PNG, SVG recommended)",

@@ -336,7 +336,7 @@ export function TrustSetForm({
       {/* Flags Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          {t('trustset.flags')}
+          {t('trustset.flagsTitle')}
         </h3>
 
         {/* Auth flag - single checkbox */}
@@ -350,7 +350,7 @@ export function TrustSetForm({
             <Label htmlFor="setAuth" className="cursor-pointer">
               {t('trustset.flags.setAuth')}
             </Label>
-            <p className="text-xs text-muted-foreground">{t('trustset.flags.authIrreversible')}</p>
+            <p className="text-xs text-muted-foreground">{t('trustset.authIrreversible')}</p>
           </div>
         </div>
 
