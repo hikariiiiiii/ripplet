@@ -498,8 +498,9 @@ async function signAndSubmitXaman(transaction: object): Promise<{ hash: string }
   const { useXamanTxStore } = await import('@/stores/xamanTx');
   useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
   console.log('[Xaman TX] QR modal shown');
-  // Subscribe via WebSocket
-  const wsUrl = payload.refs.websocket_status;
+  // Subscribe via WebSocket (use proxy to avoid CORS)
+  const wsUrl = getProxiedWsUrl(payload.refs.websocket_status);
+  console.log('[Xaman TX] WebSocket URL:', wsUrl);
   const ws = new WebSocket(wsUrl);
   
   const result = await new Promise<any>((resolve, reject) => {
@@ -531,13 +532,19 @@ async function signAndSubmitXaman(transaction: object): Promise<{ hash: string }
           useXamanTxStore.getState().setScanned();
         }
         
+        // Handle pre_signed event - user started signing, close modal to show waiting state
+        // This is the moment when user confirms the transaction in Xaman app
+        if (data.pre_signed === true) {
+          console.log('[Xaman TX] User started signing, closing modal');
+          useXamanTxStore.getState().close();
+        }
+        
         // Handle final resolution - use 'in' operator for robust detection
         if (('signed' in data) || ('txid' in data) || data.expired) {
           console.log('[Xaman TX] Transaction resolved:', data.signed !== false ? 'signed' : 'rejected');
           clearInterval(cancelCheckInterval);
           clearTimeout(timeout);
           ws.close();
-          useXamanTxStore.getState().close();
           resolve(data);
         }
       } catch (e) {
@@ -557,17 +564,59 @@ async function signAndSubmitXaman(transaction: object): Promise<{ hash: string }
   console.log('[Xaman TX] Result:', result);
   
   if (!result?.signed) {
+    useXamanTxStore.getState().close(); // Close modal on rejection
     throw new Error('Transaction rejected');
   }
   
-  // txid may be in response object or directly in result
-  const txid = result.txid || result.response?.txid;
-  if (!txid) {
-    throw new Error('Transaction not submitted');
+  // Fetch full payload to get dispatched_result (actual XRPL transaction result)
+  // This is required to detect if the transaction failed after signing
+  console.log('[Xaman TX] Fetching full payload to check transaction result...');
+  const payloadResult = await fetch(`${XUMM_API_ENDPOINT}/payload/${payload.uuid}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'x-api-secret': apiSecret,
+    },
+  });
+  
+  if (!payloadResult.ok) {
+    throw new Error('Failed to fetch payload result');
   }
   
+  const payloadData = await payloadResult.json();
+  console.log('[Xaman TX] Full payload data:', payloadData);
+  
+  // Check if transaction was submitted to the network
+  if (!payloadData.response?.dispatched_to_node) {
+    throw new Error('Transaction was not submitted to the network');
+  }
+  
+  // Get txid
+  const txid = payloadData.response?.txid;
+  
+  // Check the actual XRPL transaction result
+  const dispatchedResult = payloadData.response?.dispatched_result;
+  if (!dispatchedResult) {
+    throw new Error('Transaction result unknown - please check your wallet');
+  }
+  
+  if (dispatchedResult !== 'tesSUCCESS') {
+    // Transaction was signed but failed on the XRPL network
+    console.error('[Xaman TX] Transaction failed with code:', dispatchedResult);
+    throw new Error(`Transaction failed: ${dispatchedResult}`);
+  }
+  
+  if (!txid) {
+    throw new Error('Transaction hash not found');
+  }
+  
+  console.log('[Xaman TX] Transaction successful:', txid);
   return { hash: txid };
 }
+
+
+
 
 async function signXaman(transaction: object): Promise<{ signedTx: string; txJson: unknown }> {
   const apiKey = import.meta.env.VITE_XUMM_API_KEY;

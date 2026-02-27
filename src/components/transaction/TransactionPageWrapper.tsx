@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { NetworkMismatchDialog } from '@/components/wallet/NetworkMismatchDialog';
 import { WalletSelectModal } from '@/components/wallet/WalletSelectModal';
 import { TransactionResultDisplay } from '@/components/transaction/TransactionResult';
-
 import type { TransactionResult, WalletMismatchError } from '@/types';
 import type { Transaction } from 'xrpl';
 type ViewState = 'form' | 'submitting' | 'result';
@@ -45,7 +44,7 @@ export function TransactionPageWrapper({
 }: TransactionPageWrapperProps) {
   const { t } = useTranslation();
   const { address, connected, signAndSubmit, network } = useWallet();
-  const { getClient } = useXRPL();
+  const { getClient, reconnect } = useXRPL();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [result, setResult] = useState<TransactionResult | null>(null);
   const [showMismatchDialog, setShowMismatchDialog] = useState(false);
@@ -70,7 +69,16 @@ export function TransactionPageWrapper({
       const response = await signAndSubmit(transaction);
       
       // Fetch actual transaction result from the ledger
-      const client = getClient();
+      // Reconnect XRPL client if disconnected (can happen during long Xaman signing waits)
+      let client;
+      try {
+        client = getClient();
+      } catch {
+        console.log('[TransactionPageWrapper] XRPL client disconnected, reconnecting...');
+        await reconnect();
+        client = getClient();
+      }
+      
       const txResult: TransactionSubmitResult = await fetchTransactionResult(client, response.hash);
       
       setResult({
