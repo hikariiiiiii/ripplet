@@ -2,6 +2,31 @@ import type { TrustSet } from 'xrpl'
 import type { BaseTransactionParams } from './types'
 
 /**
+ * TrustSet transaction flags
+ * @see https://xrpl.org/trustset.html#trustset-flags
+ */
+export const TRUST_SET_FLAGS = {
+  /** Authorize the other party to hold currency issued by this account (one-way, cannot be revoked) */
+  tfSetfAuth: 0x00010000,        // 65536
+  /** Enable NoRipple flag on the trust line */
+  tfSetNoRipple: 0x00020000,     // 131072
+  /** Disable NoRipple flag on the trust line */
+  tfClearNoRipple: 0x00040000,   // 262144
+  /** Enable Freeze flag on the trust line (issuer only) */
+  tfSetFreeze: 0x00100000,       // 1048576
+  /** Disable Freeze flag on the trust line (issuer only) */
+  tfClearFreeze: 0x00200000,     // 2097152
+  /** Enable DeepFreeze flag on the trust line (issuer only, requires Freeze first) */
+  tfSetDeepFreeze: 0x00400000,   // 4194304
+  /** Disable DeepFreeze flag on the trust line (issuer only) */
+  tfClearDeepFreeze: 0x00800000, // 8388608
+} as const
+
+/** Type for TRUST_SET_FLAGS keys */
+export type TrustSetFlagKey = keyof typeof TRUST_SET_FLAGS
+
+
+/**
  * Parameters for building a TrustSet transaction
  * 
  * TrustSet creates or modifies a trust line, which allows an account to hold
@@ -34,6 +59,14 @@ export interface TrustSetParams extends BaseTransactionParams {
    * Higher values mean the holder values outgoing funds less
    */
   QualityOut?: number
+  /** 
+   * Optional flags for the trust line
+   * Combine multiple flags using bitwise OR (e.g., TRUST_SET_FLAGS.tfSetNoRipple | TRUST_SET_FLAGS.tfSetFreeze)
+   * Note: tfSetNoRipple and tfClearNoRipple are mutually exclusive
+   * Note: tfSetFreeze and tfClearFreeze are mutually exclusive
+   * Note: tfSetDeepFreeze and tfClearDeepFreeze are mutually exclusive
+   */
+  Flags?: number
 }
 
 /**
@@ -152,6 +185,31 @@ export function validateTrustSetParams(params: TrustSetParams): TrustSetValidati
     }
   }
 
+  // Validate Flags (optional)
+  if (params.Flags !== undefined) {
+    if (typeof params.Flags !== 'number' || params.Flags < 0) {
+      errors.push('Flags must be a non-negative number')
+    } else {
+      // Check for mutually exclusive flag pairs
+      const hasSetNoRipple = (params.Flags & TRUST_SET_FLAGS.tfSetNoRipple) !== 0
+      const hasClearNoRipple = (params.Flags & TRUST_SET_FLAGS.tfClearNoRipple) !== 0
+      const hasSetFreeze = (params.Flags & TRUST_SET_FLAGS.tfSetFreeze) !== 0
+      const hasClearFreeze = (params.Flags & TRUST_SET_FLAGS.tfClearFreeze) !== 0
+      const hasSetDeepFreeze = (params.Flags & TRUST_SET_FLAGS.tfSetDeepFreeze) !== 0
+      const hasClearDeepFreeze = (params.Flags & TRUST_SET_FLAGS.tfClearDeepFreeze) !== 0
+
+      if (hasSetNoRipple && hasClearNoRipple) {
+        errors.push('tfSetNoRipple and tfClearNoRipple are mutually exclusive')
+      }
+      if (hasSetFreeze && hasClearFreeze) {
+        errors.push('tfSetFreeze and tfClearFreeze are mutually exclusive')
+      }
+      if (hasSetDeepFreeze && hasClearDeepFreeze) {
+        errors.push('tfSetDeepFreeze and tfClearDeepFreeze are mutually exclusive')
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
@@ -180,20 +238,21 @@ export function validateTrustSetParams(params: TrustSetParams): TrustSetValidati
  *     currency: 'USD',
  *     issuer: 'rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn',
  *     value: '1000'
- *   }
- * })
- * 
- * @example
- * // Delete a trust line by setting limit to 0
- * const tx = buildTrustSet({
- *   Account: 'rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9',
- *   LimitAmount: {
- *     currency: 'USD',
- *     issuer: 'rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn',
- *     value: '0'
- *   }
- * })
- */
+  }
+})
+
+@example
+// Create a trust line with NoRipple enabled
+const tx = buildTrustSet({
+  Account: 'rN7n3473SaZBCG4dFL83w7a1RXtXtbk2D9',
+  LimitAmount: {
+    currency: 'USD',
+    issuer: 'rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn',
+    value: '1000'
+  },
+  Flags: TRUST_SET_FLAGS.tfSetNoRipple
+})
+*/
 export function buildTrustSet(params: TrustSetParams): TrustSet {
   // Validate parameters
   const validation = validateTrustSetParams(params)
@@ -224,6 +283,11 @@ export function buildTrustSet(params: TrustSetParams): TrustSet {
 
   if (params.QualityOut !== undefined) {
     transaction.QualityOut = params.QualityOut
+  }
+
+  // Add Flags (optional)
+  if (params.Flags !== undefined) {
+    transaction.Flags = params.Flags
   }
 
   // Add optional base transaction fields

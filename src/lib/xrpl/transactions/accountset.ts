@@ -15,8 +15,30 @@ export const ACCOUNT_FLAGS = {
   asfRequireAuth: 2,
   /** Disallow XRP payments from strangers (value: 3) */
   asfDisallowXRP: 3,
+  /** Disallow use of master key (value: 4) */
+  asfDisableMaster: 4,
+  /** Track ID of this account's most recent transaction (value: 5) */
+  asfAccountTxnID: 5,
+  /** Permanently give up the ability to freeze individual trust lines (value: 6) */
+  asfNoFreeze: 6,
+  /** Freeze all trust lines (value: 7) */
+  asfGlobalFreeze: 7,
   /** Enable rippling on trust lines by default (value: 8) */
   asfDefaultRipple: 8,
+  /** Block incoming payments from non-authorized accounts (value: 9) */
+  asfDepositAuth: 9,
+  /** Allow specific NFToken minter (value: 10) */
+  asfAuthorizedNFTokenMinter: 10,
+  /** Block incoming NFToken offers (value: 12) */
+  asfDisallowIncomingNFTokenOffer: 12,
+  /** Block incoming checks (value: 13) */
+  asfDisallowIncomingCheck: 13,
+  /** Block incoming payment channels (value: 14) */
+  asfDisallowIncomingPayChan: 14,
+  /** Block incoming trust lines (value: 15) */
+  asfDisallowIncomingTrustline: 15,
+  /** Allow issuer to clawback tokens (value: 16) */
+  asfAllowTrustLineClawback: 16,
 } as const
 
 /**
@@ -35,6 +57,26 @@ export interface AccountSetParams extends BaseTransactionParams {
    * Range: 0 to 2000000000 (inclusive)
    */
   TransferRate?: number
+  /**
+   * Hash of an email address for this account.
+   * 128-bit hex string (32 characters).
+   */
+  EmailHash?: string
+  /**
+   * Public key for sending encrypted messages.
+   * 33 bytes hex string or empty string to clear.
+   */
+  MessageKey?: string
+  /**
+   * Account that is allowed to mint NFTs on this account's behalf.
+   * Requires asfAuthorizedNFTokenMinter flag to be set.
+   */
+  NFTokenMinter?: string
+  /**
+   * Tick size for this account's offers.
+   * 0 = no tick size, otherwise must be between 3 and 15.
+   */
+  TickSize?: number
 }
 
 /**
@@ -43,7 +85,32 @@ export interface AccountSetParams extends BaseTransactionParams {
  * @returns true if valid, false otherwise
  */
 function isValidTransferRate(rate: number): boolean {
-  return Number.isInteger(rate) && rate >= 0 && rate <= 2000000000
+  // Special case: 0 means no fee (special value)
+  if (rate === 0) return true
+  // Otherwise must be between 1000000000 (0%) and 2000000000 (100%)
+  return Number.isInteger(rate) && rate >= 1000000000 && rate <= 2000000000
+}
+
+/**
+ * Validates TickSize value
+ * @param tickSize - The tick size to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidTickSize(tickSize: number): boolean {
+  // 0 means no tick size (clear the setting)
+  if (tickSize === 0) return true
+  // Otherwise must be between 3 and 15
+  return Number.isInteger(tickSize) && tickSize >= 3 && tickSize <= 15
+}
+
+/**
+ * Validates EmailHash format
+ * @param emailHash - The email hash to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidEmailHash(emailHash: string): boolean {
+  // Must be 128-bit hex string (32 hex characters)
+  return /^[0-9A-Fa-f]{32}$/.test(emailHash)
 }
 
 /**
@@ -78,6 +145,10 @@ export function buildAccountSet(params: AccountSetParams): AccountSet {
     ClearFlag,
     Domain,
     TransferRate,
+    EmailHash,
+    MessageKey,
+    NFTokenMinter,
+    TickSize,
     Fee,
     Sequence,
     LastLedgerSequence,
@@ -91,8 +162,18 @@ export function buildAccountSet(params: AccountSetParams): AccountSet {
   // Validate TransferRate if provided
   if (TransferRate !== undefined && !isValidTransferRate(TransferRate)) {
     throw new Error(
-      'TransferRate must be an integer between 0 and 2000000000 (inclusive)',
+      'TransferRate must be 0 or an integer between 1000000000 and 2000000000 (inclusive)',
     )
+  }
+
+  // Validate TickSize if provided
+  if (TickSize !== undefined && !isValidTickSize(TickSize)) {
+    throw new Error('TickSize must be 0 or an integer between 3 and 15 (inclusive)')
+  }
+
+  // Validate EmailHash if provided
+  if (EmailHash !== undefined && !isValidEmailHash(EmailHash)) {
+    throw new Error('EmailHash must be a 128-bit hex string (32 hex characters)')
   }
 
   // Validate that SetFlag and ClearFlag are not the same
@@ -126,6 +207,22 @@ export function buildAccountSet(params: AccountSetParams): AccountSet {
 
   if (TransferRate !== undefined) {
     transaction.TransferRate = TransferRate
+  }
+
+  if (EmailHash !== undefined) {
+    transaction.EmailHash = EmailHash.toUpperCase()
+  }
+
+  if (MessageKey !== undefined) {
+    transaction.MessageKey = MessageKey
+  }
+
+  if (NFTokenMinter !== undefined) {
+    transaction.NFTokenMinter = NFTokenMinter
+  }
+
+  if (TickSize !== undefined) {
+    transaction.TickSize = TickSize
   }
 
   // Add base transaction fields
