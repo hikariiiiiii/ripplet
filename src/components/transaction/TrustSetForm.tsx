@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { AlertCircle, AlertTriangle, ChevronRight, Eye, EyeOff, Loader2, Wallet } from 'lucide-react'
+import { AlertCircle, AlertTriangle, ChevronRight, Eye, EyeOff, HelpCircle, Loader2, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   buildTrustSet,
   isValidCurrency,
@@ -339,24 +340,45 @@ export function TrustSetForm({
           {t('trustset.flagsTitle')}
         </h3>
 
-        {/* Auth flag - single checkbox */}
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="setAuth"
-            checked={flags.setAuth}
-            onCheckedChange={(checked) => handleFlagChange('setAuth', checked === true)}
-          />
-          <div className="space-y-1">
-            <Label htmlFor="setAuth" className="cursor-pointer">
-              {t('trustset.flags.setAuth')}
-            </Label>
-            <p className="text-xs text-muted-foreground">{t('trustset.authIrreversible')}</p>
+        {/* Authorize Holding - single checkbox with title */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Label className="text-sm">{t('trustset.flags.authorizeHolding')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('trustset.flags.authorizeHoldingTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-6 pl-1">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="setAuth"
+                checked={flags.setAuth}
+                onCheckedChange={(checked) => handleFlagChange('setAuth', checked === true)}
+              />
+              <Label htmlFor="setAuth" className="cursor-pointer text-sm font-normal">
+                {t('trustset.flags.setAuth')}
+              </Label>
+            </div>
           </div>
         </div>
-
         {/* NoRipple - set/clear pair */}
         <div className="space-y-2">
-          <Label className="text-sm">{t('trustset.flags.noRipple')}</Label>
+          <div className="flex items-center gap-1.5">
+            <Label className="text-sm">{t('trustset.flags.noRipple')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('trustset.flags.noRippleTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="flex items-center gap-6 pl-1">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -380,10 +402,19 @@ export function TrustSetForm({
             </div>
           </div>
         </div>
-
         {/* Freeze - set/clear pair */}
         <div className="space-y-2">
-          <Label className="text-sm">{t('trustset.flags.freeze')}</Label>
+          <div className="flex items-center gap-1.5">
+            <Label className="text-sm">{t('trustset.flags.freeze')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('trustset.flags.freezeTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="flex items-center gap-6 pl-1">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -407,10 +438,19 @@ export function TrustSetForm({
             </div>
           </div>
         </div>
-
         {/* DeepFreeze - set/clear pair */}
         <div className="space-y-2">
-          <Label className="text-sm">{t('trustset.flags.deepFreeze')}</Label>
+          <div className="flex items-center gap-1.5">
+            <Label className="text-sm">{t('trustset.flags.deepFreeze')}</Label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{t('trustset.flags.deepFreezeTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <div className="flex items-center gap-6 pl-1">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -434,7 +474,6 @@ export function TrustSetForm({
             </div>
           </div>
         </div>
-
         {/* Freeze Warning Box */}
         {hasFreezeFlags && (
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
