@@ -45,6 +45,13 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/xumm-api/, '/api/v1/platform'),
         secure: true,
       },
+      // WebSocket proxy for Xumm status updates
+      '/xumm-ws': {
+        target: 'wss://xumm.app',
+        ws: true,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/xumm-ws/, ''),
+      },
     },
   },
 })

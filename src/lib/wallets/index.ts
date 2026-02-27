@@ -208,6 +208,26 @@ async function getGemwalletNetwork(): Promise<string | null> {
   return null;
 }
 
+
+// Convert Xumm WebSocket URL to use local proxy
+function getProxiedWsUrl(wsUrl: string): string {
+  // Convert wss://xumm.app/sign/... to ws://localhost:port/xumm-ws/sign/...
+  // This routes WebSocket through Vite proxy to avoid CORS issues
+  try {
+    const url = new URL(wsUrl);
+    if (url.host === 'xumm.app') {
+      // Use WebSocket URL that will be proxied by Vite
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const proxyPath = `/xumm-ws${url.pathname}${url.search}`;
+      console.log('[Xaman WS] Converting URL:', wsUrl, '-> proxy:', `${protocol}//${window.location.host}${proxyPath}`);
+      return `${protocol}//${window.location.host}${proxyPath}`;
+    }
+  } catch (e) {
+    console.warn('[Xaman WS] Failed to parse WebSocket URL:', e);
+  }
+  return wsUrl;
+}
+
 // Xaman - Direct API calls via Vite proxy
 const XUMM_API_ENDPOINT = '/xumm-api';
 
@@ -330,8 +350,9 @@ async function connectXaman(): Promise<{ account: string; network?: string }> {
   const { useXamanTxStore } = await import('@/stores/xamanTx');
   useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
   
-  // Subscribe via WebSocket
-  const wsUrl = payload.refs.websocket_status;
+  // Subscribe via WebSocket (use proxy to avoid CORS)
+  const wsUrl = getProxiedWsUrl(payload.refs.websocket_status);
+  console.log('[Xaman Connect] WebSocket URL:', wsUrl);
   const ws = new WebSocket(wsUrl);
   
   const result = await new Promise<any>((resolve, reject) => {
@@ -585,8 +606,9 @@ async function signXaman(transaction: object): Promise<{ signedTx: string; txJso
   const { useXamanTxStore } = await import('@/stores/xamanTx');
   useXamanTxStore.getState().show(payload.refs.qr_png, payload.next.always);
   
-  // Subscribe via WebSocket
-  const wsUrl = payload.refs.websocket_status;
+  // Subscribe via WebSocket (use proxy to avoid CORS)
+  const wsUrl = getProxiedWsUrl(payload.refs.websocket_status);
+  console.log('[Xaman Sign] WebSocket URL:', wsUrl);
   const ws = new WebSocket(wsUrl);
   
   const result = await new Promise<any>((resolve, reject) => {
