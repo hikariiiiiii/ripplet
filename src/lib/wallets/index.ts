@@ -110,6 +110,22 @@ async function signAndSubmitCrossmark(transaction: object): Promise<{ hash: stri
   const { response } = await sdk.methods.signAndSubmitAndWait(tx);
   
   const txResult = response?.data?.resp as any;
+  
+  // Check for engine_result (XRPL submission result)
+  const engineResult = txResult?.result?.engine_result || txResult?.engine_result;
+  const engineResultMessage = txResult?.result?.engine_result_message || txResult?.engine_result_message;
+  
+  // Also check meta.TransactionResult for final ledger result
+  const metaResult = txResult?.result?.meta?.TransactionResult || txResult?.meta?.TransactionResult;
+  const resultCode = engineResult || metaResult;
+  
+  // If we have a result code and it's not success, throw with the actual error
+  if (resultCode && resultCode !== 'tesSUCCESS') {
+    // Use friendly error message based on error code
+    const friendlyMessage = getXRPLErrorMessage(resultCode, engineResultMessage);
+    throw new Error(friendlyMessage);
+  }
+  
   const hash = txResult?.result?.hash || txResult?.hash;
   
   if (!hash) {
@@ -117,6 +133,105 @@ async function signAndSubmitCrossmark(transaction: object): Promise<{ hash: stri
   }
   
   return { hash };
+}
+
+/**
+ * Convert XRPL error code to user-friendly message
+ */
+function getXRPLErrorMessage(code: string, originalMessage?: string): string {
+  const errorMessages: Record<string, string> = {
+    // tec codes - Claimed but failed
+    tecCLAIM: 'Transaction fee claimed but failed',
+    tecPATH_DRY: 'No path found - insufficient liquidity',
+    tecUNFUNDED: 'Insufficient funds',
+    tecUNFUNDED_PAYMENT: 'Insufficient funds for payment',
+    tecNO_LINE_INSUF_RESERVE: 'No trust line, insufficient reserve',
+    tecNO_LINE_REDUNDANT: 'Trust line already exists',
+    tecNO_ISSUER: 'Issuer account does not exist',
+    tecNO_AUTH: 'Not authorized to hold this asset',
+    tecNO_DST: 'Destination account does not exist',
+    tecNO_DST_INSUF_XRP: 'Destination account does not exist, insufficient XRP to create it',
+    tecDST_TAG_NEEDED: 'Destination tag is required',
+    tecINSUF_FEE: 'Insufficient fee',
+    tecFROZEN: 'Asset is frozen',
+    tecNO_PERMISSION: 'No permission for this operation',
+    tecNO_REGULAR_KEY: 'No regular key set',
+    tecOWNERS: 'Account has owners count set',
+    tecNEED_MASTER_KEY: 'This operation requires master key',
+    tecCRYPTOCONDITION_ERROR: 'Crypto condition error',
+    tecINVARIANT_FAILED: 'Transaction would violate ledger invariants',
+    tecEXPIRED: 'Transaction has expired',
+    tecDUPLICATE: 'Transaction is a duplicate',
+    tecKILLED: 'Transaction was killed',
+    tecHAS_OBLIGATIONS: 'Account has obligations',
+    tecOVERSIZE: 'Transaction output too large',
+    tecINSUF_RESERVE_LINE: 'Insufficient reserve for trust line',
+    tecINSUF_RESERVE_OFFER: 'Insufficient reserve for offer',
+    tecUNFUNDED_ADDITIONAL: 'Insufficient funds for additional amount',
+    tecUNFUNDED_OFFER: 'Insufficient funds for offer',
+    tecAMM_ACCOUNT: 'Cannot delete AMM account',
+    tecAMM_INVALID_TOKENS: 'Invalid AMM tokens',
+    tecAMM_NOT_EMPTY: 'AMM pool is not empty',
+    tecAMM_OWNER_NOT_FOUND: 'AMM owner not found',
+    
+    // tel codes - Local errors
+    telCAN_NOT_QUEUE: 'Transaction cannot be queued',
+    telCAN_NOT_QUEUE_BALANCE: 'Insufficient balance to queue',
+    telCAN_NOT_QUEUE_FEE: 'Insufficient fee to queue',
+    telCAN_NOT_QUEUE_FULL: 'Transaction queue is full',
+    telFAILED_PROCESSING: 'Transaction failed during processing',
+    telINSUF_FEE_P: 'Insufficient fee provided',
+    telNO_DST: 'Destination account does not exist',
+    telDST_IS_SRC: 'Destination is the same as source',
+    
+    // ter codes - Retryable errors
+    terRETRY: 'Transaction failed, please retry',
+    terFUNDS_SPENT: 'Funds already spent',
+    terINSUF_FEE_B: 'Insufficient fee balance',
+    terLAST: 'Last ledger sequence passed',
+    terNO_ACCOUNT: 'Account does not exist',
+    terNO_AUTH: 'Not authorized',
+    terNO_LINE: 'No trust line exists',
+    terOWNERS: 'Account has owners',
+    terPRE_SEQ: 'Sequence number too high',
+    terPRE_TICK: 'Ticket not found',
+    terQ_NO: 'Not in queue',
+    
+    // tef codes - Fatal errors
+    tefALREADY: 'Transaction already applied',
+    tefBAD_ADD_AUTH: 'Invalid additional authorization',
+    tefBAD_AUTH: 'Invalid authorization',
+    tefBAD_AUTH_MASTER: 'Invalid master key authorization',
+    tefBAD_LEDGER: 'Invalid ledger',
+    tefBAD_QUORUM: 'Invalid quorum',
+    tefBAD_SIGNATURE: 'Invalid signature',
+    tefCREATED: 'Account already created',
+    tefEXCEPTION: 'Transaction processing exception',
+    tefFAILURE: 'Transaction failed',
+    tefINTERNAL: 'Internal error',
+    tefINV_SIGNER: 'Invalid signer',
+    tefMASTER_DISABLED: 'Master key is disabled',
+    tefMAX_LEDGER: 'Last ledger sequence exceeded',
+    tefNOT_MULTI_SIGNING: 'Not configured for multi-signing',
+    tefPAST_SEQ: 'Sequence number already used',
+    tefTOO_BIG: 'Transaction too large',
+    tefWRONG_PRIOR: 'Wrong prior transaction',
+    tefWRONG_SECP256K1: 'Wrong SECP256K1 key',
+    tefNOT_SUSPICIOUS: 'Not suspicious',
+  };
+  
+  // Return friendly message if available, otherwise use original or code
+  if (errorMessages[code]) {
+    return errorMessages[code];
+  }
+  
+  // Fall back to original message if it's meaningful
+  if (originalMessage && originalMessage !== code) {
+    return originalMessage;
+  }
+  
+  // Return code as last resort
+  return `Transaction failed: ${code}`;
 }
 
 async function signCrossmark(transaction: object): Promise<{ signedTx: string; txJson: unknown }> {
