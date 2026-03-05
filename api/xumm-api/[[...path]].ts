@@ -16,8 +16,15 @@ export default async function handler(req: any, res: any) {
     return res.status(401).json({ error: 'Xumm API credentials not configured' });
   }
 
-  const path = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path || '';
-  const targetUrl = `${XUMM_API_BASE}/${path}`;
+  const url = new URL(req.url, `https://${req.headers.host}`);
+  let path = url.pathname.replace(/^\/api\/xumm-api\/?/, '').replace(/^\/xumm-api\/?/, '');
+  
+  if (!path) {
+    path = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path || '';
+  }
+  
+  const targetUrl = path ? `${XUMM_API_BASE}/${path}` : XUMM_API_BASE;
+  console.log('Proxying to:', targetUrl);
 
   try {
     const fetchOptions: RequestInit = {
