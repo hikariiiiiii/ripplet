@@ -16,8 +16,9 @@ build/
 # ===========================================
 # Environment Files (contains secrets)
 # ===========================================
-.env
-.env.*
+# .env  # Uncomment to ignore .env
+.env.local
+.env.*.local
 !.env.template
 !.env.example
 
