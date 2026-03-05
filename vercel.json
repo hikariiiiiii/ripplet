@@ -1,7 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/xumm-api/:path*",
+      "destination": "/api/xumm-api/:path*"
+    },
+    {
+      "source": "/((?!api|assets).*)",
       "destination": "/index.html"
     }
   ],
